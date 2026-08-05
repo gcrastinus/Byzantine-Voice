@@ -5,6 +5,8 @@ import fitz, sys, json, statistics, argparse
 
 MUSIC_FONTS = ("Maestro", "Petrucci")
 NOTEHEADS = {"œ": "quarter", "˙": "half", "w": "whole", "W": "recit"}
+# Maestro/Petrucci flags: j/J = eighth, k/K = sixteenth (weight)
+FLAG_WEIGHT = {"j": 1, "J": 1, "k": 2, "K": 2}
 ACCIDENTALS = {"#": 1, "b": -1, "n": 0}
 SHARP_LETTERS = [3, 0, 4, 1, 5, 2, 6]   # F C G D A E B (letter idx, C=0)
 FLAT_LETTERS = [6, 2, 5, 1, 4]          # B E A D G
@@ -99,8 +101,8 @@ def extract(path):
                     bd, best = d, si
             return best if bd < 6 * staves[best]["spacing"] else None
 
-        per = [{"clef": None, "keysig": 0, "keyx": None, "notes": [], "pending_acc": None,
-                "raw": st} for st in staves]
+        per = [{"clef": None, "keysig": 0, "keyx": None, "notes": [], "flags": [],
+                "pending_acc": None, "raw": st} for st in staves]
 
         for ch in chars:  # sorted by x; but staves interleave, handle per-staff x order later
             si = staff_of(ch["y"])
@@ -119,8 +121,11 @@ def extract(path):
                     st["pending_acc"] = c
             elif c in NOTEHEADS:
                 st["notes"].append({"c": c, "x": ch["x"], "y": ch["y"],
-                                    "acc": st["pending_acc"]})
+                                    "acc": st["pending_acc"], "flagCount": 0})
                 st["pending_acc"] = None
+            elif c in FLAG_WEIGHT:
+                st["flags"].append({"x": ch["x"], "y": ch["y"],
+                                    "weight": FLAG_WEIGHT[c]})
 
         staves_out = []
         for si, st in enumerate(per):
@@ -138,6 +143,21 @@ def extract(path):
                         filtered[-1] = n
                     continue
                 filtered.append(n)
+            # Attach flags (j/J = 8th, k/K = 16th) to nearest filled head
+            for f in st["flags"]:
+                best, best_score = None, 1e9
+                for n in filtered:
+                    if n["c"] != "œ":
+                        continue
+                    dx = f["x"] - n["x"]
+                    dy = abs(f["y"] - n["y"])
+                    if abs(dx) > sp * 2.8 or dy > sp * 6.5:
+                        continue
+                    score = abs(dx) * 1.4 + dy * 0.35
+                    if score < best_score:
+                        best_score, best = score, n
+                if best is not None:
+                    best["flagCount"] = best.get("flagCount", 0) + f["weight"]
             # lyrics: words below staff within 4 spacings, first verse line only
             band = [w for w in words
                     if raw["xStart"] - 5 <= w["x"] <= raw["xEnd"] + 20
@@ -147,9 +167,12 @@ def extract(path):
             for n in filtered:
                 step = round((bottom - n["y"]) / (sp / 2))
                 midi = step_to_midi(step, st["keysig"], n["acc"])
+                glyph = NOTEHEADS[n["c"]]
+                if glyph == "quarter" and n.get("flagCount"):
+                    glyph = "sixteenth" if n["flagCount"] >= 2 else "eighth"
                 notes_out.append({
                     "index": gidx, "type": "recit" if n["c"] == "W" else "note",
-                    "glyph": NOTEHEADS[n["c"]],
+                    "glyph": glyph,
                     "x": round(n["x"] + sp * 0.6, 2), "y": round(n["y"], 2),
                     "step": step, "midi": midi,
                     "accidental": n["acc"], "lyric": ""})

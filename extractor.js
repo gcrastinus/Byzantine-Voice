@@ -14,10 +14,22 @@
   const MUSIC_FONTS = ["Maestro", "Petrucci"];
   // Maestro/Petrucci notehead code points (must stay as UTF-8 string keys)
   const NOTEHEADS = {
-    "\u0153": "quarter", // œ
+    "\u0153": "quarter", // œ  (filled head — also used under flags for 8ths/16ths)
     "\u02D9": "half", // ˙  (dot above — Finale half-note head)
     w: "whole",
     W: "recit",
+  };
+  /**
+   * Flag characters (Maestro/Petrucci). Filled head œ + flag ⇒ shorter duration.
+   * j/J = eighth flag (up/down stem); k/K = sixteenth flag when present.
+   * Beamed 8ths often have no flag glyph (beams are drawings) — those still
+   * look like quarters unless a flag is present.
+   */
+  const FLAG_WEIGHT = {
+    j: 1,
+    J: 1,
+    k: 2,
+    K: 2,
   };
   const ACCIDENTALS = { "#": 1, b: -1, n: 0 };
   const SHARP_LETTERS = [3, 0, 4, 1, 5, 2, 6]; // F C G D A E B
@@ -32,6 +44,19 @@
     if (!family) return false;
     const f = String(family);
     return MUSIC_FONTS.some((m) => f.indexOf(m) !== -1);
+  }
+
+  /** True for Maestro code points we care about even if font name is unresolved. */
+  function isKnownMusicChar(c) {
+    if (!c) return false;
+    return (
+      Object.prototype.hasOwnProperty.call(NOTEHEADS, c) ||
+      Object.prototype.hasOwnProperty.call(FLAG_WEIGHT, c) ||
+      Object.prototype.hasOwnProperty.call(ACCIDENTALS, c) ||
+      c === "&" ||
+      c === "?" ||
+      c === "."
+    );
   }
 
   function round(n, d) {
@@ -249,21 +274,14 @@
     }
 
     function emitGlyphs(glyphs) {
-      if (!fontId || !isMusicFont(resolveFontName(page, fontId, null))) {
-        // Still advance the text matrix so subsequent TD/show stay consistent
-        // when a non-music run is interleaved (rare on these pages).
-        const list = Array.isArray(glyphs) ? glyphs : [glyphs];
-        for (const g of list) {
-          if (typeof g === "number") {
-            moveText(-g / 1000, 0);
-          } else if (g && typeof g === "object") {
-            advanceByWidth(g.width);
-          }
-        }
-        return;
-      }
-
+      const fontName = fontId ? resolveFontName(page, fontId, null) : "";
+      const musicFont = !!(fontId && isMusicFont(fontName));
       const list = Array.isArray(glyphs) ? glyphs : [glyphs];
+
+      // Always walk the list so the text matrix advances correctly.
+      // Emit a glyph if the active font is Maestro/Petrucci OR the character is
+      // a known music code point (œ, j/J flags, …). Font names sometimes fail to
+      // resolve until commonObjs is ready — that used to drop all flags.
       for (const g of list) {
         if (g == null) continue;
         // TJ numbers: horizontal displacement in thousandths of text space
@@ -277,7 +295,12 @@
         if (typeof g === "string") {
           ch = g;
         } else if (typeof g === "object") {
-          ch = g.unicode != null ? String(g.unicode) : "";
+          // Prefer unicode; fall back to fontChar (Maestro single-byte glyphs)
+          if (g.unicode != null && String(g.unicode).length) {
+            ch = String(g.unicode);
+          } else if (g.fontChar != null && String(g.fontChar).length) {
+            ch = String(g.fontChar);
+          }
           widthThou = g.width != null ? g.width : 500;
         }
 
@@ -286,7 +309,8 @@
         const yTop = yToTop(page, textMatrix[5]);
         for (let i = 0; i < ch.length; i++) {
           const c = ch[i];
-          if (c.trim()) {
+          if (!c || !c.trim()) continue;
+          if (musicFont || isKnownMusicChar(c)) {
             out.push({ c, x, y: yTop });
           }
         }
@@ -421,6 +445,53 @@
     return bd < 6 * staves[best].spacing ? best : null;
   }
 
+  /**
+   * Pair flag glyphs with the nearest filled notehead (œ).
+   * Flags may sit above or below the head (stem up/down).
+   * Validated on 08-15_Dormition_DL.pdf staff 1 (notes 1,2,5,6,9,10,13,14).
+   */
+  function attachFlagsToNotes(notes, flags, spacing) {
+    if (!notes || !notes.length || !flags || !flags.length) return;
+    const sp = spacing > 0 ? spacing : 4.32;
+    for (const f of flags) {
+      let best = null;
+      let bestScore = Infinity;
+      for (const n of notes) {
+        // Only filled heads take flags (half/whole/recit do not)
+        if (n.c !== "\u0153") continue;
+        const dx = f.x - n.x;
+        const dy = Math.abs(f.y - n.y);
+        // Flag is near the stem: often slightly right of head, above or below
+        // Dormition sample: |dx|≈5pt, |dy|≈11pt with sp≈4.32
+        if (Math.abs(dx) > sp * 3.5) continue;
+        if (dy > sp * 8) continue;
+        // Prefer closer in x; y can be far along the stem
+        const score = Math.abs(dx) * 1.4 + dy * 0.35;
+        if (score < bestScore) {
+          bestScore = score;
+          best = n;
+        }
+      }
+      if (best) {
+        best.flagCount = (best.flagCount || 0) + (f.weight || 1);
+      }
+    }
+  }
+
+  /** Map notehead + flags → duration glyph name for Play / holds. */
+  function glyphForExtractedNote(n) {
+    if (!n) return "quarter";
+    if (n.c === "W") return "recit";
+    let g = NOTEHEADS[n.c];
+    if (g == null) g = "quarter";
+    // Filled head + flag(s) → eighth / sixteenth
+    if (g === "quarter" && n.flagCount) {
+      if (n.flagCount >= 2) g = "sixteenth";
+      else g = "eighth";
+    }
+    return g;
+  }
+
   async function extractPage(page, pageIndex, gidxStart) {
     let gidx = gidxStart;
     const hl = await findStaffLinesByCanvas(page);
@@ -437,6 +508,7 @@
       keysig: 0,
       keyx: null,
       notes: [],
+      flags: [],
       pending_acc: null,
       raw: st,
     }));
@@ -463,10 +535,18 @@
           x: ch.x,
           y: ch.y,
           acc: st.pending_acc,
+          flagCount: 0,
         });
         st.pending_acc = null;
+      } else if (Object.prototype.hasOwnProperty.call(FLAG_WEIGHT, c)) {
+        // Eighth/sixteenth flags (up or down stem) — attach to nearest filled head
+        st.flags.push({
+          x: ch.x,
+          y: ch.y,
+          weight: FLAG_WEIGHT[c],
+        });
       }
-      // ignore j/J flags, dots, breaths, etc.
+      // ignore breaths, ornaments, etc.
     }
 
     const stavesOut = [];
@@ -490,6 +570,9 @@
         filtered.push(n);
       }
 
+      // Attach flags to nearest filled notehead on this staff
+      attachFlagsToNotes(filtered, st.flags, sp);
+
       // lyrics: first verse band below staff
       const band = words
         .filter(
@@ -508,7 +591,7 @@
         notesOut.push({
           index: gidx,
           type: n.c === "W" ? "recit" : "note",
-          glyph: NOTEHEADS[n.c],
+          glyph: glyphForExtractedNote(n),
           x: round(n.x + sp * 0.6, 2),
           y: round(n.y, 2),
           step,
@@ -828,8 +911,11 @@
     flattenNotes,
     compareToGolden,
     stepToMidi,
+    attachFlagsToNotes,
+    glyphForExtractedNote,
     MUSIC_FONTS,
     NOTEHEADS,
+    FLAG_WEIGHT,
     /** Default pages per progressive batch (UI may override). */
     DEFAULT_BATCH_SIZE: 3,
   };

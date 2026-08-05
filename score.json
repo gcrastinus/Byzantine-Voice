@@ -1,0 +1,4703 @@
+{
+ "version": 1,
+ "source": "08-15_Dormition_DL.pdf",
+ "pages": [
+  {
+   "index": 0,
+   "width": 504.0,
+   "height": 612.0,
+   "staves": [
+    {
+     "index": 0,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      192.96,
+      197.28,
+      201.6,
+      205.92,
+      210.24
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 0,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 87.01,
+       "y": 212.4,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": "- -"
+      },
+      {
+       "index": 1,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 116.71,
+       "y": 208.08,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "joice, gel"
+      },
+      {
+       "index": 2,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 141.37,
+       "y": 203.76,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 3,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 169.45,
+       "y": 203.76,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "O ic hosts pur"
+      },
+      {
+       "index": 4,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 195.91,
+       "y": 201.6,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "- sur est"
+      },
+      {
+       "index": 5,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 218.05,
+       "y": 203.76,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- round Moth"
+      },
+      {
+       "index": 6,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 241.27,
+       "y": 205.92,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- you, er,"
+      },
+      {
+       "index": 7,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 270.61,
+       "y": 205.92,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "sing full"
+      },
+      {
+       "index": 8,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 304.09,
+       "y": 203.76,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- ing of"
+      },
+      {
+       "index": 9,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 328.03,
+       "y": 205.92,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "grace, prais"
+      },
+      {
+       "index": 10,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 353.23,
+       "y": 208.08,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- most es"
+      },
+      {
+       "index": 11,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 378.97,
+       "y": 203.76,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "of"
+      },
+      {
+       "index": 12,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 403.45,
+       "y": 205.92,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "in - no es"
+      },
+      {
+       "index": 13,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 427.57,
+       "y": 208.08,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- - teem. cent."
+      },
+      {
+       "index": 14,
+       "type": "note",
+       "glyph": "half",
+       "x": 451.87,
+       "y": 210.24,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      302.4,
+      306.72,
+      311.04,
+      315.36,
+      319.68
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 15,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 79.99,
+       "y": 321.84,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": "E - - ven"
+      },
+      {
+       "index": 16,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 106.09,
+       "y": 317.52,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "u - bim an"
+      },
+      {
+       "index": 17,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 134.35,
+       "y": 313.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- gels and"
+      },
+      {
+       "index": 18,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 160.99,
+       "y": 313.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Ser"
+      },
+      {
+       "index": 19,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 184.75,
+       "y": 311.04,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "in - their"
+      },
+      {
+       "index": 20,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 208.33,
+       "y": 313.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "a - phim glo"
+      },
+      {
+       "index": 21,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 234.61,
+       "y": 315.36,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- ry"
+      },
+      {
+       "index": 22,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 260.17,
+       "y": 315.36,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "know nev"
+      },
+      {
+       "index": 23,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 294.37,
+       "y": 313.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- that"
+      },
+      {
+       "index": 24,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 318.49,
+       "y": 315.36,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "er shone you"
+      },
+      {
+       "index": 25,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 342.97,
+       "y": 317.52,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "more are"
+      },
+      {
+       "index": 26,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 370.69,
+       "y": 313.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "heav"
+      },
+      {
+       "index": 27,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 396.25,
+       "y": 315.36,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "ra - - en's"
+      },
+      {
+       "index": 28,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 418.21,
+       "y": 317.52,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "di - Queen. ant."
+      },
+      {
+       "index": 29,
+       "type": "note",
+       "glyph": "half",
+       "x": 445.75,
+       "y": 319.68,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 2,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      411.84,
+      416.16,
+      420.48,
+      424.8,
+      429.12
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 30,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 87.91,
+       "y": 424.8,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "for"
+      },
+      {
+       "index": 31,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 112.39,
+       "y": 422.64,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "me,"
+      },
+      {
+       "index": 32,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 136.69,
+       "y": 420.48,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "j\u0153 pray"
+      },
+      {
+       "index": 33,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 163.69,
+       "y": 429.12,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "for"
+      },
+      {
+       "index": 34,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 190.69,
+       "y": 429.12,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "me,"
+      },
+      {
+       "index": 35,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 215.17,
+       "y": 431.28,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 36,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 239.47,
+       "y": 431.28,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": "heav"
+      },
+      {
+       "index": 37,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 280.51,
+       "y": 426.96,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- en's"
+      },
+      {
+       "index": 38,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 304.09,
+       "y": 424.8,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "Queen"
+      },
+      {
+       "index": 39,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 329.47,
+       "y": 422.64,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Mar"
+      },
+      {
+       "index": 40,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 357.01,
+       "y": 422.64,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 41,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 379.15,
+       "y": 424.8,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 42,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 401.29,
+       "y": 426.96,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 43,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 423.25,
+       "y": 429.12,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 44,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 445.39,
+       "y": 431.28,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": "y."
+      }
+     ]
+    },
+    {
+     "index": 3,
+     "xStart": 36.0,
+     "xEnd": 260.6,
+     "lineYs": [
+      474.66,
+      478.98,
+      483.3,
+      487.62,
+      491.94
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 45,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 79.99,
+       "y": 483.3,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "us"
+      },
+      {
+       "index": 46,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 103.03,
+       "y": 483.3,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "all"
+      },
+      {
+       "index": 47,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 126.07,
+       "y": 485.46,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "who"
+      },
+      {
+       "index": 48,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 153.07,
+       "y": 487.62,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "call"
+      },
+      {
+       "index": 49,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 175.93,
+       "y": 489.78,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "on"
+      },
+      {
+       "index": 50,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 201.49,
+       "y": 491.94,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "you."
+      },
+      {
+       "index": 51,
+       "type": "note",
+       "glyph": "half",
+       "x": 226.87,
+       "y": 494.1,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "index": 1,
+   "width": 504.0,
+   "height": 612.0,
+   "staves": [
+    {
+     "index": 0,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      58.14,
+      62.46,
+      66.78,
+      71.1,
+      75.42
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 52,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 73.51,
+       "y": 75.42,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "O The"
+      },
+      {
+       "index": 53,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 93.31,
+       "y": 73.26,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 54,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 112.57,
+       "y": 71.1,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "o -"
+      },
+      {
+       "index": 55,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 131.83,
+       "y": 73.26,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "to \u0153 - kos,"
+      },
+      {
+       "index": 56,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 150.91,
+       "y": 71.1,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "W"
+      },
+      {
+       "index": 57,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 171.79,
+       "y": 68.94,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "in giv"
+      },
+      {
+       "index": 58,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 190.87,
+       "y": 66.78,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 59,
+       "type": "recit",
+       "glyph": "recit",
+       "x": 210.13,
+       "y": 66.78,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "ing \u0153 birth you preserved vir"
+      },
+      {
+       "index": 60,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 319.03,
+       "y": 66.78,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "- gin"
+      },
+      {
+       "index": 61,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 338.11,
+       "y": 68.94,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 62,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 358.99,
+       "y": 71.1,
+       "step": 2,
+       "midi": 68,
+       "accidental": "#",
+       "lyric": "i - ty;"
+      },
+      {
+       "index": 63,
+       "type": "note",
+       "glyph": "half",
+       "x": 378.07,
+       "y": 68.94,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "and"
+      },
+      {
+       "index": 64,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 410.65,
+       "y": 66.78,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 65,
+       "type": "note",
+       "glyph": "half",
+       "x": 430.09,
+       "y": 68.94,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "in your"
+      },
+      {
+       "index": 66,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 451.15,
+       "y": 71.1,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "\u0153"
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      113.94,
+      118.26,
+      122.58,
+      126.9,
+      131.22
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 67,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 76.75,
+       "y": 129.06,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "\u0153 - ing"
+      },
+      {
+       "index": 68,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 96.91,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "W"
+      },
+      {
+       "index": 69,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 116.71,
+       "y": 124.74,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "a - sleep"
+      },
+      {
+       "index": 70,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 136.69,
+       "y": 122.58,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 71,
+       "type": "recit",
+       "glyph": "recit",
+       "x": 158.65,
+       "y": 122.58,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "you did \u0153 not for"
+      },
+      {
+       "index": 72,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 217.33,
+       "y": 122.58,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "- sake"
+      },
+      {
+       "index": 73,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 239.11,
+       "y": 124.74,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "the"
+      },
+      {
+       "index": 74,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 262.69,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "world."
+      },
+      {
+       "index": 75,
+       "type": "note",
+       "glyph": "half",
+       "x": 289.69,
+       "y": 129.06,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "You"
+      },
+      {
+       "index": 76,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 327.13,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "are"
+      },
+      {
+       "index": 77,
+       "type": "note",
+       "glyph": "half",
+       "x": 347.83,
+       "y": 124.74,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "the"
+      },
+      {
+       "index": 78,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 369.43,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "Moth"
+      },
+      {
+       "index": 79,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 390.85,
+       "y": 129.06,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 80,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 411.01,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "er of"
+      },
+      {
+       "index": 81,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 430.63,
+       "y": 124.74,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Life"
+      },
+      {
+       "index": 82,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 450.79,
+       "y": 122.58,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 2,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      169.74,
+      174.06,
+      178.38,
+      182.7,
+      187.02
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 83,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 77.29,
+       "y": 178.38,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 84,
+       "type": "recit",
+       "glyph": "recit",
+       "x": 99.97,
+       "y": 178.38,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "have been \u0153 trans - ferred"
+      },
+      {
+       "index": 85,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 179.17,
+       "y": 178.38,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 86,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 206.17,
+       "y": 180.54,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "to"
+      },
+      {
+       "index": 87,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 230.47,
+       "y": 182.7,
+       "step": 2,
+       "midi": 68,
+       "accidental": "#",
+       "lyric": "life,"
+      },
+      {
+       "index": 88,
+       "type": "note",
+       "glyph": "half",
+       "x": 252.97,
+       "y": 180.54,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "and"
+      },
+      {
+       "index": 89,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 289.33,
+       "y": 182.7,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 90,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 310.75,
+       "y": 180.54,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "through"
+      },
+      {
+       "index": 91,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 333.43,
+       "y": 182.7,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 92,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 356.47,
+       "y": 184.86,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "your"
+      },
+      {
+       "index": 93,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 378.07,
+       "y": 187.02,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 94,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 399.85,
+       "y": 182.7,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "pray'rs"
+      },
+      {
+       "index": 95,
+       "type": "note",
+       "glyph": "half",
+       "x": 421.99,
+       "y": 184.86,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 96,
+       "type": "note",
+       "glyph": "half",
+       "x": 446.29,
+       "y": 187.02,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 3,
+     "xStart": 36.0,
+     "xEnd": 312.5,
+     "lineYs": [
+      225.54,
+      229.86,
+      234.18,
+      238.5,
+      242.82
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 97,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 77.83,
+       "y": 236.34,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "de"
+      },
+      {
+       "index": 98,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 103.03,
+       "y": 236.34,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- liv"
+      },
+      {
+       "index": 99,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 128.23,
+       "y": 234.18,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 100,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 153.43,
+       "y": 236.34,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "er our"
+      },
+      {
+       "index": 101,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 178.45,
+       "y": 238.5,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "souls"
+      },
+      {
+       "index": 102,
+       "type": "note",
+       "glyph": "half",
+       "x": 203.65,
+       "y": 240.66,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "from"
+      },
+      {
+       "index": 103,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 231.19,
+       "y": 242.82,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 104,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 256.39,
+       "y": 244.98,
+       "step": -1,
+       "midi": 63,
+       "accidental": "#",
+       "lyric": "death."
+      },
+      {
+       "index": 105,
+       "type": "note",
+       "glyph": "whole",
+       "x": 281.59,
+       "y": 242.82,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 4,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      307.26,
+      311.58,
+      315.9,
+      320.22,
+      324.54
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 2
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 106,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 82.51,
+       "y": 322.38,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- ry"
+      },
+      {
+       "index": 107,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 103.75,
+       "y": 320.22,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 108,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 124.81,
+       "y": 318.06,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "to"
+      },
+      {
+       "index": 109,
+       "type": "recit",
+       "glyph": "recit",
+       "x": 146.05,
+       "y": 318.06,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "the Father, and to the Son, and to the"
+      },
+      {
+       "index": 110,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 304.81,
+       "y": 318.06,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Ho"
+      },
+      {
+       "index": 111,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 327.49,
+       "y": 318.06,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 112,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 346.75,
+       "y": 320.22,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 113,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 365.83,
+       "y": 322.38,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "ly"
+      },
+      {
+       "index": 114,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 385.09,
+       "y": 318.06,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Spir"
+      },
+      {
+       "index": 115,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 404.35,
+       "y": 320.22,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 116,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 425.41,
+       "y": 322.38,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 117,
+       "type": "note",
+       "glyph": "half",
+       "x": 446.65,
+       "y": 324.54,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "it,"
+      }
+     ]
+    },
+    {
+     "index": 5,
+     "xStart": 36.0,
+     "xEnd": 364.3,
+     "lineYs": [
+      363.06,
+      367.38,
+      371.7,
+      376.02,
+      380.34
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 2
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 118,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 83.59,
+       "y": 378.18,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "and"
+      },
+      {
+       "index": 119,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 105.73,
+       "y": 376.02,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "ev"
+      },
+      {
+       "index": 120,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 127.69,
+       "y": 373.86,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 121,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 149.83,
+       "y": 373.86,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "er and"
+      },
+      {
+       "index": 122,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 171.79,
+       "y": 373.86,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "for"
+      },
+      {
+       "index": 123,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 193.93,
+       "y": 373.86,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- ev"
+      },
+      {
+       "index": 124,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 215.89,
+       "y": 373.86,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 125,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 235.87,
+       "y": 376.02,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- er."
+      },
+      {
+       "index": 126,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 255.85,
+       "y": 378.18,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 127,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 275.83,
+       "y": 373.86,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 128,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 295.81,
+       "y": 376.02,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "A -"
+      },
+      {
+       "index": 129,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 317.77,
+       "y": 378.18,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "men."
+      },
+      {
+       "index": 130,
+       "type": "note",
+       "glyph": "half",
+       "x": 339.91,
+       "y": 380.34,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 6,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      444.78,
+      449.1,
+      453.42,
+      457.74,
+      462.06
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 2
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 131,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 82.87,
+       "y": 459.9,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "grave"
+      },
+      {
+       "index": 132,
+       "type": "note",
+       "glyph": "half",
+       "x": 109.69,
+       "y": 457.74,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "and"
+      },
+      {
+       "index": 133,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 136.33,
+       "y": 455.58,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 134,
+       "type": "recit",
+       "glyph": "recit",
+       "x": 155.59,
+       "y": 455.58,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "death did not de"
+      },
+      {
+       "index": 135,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 219.67,
+       "y": 455.58,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- tain"
+      },
+      {
+       "index": 136,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 238.75,
+       "y": 455.58,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "the"
+      },
+      {
+       "index": 137,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 260.17,
+       "y": 457.74,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "j\u0153 The"
+      },
+      {
+       "index": 138,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 281.77,
+       "y": 459.9,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "j\u0153 -"
+      },
+      {
+       "index": 139,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 299.05,
+       "y": 455.58,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "o -"
+      },
+      {
+       "index": 140,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 316.51,
+       "y": 457.74,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "to"
+      },
+      {
+       "index": 141,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 335.77,
+       "y": 459.9,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- kos."
+      },
+      {
+       "index": 142,
+       "type": "note",
+       "glyph": "half",
+       "x": 355.03,
+       "y": 462.06,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "She"
+      },
+      {
+       "index": 143,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 388.15,
+       "y": 459.9,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 144,
+       "type": "note",
+       "glyph": "half",
+       "x": 408.31,
+       "y": 457.74,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "in - ter"
+      },
+      {
+       "index": 145,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 430.27,
+       "y": 455.58,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- cedes"
+      },
+      {
+       "index": 146,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 450.43,
+       "y": 455.58,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 7,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      500.58,
+      504.9,
+      509.22,
+      513.54,
+      517.86
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 2
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 147,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 84.13,
+       "y": 511.38,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 148,
+       "type": "recit",
+       "glyph": "recit",
+       "x": 99.97,
+       "y": 511.38,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "out rest and is our unfail - ing"
+      },
+      {
+       "index": 149,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 217.15,
+       "y": 511.38,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "hope"
+      },
+      {
+       "index": 150,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 238.57,
+       "y": 511.38,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 151,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 256.57,
+       "y": 513.54,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "of"
+      },
+      {
+       "index": 152,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 270.79,
+       "y": 515.7,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "pro"
+      },
+      {
+       "index": 153,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 287.17,
+       "y": 511.38,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- tec"
+      },
+      {
+       "index": 154,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 302.29,
+       "y": 513.54,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 155,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 318.13,
+       "y": 515.7,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- tion;"
+      },
+      {
+       "index": 156,
+       "type": "note",
+       "glyph": "half",
+       "x": 333.97,
+       "y": 517.86,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "for"
+      },
+      {
+       "index": 157,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 361.69,
+       "y": 515.7,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "he"
+      },
+      {
+       "index": 158,
+       "type": "note",
+       "glyph": "half",
+       "x": 377.71,
+       "y": 513.54,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "who"
+      },
+      {
+       "index": 159,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 396.61,
+       "y": 511.38,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 160,
+       "type": "recit",
+       "glyph": "recit",
+       "x": 413.35,
+       "y": 511.38,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "dwelt in the"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "index": 2,
+   "width": 504.0,
+   "height": 612.0,
+   "staves": [
+    {
+     "index": 0,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      50.4,
+      54.72,
+      59.04,
+      63.36,
+      67.68
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 2
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 161,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 87.73,
+       "y": 61.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "of"
+      },
+      {
+       "index": 162,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 108.97,
+       "y": 61.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "the"
+      },
+      {
+       "index": 163,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 125.53,
+       "y": 61.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Ev"
+      },
+      {
+       "index": 164,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 142.99,
+       "y": 61.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 165,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 157.93,
+       "y": 63.36,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 166,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 173.05,
+       "y": 65.52,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "er"
+      },
+      {
+       "index": 167,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 187.99,
+       "y": 61.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- Vir"
+      },
+      {
+       "index": 168,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 203.11,
+       "y": 63.36,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 169,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 219.67,
+       "y": 65.52,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- gin"
+      },
+      {
+       "index": 170,
+       "type": "note",
+       "glyph": "half",
+       "x": 236.23,
+       "y": 67.68,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "trans"
+      },
+      {
+       "index": 171,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 268.63,
+       "y": 65.52,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- ferred"
+      },
+      {
+       "index": 172,
+       "type": "note",
+       "glyph": "half",
+       "x": 292.75,
+       "y": 63.36,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 173,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 314.35,
+       "y": 61.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "to life"
+      },
+      {
+       "index": 174,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 331.27,
+       "y": 61.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 175,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 346.93,
+       "y": 63.36,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "the"
+      },
+      {
+       "index": 176,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 362.23,
+       "y": 65.52,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 177,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 377.53,
+       "y": 61.2,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Moth"
+      },
+      {
+       "index": 178,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 394.45,
+       "y": 63.36,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 179,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 412.99,
+       "y": 65.52,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "er"
+      },
+      {
+       "index": 180,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 428.11,
+       "y": 65.52,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "of Life."
+      },
+      {
+       "index": 181,
+       "type": "note",
+       "glyph": "whole",
+       "x": 447.19,
+       "y": 67.68,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      132.12,
+      136.44,
+      140.76,
+      145.08,
+      149.4
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": -1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 182,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 76.57,
+       "y": 142.92,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "\u0153"
+      },
+      {
+       "index": 183,
+       "type": "recit",
+       "glyph": "recit",
+       "x": 95.29,
+       "y": 142.92,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "soul proclaims the greatness"
+      },
+      {
+       "index": 184,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 222.73,
+       "y": 142.92,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "of the"
+      },
+      {
+       "index": 185,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 241.45,
+       "y": 145.08,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "Lord"
+      },
+      {
+       "index": 186,
+       "type": "note",
+       "glyph": "half",
+       "x": 265.21,
+       "y": 142.92,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 187,
+       "type": "note",
+       "glyph": "half",
+       "x": 286.45,
+       "y": 145.08,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "and"
+      },
+      {
+       "index": 188,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 318.49,
+       "y": 142.92,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 189,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 335.23,
+       "y": 145.08,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "my"
+      },
+      {
+       "index": 190,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 351.79,
+       "y": 147.24,
+       "step": 1,
+       "midi": 65,
+       "accidental": null,
+       "lyric": "spir"
+      },
+      {
+       "index": 191,
+       "type": "note",
+       "glyph": "half",
+       "x": 370.51,
+       "y": 145.08,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 192,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 388.87,
+       "y": 142.92,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "it"
+      },
+      {
+       "index": 193,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 405.43,
+       "y": 142.92,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "re - joic"
+      },
+      {
+       "index": 194,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 422.17,
+       "y": 145.08,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 195,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 437.29,
+       "y": 142.92,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- es"
+      },
+      {
+       "index": 196,
+       "type": "note",
+       "glyph": "half",
+       "x": 452.41,
+       "y": 140.76,
+       "step": 4,
+       "midi": 70,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 2,
+     "xStart": 36.0,
+     "xEnd": 260.6,
+     "lineYs": [
+      187.92,
+      192.24,
+      196.56,
+      200.88,
+      205.2
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": -1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 197,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 73.51,
+       "y": 194.4,
+       "step": 5,
+       "midi": 72,
+       "accidental": null,
+       "lyric": "in"
+      },
+      {
+       "index": 198,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 93.85,
+       "y": 196.56,
+       "step": 4,
+       "midi": 70,
+       "accidental": null,
+       "lyric": "God"
+      },
+      {
+       "index": 199,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 114.01,
+       "y": 198.72,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "my"
+      },
+      {
+       "index": 200,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 134.35,
+       "y": 198.72,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Sav"
+      },
+      {
+       "index": 201,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 154.69,
+       "y": 200.88,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 202,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 174.85,
+       "y": 203.04,
+       "step": 1,
+       "midi": 66,
+       "accidental": "#",
+       "lyric": "-"
+      },
+      {
+       "index": 203,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 195.19,
+       "y": 200.88,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 204,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 215.53,
+       "y": 198.72,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- ior."
+      },
+      {
+       "index": 205,
+       "type": "note",
+       "glyph": "whole",
+       "x": 235.69,
+       "y": 205.2,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 3,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      295.56,
+      299.88,
+      304.2,
+      308.52,
+      312.84
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 206,
+       "type": "note",
+       "glyph": "half",
+       "x": 75.13,
+       "y": 308.52,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 207,
+       "type": "note",
+       "glyph": "half",
+       "x": 93.67,
+       "y": 308.52,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "le -"
+      },
+      {
+       "index": 208,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 112.39,
+       "y": 310.68,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "lu"
+      },
+      {
+       "index": 209,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 129.31,
+       "y": 308.52,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- ia!"
+      },
+      {
+       "index": 210,
+       "type": "note",
+       "glyph": "half",
+       "x": 146.41,
+       "y": 306.36,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Al"
+      },
+      {
+       "index": 211,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 174.31,
+       "y": 308.52,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 212,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 191.23,
+       "y": 306.36,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "le -"
+      },
+      {
+       "index": 213,
+       "type": "note",
+       "glyph": "half",
+       "x": 208.15,
+       "y": 304.2,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "lu -"
+      },
+      {
+       "index": 214,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 226.69,
+       "y": 310.68,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 215,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 243.79,
+       "y": 308.52,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 216,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 260.71,
+       "y": 310.68,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- ia!"
+      },
+      {
+       "index": 217,
+       "type": "note",
+       "glyph": "half",
+       "x": 277.63,
+       "y": 312.84,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "Al"
+      },
+      {
+       "index": 218,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 305.53,
+       "y": 304.2,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 219,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 322.45,
+       "y": 306.36,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 220,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 339.37,
+       "y": 304.2,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 221,
+       "type": "note",
+       "glyph": "half",
+       "x": 356.29,
+       "y": 310.68,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 222,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 374.83,
+       "y": 308.52,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "le -"
+      },
+      {
+       "index": 223,
+       "type": "note",
+       "glyph": "half",
+       "x": 391.57,
+       "y": 306.36,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "lu"
+      },
+      {
+       "index": 224,
+       "type": "note",
+       "glyph": "half",
+       "x": 410.11,
+       "y": 308.52,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 225,
+       "type": "note",
+       "glyph": "half",
+       "x": 428.65,
+       "y": 310.68,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "ia!"
+      },
+      {
+       "index": 226,
+       "type": "note",
+       "glyph": "whole",
+       "x": 447.19,
+       "y": 312.84,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 4,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      413.64,
+      417.96,
+      422.28,
+      426.6,
+      430.92
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 227,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 78.01,
+       "y": 430.92,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "an"
+      },
+      {
+       "index": 228,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 97.45,
+       "y": 430.92,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 229,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 115.63,
+       "y": 433.08,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": "- gels"
+      },
+      {
+       "index": 230,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 133.81,
+       "y": 435.24,
+       "step": -2,
+       "midi": 61,
+       "accidental": "#",
+       "lyric": "j\u0153 were"
+      },
+      {
+       "index": 231,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 156.85,
+       "y": 433.08,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 232,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 176.29,
+       "y": 430.92,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "struck"
+      },
+      {
+       "index": 233,
+       "type": "note",
+       "glyph": "half",
+       "x": 196.09,
+       "y": 428.76,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "with"
+      },
+      {
+       "index": 234,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 222.01,
+       "y": 430.92,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 235,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 240.91,
+       "y": 428.76,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "a - maze"
+      },
+      {
+       "index": 236,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 259.63,
+       "y": 426.6,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 237,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 278.89,
+       "y": 428.76,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- \u02d9 ment"
+      },
+      {
+       "index": 238,
+       "type": "note",
+       "glyph": "half",
+       "x": 298.51,
+       "y": 430.92,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "\u02d9 be"
+      },
+      {
+       "index": 239,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 328.21,
+       "y": 430.92,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "- hold"
+      },
+      {
+       "index": 240,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 345.85,
+       "y": 430.92,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 241,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 363.67,
+       "y": 433.08,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": "- ing"
+      },
+      {
+       "index": 242,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 381.31,
+       "y": 435.24,
+       "step": -2,
+       "midi": 61,
+       "accidental": "#",
+       "lyric": "the"
+      },
+      {
+       "index": 243,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 399.13,
+       "y": 433.08,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": "dor"
+      },
+      {
+       "index": 244,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 416.77,
+       "y": 430.92,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "- mi"
+      },
+      {
+       "index": 245,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 434.41,
+       "y": 428.76,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- tion"
+      },
+      {
+       "index": 246,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 452.23,
+       "y": 428.76,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 5,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      469.44,
+      473.76,
+      478.08,
+      482.4,
+      486.72
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 247,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 74.23,
+       "y": 486.72,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "\u02d9 the"
+      },
+      {
+       "index": 248,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 97.63,
+       "y": 484.56,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "\u02d9 Most"
+      },
+      {
+       "index": 249,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 121.03,
+       "y": 482.4,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 250,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 146.05,
+       "y": 484.56,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "Pure;"
+      },
+      {
+       "index": 251,
+       "type": "note",
+       "glyph": "half",
+       "x": 167.11,
+       "y": 486.72,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "see"
+      },
+      {
+       "index": 252,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 203.65,
+       "y": 484.56,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- ing"
+      },
+      {
+       "index": 253,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 225.43,
+       "y": 484.56,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "how"
+      },
+      {
+       "index": 254,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 247.03,
+       "y": 482.4,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "the"
+      },
+      {
+       "index": 255,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 268.81,
+       "y": 480.24,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Vir"
+      },
+      {
+       "index": 256,
+       "type": "note",
+       "glyph": "half",
+       "x": 290.59,
+       "y": 478.08,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "- gin"
+      },
+      {
+       "index": 257,
+       "type": "note",
+       "glyph": "half",
+       "x": 314.35,
+       "y": 478.08,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "was"
+      },
+      {
+       "index": 258,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 338.11,
+       "y": 480.24,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "tak"
+      },
+      {
+       "index": 259,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 359.89,
+       "y": 482.4,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- en"
+      },
+      {
+       "index": 260,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 381.67,
+       "y": 484.56,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "up"
+      },
+      {
+       "index": 261,
+       "type": "note",
+       "glyph": "half",
+       "x": 403.27,
+       "y": 486.72,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "from"
+      },
+      {
+       "index": 262,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 427.21,
+       "y": 482.4,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 263,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 448.81,
+       "y": 480.24,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 6,
+     "xStart": 36.0,
+     "xEnd": 234.7,
+     "lineYs": [
+      525.24,
+      529.56,
+      533.88,
+      538.2,
+      542.52
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 264,
+       "type": "note",
+       "glyph": "half",
+       "x": 80.35,
+       "y": 533.88,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 265,
+       "type": "note",
+       "glyph": "half",
+       "x": 103.21,
+       "y": 533.88,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "to heav"
+      },
+      {
+       "index": 266,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 125.89,
+       "y": 536.04,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 267,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 146.77,
+       "y": 538.2,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 268,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 167.47,
+       "y": 540.36,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 269,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 188.35,
+       "y": 538.2,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- en."
+      },
+      {
+       "index": 270,
+       "type": "note",
+       "glyph": "whole",
+       "x": 209.23,
+       "y": 542.52,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "3"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "index": 3,
+   "width": 504.0,
+   "height": 612.0,
+   "staves": [
+    {
+     "index": 0,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      58.14,
+      62.46,
+      66.78,
+      71.1,
+      75.42
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 2
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 271,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 74.23,
+       "y": 77.58,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 272,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 94.75,
+       "y": 75.42,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "lim"
+      },
+      {
+       "index": 273,
+       "type": "note",
+       "glyph": "half",
+       "x": 115.45,
+       "y": 73.26,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- its"
+      },
+      {
+       "index": 274,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 137.95,
+       "y": 75.42,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "of"
+      },
+      {
+       "index": 275,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 158.65,
+       "y": 73.26,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "na"
+      },
+      {
+       "index": 276,
+       "type": "note",
+       "glyph": "half",
+       "x": 179.17,
+       "y": 71.1,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- ture"
+      },
+      {
+       "index": 277,
+       "type": "note",
+       "glyph": "half",
+       "x": 201.85,
+       "y": 71.1,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "j\u0153 are"
+      },
+      {
+       "index": 278,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 234.97,
+       "y": 71.1,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 279,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 257.83,
+       "y": 71.1,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "o - ver"
+      },
+      {
+       "index": 280,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 280.69,
+       "y": 68.94,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "- come"
+      },
+      {
+       "index": 281,
+       "type": "note",
+       "glyph": "half",
+       "x": 303.55,
+       "y": 66.78,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "\u02d9"
+      },
+      {
+       "index": 282,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 328.57,
+       "y": 68.94,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "in you,"
+      },
+      {
+       "index": 283,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 351.25,
+       "y": 71.1,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 284,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 374.11,
+       "y": 71.1,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "O pure"
+      },
+      {
+       "index": 285,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 396.97,
+       "y": 71.1,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "Vir"
+      },
+      {
+       "index": 286,
+       "type": "note",
+       "glyph": "half",
+       "x": 419.83,
+       "y": 73.26,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- gin,"
+      },
+      {
+       "index": 287,
+       "type": "note",
+       "glyph": "half",
+       "x": 444.85,
+       "y": 75.42,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 1,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      113.94,
+      118.26,
+      122.58,
+      126.9,
+      131.22
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 2
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 288,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 74.23,
+       "y": 133.38,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 289,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 90.61,
+       "y": 131.22,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "birth"
+      },
+      {
+       "index": 290,
+       "type": "note",
+       "glyph": "half",
+       "x": 106.99,
+       "y": 129.06,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- giv"
+      },
+      {
+       "index": 291,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 126.07,
+       "y": 129.06,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- ing"
+      },
+      {
+       "index": 292,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 142.45,
+       "y": 129.06,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 293,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 158.83,
+       "y": 129.06,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "re - mains"
+      },
+      {
+       "index": 294,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 177.37,
+       "y": 131.22,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 295,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 196.81,
+       "y": 129.06,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "vir"
+      },
+      {
+       "index": 296,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 213.19,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- gin"
+      },
+      {
+       "index": 297,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 230.65,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- al,"
+      },
+      {
+       "index": 298,
+       "type": "note",
+       "glyph": "half",
+       "x": 245.41,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "and"
+      },
+      {
+       "index": 299,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 274.93,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 300,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 291.49,
+       "y": 124.74,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "death"
+      },
+      {
+       "index": 301,
+       "type": "note",
+       "glyph": "half",
+       "x": 308.95,
+       "y": 122.58,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 302,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 328.75,
+       "y": 124.74,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 303,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 345.49,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "is"
+      },
+      {
+       "index": 304,
+       "type": "recit",
+       "glyph": "recit",
+       "x": 362.05,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "the prelude"
+      },
+      {
+       "index": 305,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 415.33,
+       "y": 126.9,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "to life:"
+      },
+      {
+       "index": 306,
+       "type": "note",
+       "glyph": "half",
+       "x": 433.33,
+       "y": 129.06,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 307,
+       "type": "note",
+       "glyph": "half",
+       "x": 451.69,
+       "y": 131.22,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 2,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      169.74,
+      174.06,
+      178.38,
+      182.7,
+      187.02
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 2
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 308,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 74.23,
+       "y": 189.18,
+       "step": -1,
+       "midi": 62,
+       "accidental": null,
+       "lyric": "a"
+      },
+      {
+       "index": 309,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 94.75,
+       "y": 187.02,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "vir"
+      },
+      {
+       "index": 310,
+       "type": "note",
+       "glyph": "half",
+       "x": 115.09,
+       "y": 184.86,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- gin"
+      },
+      {
+       "index": 311,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 137.41,
+       "y": 184.86,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 312,
+       "type": "recit",
+       "glyph": "recit",
+       "x": 157.93,
+       "y": 184.86,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "after childbearing and a - live"
+      },
+      {
+       "index": 313,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 268.27,
+       "y": 184.86,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 314,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 289.51,
+       "y": 187.02,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "af - ter"
+      },
+      {
+       "index": 315,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 310.03,
+       "y": 184.86,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "death!"
+      },
+      {
+       "index": 316,
+       "type": "note",
+       "glyph": "half",
+       "x": 337.21,
+       "y": 182.7,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "You"
+      },
+      {
+       "index": 317,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 375.37,
+       "y": 184.86,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 318,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 394.45,
+       "y": 182.7,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "ev"
+      },
+      {
+       "index": 319,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 413.53,
+       "y": 180.54,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 320,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 432.43,
+       "y": 182.7,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "er save"
+      },
+      {
+       "index": 321,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 451.51,
+       "y": 184.86,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 3,
+     "xStart": 36.0,
+     "xEnd": 364.3,
+     "lineYs": [
+      225.54,
+      229.86,
+      234.18,
+      238.5,
+      242.82
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 322,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 79.45,
+       "y": 238.5,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 323,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 98.71,
+       "y": 240.66,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "in - her"
+      },
+      {
+       "index": 324,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 117.25,
+       "y": 242.82,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 325,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 135.79,
+       "y": 242.82,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "i - tance,"
+      },
+      {
+       "index": 326,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 154.69,
+       "y": 242.82,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 327,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 174.49,
+       "y": 242.82,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "O The"
+      },
+      {
+       "index": 328,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 193.39,
+       "y": 244.98,
+       "step": -1,
+       "midi": 63,
+       "accidental": "#",
+       "lyric": ""
+      },
+      {
+       "index": 329,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 211.93,
+       "y": 242.82,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 330,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 230.47,
+       "y": 240.66,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "o"
+      },
+      {
+       "index": 331,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 249.01,
+       "y": 238.5,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 332,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 267.55,
+       "y": 236.34,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "to -"
+      },
+      {
+       "index": 333,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 285.91,
+       "y": 238.5,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 334,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 304.45,
+       "y": 240.66,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 335,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 322.99,
+       "y": 238.5,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- kos."
+      },
+      {
+       "index": 336,
+       "type": "note",
+       "glyph": "whole",
+       "x": 341.53,
+       "y": 242.82,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 4,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      320.22,
+      324.54,
+      328.86,
+      333.18,
+      337.5
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 337,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 72.97,
+       "y": 337.5,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "j\u0153 I"
+      },
+      {
+       "index": 338,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 94.57,
+       "y": 339.66,
+       "step": -1,
+       "midi": 63,
+       "accidental": "#",
+       "lyric": "shall j\u0153"
+      },
+      {
+       "index": 339,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 113.11,
+       "y": 337.5,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "J\u0153"
+      },
+      {
+       "index": 340,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 131.47,
+       "y": 335.34,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "j\u0153"
+      },
+      {
+       "index": 341,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 149.83,
+       "y": 333.18,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "take j\u0153"
+      },
+      {
+       "index": 342,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 168.19,
+       "y": 328.86,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "the"
+      },
+      {
+       "index": 343,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 188.53,
+       "y": 331.02,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "chal"
+      },
+      {
+       "index": 344,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 208.87,
+       "y": 333.18,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "- j\u0153# ice"
+      },
+      {
+       "index": 345,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 227.41,
+       "y": 335.34,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "of"
+      },
+      {
+       "index": 346,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 245.95,
+       "y": 337.5,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "sal"
+      },
+      {
+       "index": 347,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 264.31,
+       "y": 335.34,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "j\u0153 -"
+      },
+      {
+       "index": 348,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 282.67,
+       "y": 333.18,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "va \u0153"
+      },
+      {
+       "index": 349,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 302.83,
+       "y": 335.34,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- j\u0153 tion"
+      },
+      {
+       "index": 350,
+       "type": "note",
+       "glyph": "half",
+       "x": 323.17,
+       "y": 337.5,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "j\u0153 and j\u0153"
+      },
+      {
+       "index": 351,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 352.69,
+       "y": 328.86,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "j\u0153"
+      },
+      {
+       "index": 352,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 374.47,
+       "y": 331.02,
+       "step": 3,
+       "midi": 70,
+       "accidental": "#",
+       "lyric": "j\u0153 call"
+      },
+      {
+       "index": 353,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 393.19,
+       "y": 328.86,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "j\u0153 up"
+      },
+      {
+       "index": 354,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 411.91,
+       "y": 326.7,
+       "step": 5,
+       "midi": 73,
+       "accidental": "#",
+       "lyric": "-"
+      },
+      {
+       "index": 355,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 430.63,
+       "y": 328.86,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "on"
+      },
+      {
+       "index": 356,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 449.17,
+       "y": 335.34,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    },
+    {
+     "index": 5,
+     "xStart": 36.0,
+     "xEnd": 468.0,
+     "lineYs": [
+      376.02,
+      380.34,
+      384.66,
+      388.98,
+      393.3
+     ],
+     "spacing": 4.32,
+     "clef": "treble",
+     "keySig": {
+      "fifths": 1
+     },
+     "label": null,
+     "notes": [
+      {
+       "index": 357,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 72.97,
+       "y": 391.14,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "name"
+      },
+      {
+       "index": 358,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 90.79,
+       "y": 388.98,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 359,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 109.87,
+       "y": 393.3,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "of"
+      },
+      {
+       "index": 360,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 126.43,
+       "y": 384.66,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "the"
+      },
+      {
+       "index": 361,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 143.35,
+       "y": 386.82,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "Lord."
+      },
+      {
+       "index": 362,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 163.51,
+       "y": 388.98,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 363,
+       "type": "note",
+       "glyph": "half",
+       "x": 179.89,
+       "y": 391.14,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "Al"
+      },
+      {
+       "index": 364,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 209.23,
+       "y": 393.3,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      },
+      {
+       "index": 365,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 227.95,
+       "y": 395.46,
+       "step": -1,
+       "midi": 63,
+       "accidental": "#",
+       "lyric": "-"
+      },
+      {
+       "index": 366,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 243.79,
+       "y": 393.3,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "le"
+      },
+      {
+       "index": 367,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 259.81,
+       "y": 391.14,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 368,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 275.83,
+       "y": 388.98,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "lu - ia!"
+      },
+      {
+       "index": 369,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 291.67,
+       "y": 384.66,
+       "step": 4,
+       "midi": 71,
+       "accidental": null,
+       "lyric": "Al"
+      },
+      {
+       "index": 370,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 316.51,
+       "y": 386.82,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 371,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 332.35,
+       "y": 386.82,
+       "step": 3,
+       "midi": 69,
+       "accidental": null,
+       "lyric": "le -"
+      },
+      {
+       "index": 372,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 348.19,
+       "y": 388.98,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "lu - ia!"
+      },
+      {
+       "index": 373,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 364.03,
+       "y": 391.14,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "Al"
+      },
+      {
+       "index": 374,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 379.87,
+       "y": 393.3,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": "-"
+      },
+      {
+       "index": 375,
+       "type": "note",
+       "glyph": "eighth",
+       "x": 395.71,
+       "y": 391.14,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "le -"
+      },
+      {
+       "index": 376,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 411.55,
+       "y": 388.98,
+       "step": 2,
+       "midi": 67,
+       "accidental": null,
+       "lyric": "lu"
+      },
+      {
+       "index": 377,
+       "type": "note",
+       "glyph": "quarter",
+       "x": 429.01,
+       "y": 391.14,
+       "step": 1,
+       "midi": 66,
+       "accidental": null,
+       "lyric": "- ia!"
+      },
+      {
+       "index": 378,
+       "type": "note",
+       "glyph": "whole",
+       "x": 446.47,
+       "y": 393.3,
+       "step": 0,
+       "midi": 64,
+       "accidental": null,
+       "lyric": ""
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
