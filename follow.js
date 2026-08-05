@@ -214,6 +214,11 @@
     rafId: 0,
     /** Only for computer Play timeline (not for Begin hold lengths). */
     tempo: PLAY_TEMPO_DEFAULT,
+    /**
+     * User pitch transpose in semitones (whole octaves: −24 … +12).
+     * Default 0 = written pitch (slider sits 2/3 from the low end).
+     */
+    transposeSemis: 0,
     voicedMs: 0,
     /** Green-hold accumulator for the current note (ms). */
     inTuneMs: 0,
@@ -579,8 +584,9 @@
   }
 
   function setSoundMicMenuOpen(open) {
-    const panel = el("sound-mic-panel");
-    const toggle = el("sound-mic-toggle");
+    // Sound & Mic lives inside Upload & Settings now
+    const panel = el("upload-save-panel");
+    const toggle = el("upload-save-toggle");
     if (!panel || !toggle) return;
     panel.hidden = !open;
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
@@ -589,7 +595,7 @@
 
   function showAudioBlocked() {
     const msg =
-      "No sound yet. Open Sound & Mic → Turn Sound On (you should hear a beep), then try again.";
+      "No sound yet. Open Upload & Settings → Turn Sound On (you should hear a beep), then try again.";
     console.warn(msg, window.AppAudio && window.AppAudio.getState());
     const b = document.getElementById("mic-error");
     if (b) {
@@ -747,16 +753,16 @@
 
   /**
    * Schedule a speaker tone. ONLY call when ctx.state === "running".
-   * Always uses the written score MIDI — never follow.offset (relative-mode
-   * singer transposition). Otherwise singing low in Match Pitch made Play
-   * come out an octave or two flat.
+   * Applies user Transpose (play.transposeSemis) but never relative-mode
+   * follow.offset (that was wrongly shifting Play when someone sang low).
    * Linear gain only; simple sine — most reliable across Safari/Chrome.
    */
   function scheduleTone(ctx, midi, startSec, endSec) {
     if (!ctx || ctx.state !== "running") return false;
     if (midi == null || !Number.isFinite(midi)) return false;
     if (!(endSec > startSec + 0.05)) return false;
-    const freq = midiToFreq(Number(midi));
+    const transposed = Number(midi) + (play.transposeSemis || 0);
+    const freq = midiToFreq(transposed);
     if (!Number.isFinite(freq) || freq < 40 || freq > 3500) return false;
 
     const now = ctx.currentTime;
@@ -1059,12 +1065,13 @@
       document.body.classList.toggle("score-ready", ready);
     }
 
-    const tempoControls = el("tempo-controls");
+    const tempoTransposeMenu = el("tempo-transpose-menu");
     if (playControls) {
       playControls.hidden = !ready;
     }
-    if (tempoControls) {
-      tempoControls.hidden = !ready;
+    if (tempoTransposeMenu) {
+      tempoTransposeMenu.hidden = !ready;
+      if (!ready) setTempoTransposeMenuOpen(false);
     }
 
     if (matchBtn) {
@@ -1203,6 +1210,71 @@
       slider.setAttribute("aria-valuenow", String(t));
     }
     if (val) val.textContent = String(t);
+  }
+
+  /** Whole-octave transpose: −24 … +12 semitones (step 12). Default 0. */
+  function clampTranspose(semis) {
+    const n = Math.round(Number(semis) / 12) * 12;
+    return Math.max(-24, Math.min(12, n));
+  }
+
+  function transposeLabel(semis) {
+    const oct = (semis | 0) / 12;
+    if (oct === 0) return "0";
+    if (oct > 0) return `+${oct}`;
+    return String(oct);
+  }
+
+  function syncTransposeUi(semis) {
+    const t = clampTranspose(semis);
+    play.transposeSemis = t;
+    const slider = el("transpose-slider");
+    const val = el("transpose-val");
+    if (slider) {
+      slider.value = String(t);
+      slider.setAttribute("aria-valuenow", String(t));
+    }
+    if (val) {
+      val.textContent = transposeLabel(t);
+      val.title =
+        t === 0
+          ? "Written pitch"
+          : t < 0
+            ? `${Math.abs(t / 12)} octave${t === -12 ? "" : "s"} down`
+            : "1 octave up";
+    }
+  }
+
+  /**
+   * After the user releases the transpose slider, play the first three score
+   * notes at the new pitch so they can hear the register.
+   */
+  function previewTranspose() {
+    const t = trainer();
+    if (!t || !t.notes || !t.notes.length) return;
+    // Don't interrupt a full Play run
+    if (play.active && play.listen) return;
+    unlockAudio();
+    const count = Math.min(3, t.notes.length);
+    const beat = 520;
+    for (let i = 0; i < count; i++) {
+      const n = t.notes[i];
+      if (!n || n.midi == null) continue;
+      const delay = i * beat;
+      setTimeout(() => {
+        if (play.active && play.listen) return;
+        playSingleTone(n, 420, { forceSingle: true });
+      }, delay);
+    }
+  }
+
+  function setTempoTransposeMenuOpen(open) {
+    const panel = el("tempo-transpose-panel");
+    const toggle = el("tempo-transpose-toggle");
+    if (!panel || !toggle) return;
+    panel.hidden = !open;
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    toggle.classList.toggle("is-open", open);
   }
 
   function isRecitNote(n) {
@@ -1856,11 +1928,13 @@
       return;
     }
 
-    // Match Pitch always judges against written pitch (absolute). Relative-mode
-    // anchor is only for free practice — never for Match Pitch, and never for Play.
+    // Match Pitch / free-follow use written pitch + user Transpose.
+    // Relative-mode anchor is only for free practice — never for Match Pitch.
     const relativeMode = t.mode === "relative" && !play.matchPitch;
     if (relativeMode && !follow.anchored) updateAnchor(midiFloat, now, n);
-    const offset = relativeMode && follow.anchored ? follow.offset : 0;
+    const relOffset = relativeMode && follow.anchored ? follow.offset : 0;
+    const transpose = play.transposeSemis || 0;
+    const offset = relOffset + transpose;
 
     const targetMidi = n.midi + offset;
     const noteKey = n.globalIndex != null ? n.globalIndex : n.x;
@@ -1868,7 +1942,8 @@
     const sung = midiFloat - 12 * fold;
 
     const fifths = (n.keySig && n.keySig.fifths) || 0;
-    const step = ballStep(sung, n, fifths, offset);
+    // Ball staff position uses score degrees only (transpose is register, not staff step)
+    const step = ballStep(sung, n, fifths, relOffset);
     const y = stepToY(step, n.staffLineYs, n.staffSpacing || 4.32);
     play.pitchY = y;
     play.lastVoicedMs = now;
@@ -2097,7 +2172,33 @@
     if (!wrap || wrap.hidden) return;
     if (e.button != null && e.button !== 0) return;
     const rect = wrap.getBoundingClientRect();
-    const i = nearestNoteToPoint(e.clientX - rect.left, e.clientY - rect.top);
+    let i = nearestNoteToPoint(e.clientX - rect.left, e.clientY - rect.top);
+
+    // Page shown before notes extracted: kick extraction and retry once
+    if (i < 0 && window.trainer) {
+      const page = window.trainer.pageNum;
+      const notes = window.trainer.notes || [];
+      const hasPageNotes = notes.some((n) => n && n.pdfPage === page);
+      if (!hasPageNotes && typeof window.trainer.ensurePageNotes === "function") {
+        window.trainer.ensurePageNotes(page).then(() => {
+          const j = nearestNoteToPoint(e.clientX - rect.left, e.clientY - rect.top);
+          if (j >= 0) {
+            // Re-dispatch as a synthetic seek on the note that just appeared
+            if (
+              window.diagnose &&
+              window.diagnose.isOn &&
+              window.diagnose.isOn() &&
+              typeof window.diagnose.handleNoteClick === "function"
+            ) {
+              window.diagnose.handleNoteClick(j);
+            } else {
+              seekTo(j);
+            }
+          }
+        });
+        return;
+      }
+    }
 
     // Assess mode may consume the click
     if (
@@ -2194,18 +2295,6 @@
     // Close Sound & Mic / Score dropdowns when clicking outside; clear note highlight on empty click
     if (typeof document.addEventListener === "function") {
       document.addEventListener("pointerdown", (e) => {
-        const smMenu = el("sound-mic-menu");
-        const smPanel = el("sound-mic-panel");
-        if (
-          smMenu &&
-          smPanel &&
-          !smPanel.hidden &&
-          e.target &&
-          smMenu.contains &&
-          !smMenu.contains(e.target)
-        ) {
-          setSoundMicMenuOpen(false);
-        }
         const uploadSaveMenu = el("upload-save-menu");
         const uploadSavePanel = el("upload-save-panel");
         if (
@@ -2222,6 +2311,18 @@
             st.setAttribute("aria-expanded", "false");
             st.classList.remove("is-open");
           }
+        }
+        const ttMenu = el("tempo-transpose-menu");
+        const ttPanel = el("tempo-transpose-panel");
+        if (
+          ttMenu &&
+          ttPanel &&
+          !ttPanel.hidden &&
+          e.target &&
+          ttMenu.contains &&
+          !ttMenu.contains(e.target)
+        ) {
+          setTempoTransposeMenuOpen(false);
         }
 
         // Clear note highlight only for empty background — never when pressing
@@ -2280,16 +2381,6 @@
       }
     });
 
-    const soundMicToggle = el("sound-mic-toggle");
-    if (soundMicToggle) {
-      soundMicToggle.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const panel = el("sound-mic-panel");
-        if (!panel) return;
-        setSoundMicMenuOpen(!!panel.hidden);
-      });
-    }
-
     const soundStatusCollapse = el("sound-status-collapse");
     if (soundStatusCollapse) {
       soundStatusCollapse.addEventListener("click", (e) => {
@@ -2311,13 +2402,24 @@
         if (st && st.state && st.state !== "running" && st.state !== "none") {
           updateSoundUi(
             false,
-            "Sound was paused (tab was in the background or idle). Open <strong>Sound &amp; Mic</strong> and press <strong>Turn Sound On</strong>."
+            "Sound was paused (tab was in the background or idle). Open <strong>Upload &amp; Settings</strong> and press <strong>Turn Sound On</strong>."
           );
         }
       });
     }
     // No permanent banner on load — only show the floating box when needed
     setSoundStatusOpen(false);
+
+    // Tempo & Transpose menu
+    const tempoTransposeToggle = el("tempo-transpose-toggle");
+    if (tempoTransposeToggle) {
+      tempoTransposeToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const panel = el("tempo-transpose-panel");
+        if (!panel) return;
+        setTempoTransposeMenuOpen(!!panel.hidden);
+      });
+    }
 
     // Tempo slider (computer Play only)
     const tempoSlider = el("tempo-slider");
@@ -2328,6 +2430,22 @@
       });
     } else {
       syncTempoUi(PLAY_TEMPO_DEFAULT);
+    }
+
+    // Transpose: whole octaves; release plays first three notes at new pitch
+    const transposeSlider = el("transpose-slider");
+    if (transposeSlider) {
+      syncTransposeUi(transposeSlider.value);
+      transposeSlider.addEventListener("input", () => {
+        syncTransposeUi(transposeSlider.value);
+      });
+      // change fires when the user releases the thumb
+      transposeSlider.addEventListener("change", () => {
+        syncTransposeUi(transposeSlider.value);
+        previewTranspose();
+      });
+    } else {
+      syncTransposeUi(0);
     }
 
     const wrap = el("canvas-wrap");

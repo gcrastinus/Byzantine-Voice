@@ -1042,10 +1042,51 @@
     }
   }
 
+  /** Scroll the stage to the top of the current PDF page. */
+  function scrollStageToTop() {
+    if (els.stage) els.stage.scrollTop = 0;
+  }
+
+  /**
+   * Navigate to a PDF page (1-based).
+   * Always scrolls to the top so manual Next/Prev doesn’t leave you stuck at
+   * the previous page’s bottom. Note-following can scroll again via scrollToNote.
+   */
   async function goToPage(num) {
     if (!state.pdfDoc) return;
     const clamped = Math.max(1, Math.min(state.pageCount, num));
+    const pageChanged = clamped !== state.pageNum;
+    // Wait for note extraction on this page so clicks/highlights work immediately
+    await ensureExtractThroughPage(clamped);
     await renderPage(clamped);
+    // If this page has no notes yet (title page, or still catching up), keep going
+    if (
+      state.extractJob &&
+      !state.extractJob.complete &&
+      !pageHasNotes(clamped)
+    ) {
+      setExtractBanner(
+        `EXTRACTING NOTES FOR PAGE ${clamped}…`,
+        null
+      );
+      await ensureExtractThroughPage(clamped);
+      // Merge may have finished via onBatch; refresh overlay hit targets
+      redrawOverlay();
+      if (state.extractComplete || pageHasNotes(clamped)) {
+        // Restore ready banner into menu when fully done; otherwise clear bottom
+        if (state.extractComplete && state.notes.length) {
+          setExtractBanner(readyToPlayMessage(state.notes.length), "ok");
+        } else if (pageHasNotes(clamped) && !state.extractComplete) {
+          // Processing continues in background — only show bottom while still busy overall
+          const job = state.extractJob;
+          const st = job && job.status ? job.status() : null;
+          if (st) bannerForExtractStatus(st);
+        }
+      }
+    }
+    // Manual paging (and any page change): start at the top of the new page.
+    // Auto-play will call scrollToNote afterward if it needs a lower staff.
+    if (pageChanged) scrollStageToTop();
   }
 
   // —— Score / trainer ——
@@ -1241,6 +1282,42 @@
     const idx0 = Math.max(0, (pageNum1Based | 0) - 1);
     // Prefer having the next full batch ready (≈2–3 pages ahead)
     job.ensureAhead(idx0, job.batchSize).catch((e) => console.warn("ensureAhead", e));
+  }
+
+  /**
+   * Block until notes for this PDF page are extracted (0-based index = pageNum-1).
+   * Without this, Next Page shows the PDF image before note positions exist, so
+   * clicks miss and do nothing.
+   */
+  async function ensureExtractThroughPage(pageNum1Based) {
+    const job = state.extractJob;
+    if (!job || job.complete || job.cancelled) return null;
+    const idx0 = Math.max(0, (pageNum1Based | 0) - 1);
+    try {
+      // Show brief status while we catch up
+      if (!job.complete && job.status && job.status().pagesDone <= idx0) {
+        setExtractBanner(
+          `EXTRACTING… PAGE ${Math.min(idx0 + 1, state.pageCount)}/${state.pageCount}`,
+          null
+        );
+      }
+      const st = await job.ensureThrough(idx0);
+      // Also pull a little ahead so Next Page is snappy
+      job.ensureAhead(idx0, 1).catch((e) => console.warn("ensureAhead", e));
+      return st;
+    } catch (e) {
+      console.warn("ensureExtractThroughPage", e);
+      return null;
+    }
+  }
+
+  /** True if any extracted note belongs to this 1-based PDF page. */
+  function pageHasNotes(pageNum1Based) {
+    const p = pageNum1Based | 0;
+    for (const n of state.notes) {
+      if (n && n.pdfPage === p) return true;
+    }
+    return false;
   }
 
   /**
@@ -1443,6 +1520,14 @@
     /** 1-based page currently rendered. */
     get pageNum() {
       return state.pageNum;
+    },
+    /**
+     * Ensure notes for a 1-based PDF page are extracted (for click-before-ready).
+     * @returns {Promise<void>}
+     */
+    async ensurePageNotes(pageNum1Based) {
+      await ensureExtractThroughPage(pageNum1Based);
+      redrawOverlay();
     },
     get mode() {
       return state.mode;

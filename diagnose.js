@@ -322,6 +322,21 @@
     return sung - 12 * oct;
   }
 
+  /** User Transpose from Tempo & Transpose menu (semitones). */
+  function userTranspose() {
+    try {
+      const p = window.followPlayback && window.followPlayback.play;
+      return (p && p.transposeSemis) || 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function expectedMidi(n) {
+    if (!n || n.midi == null) return null;
+    return Number(n.midi) + userTranspose();
+  }
+
   function categoryFromCents(cents) {
     if (cents <= OK_CENTS) return "ok";
     if (cents <= NEAR_CENTS) return "near";
@@ -342,10 +357,10 @@
   function samePitchRunLength(expected, jEnd) {
     // jEnd is exclusive index in DP space (number of notes matched)
     if (jEnd <= 0) return 0;
-    const pitch = expected[jEnd - 1].n.midi;
+    const pitch = expected[jEnd - 1].midi;
     let cover = 1;
     while (jEnd - cover - 1 >= 0) {
-      if (Math.abs(expected[jEnd - cover - 1].n.midi - pitch) > 0.9) break;
+      if (Math.abs(expected[jEnd - cover - 1].midi - pitch) > 0.9) break;
       cover += 1;
       if (cover >= 64) break;
     }
@@ -397,7 +412,7 @@
         }
         // Match plateau i-1 onto cover consecutive same-pitch notes ending at j-1
         const p = plateaus[i - 1];
-        const target = expected[j - 1].n.midi;
+        const target = expected[j - 1].midi;
         const folded = foldTo(p.midi, target);
         const cents = Math.abs(folded - target) * 100;
         if (cents > WRONG_CENTS) continue;
@@ -442,13 +457,13 @@
         for (let k = 0; k < cover; k++) {
           const ej = j - cover + k;
           const exp = expected[ej];
-          const foldK = foldTo(b.plateau.midi, exp.n.midi);
-          const cK = Math.abs(foldK - exp.n.midi) * 100;
+          const foldK = foldTo(b.plateau.midi, exp.midi);
+          const cK = Math.abs(foldK - exp.midi) * 100;
           const cat = categoryFromCents(cK) || "wrong";
           assign[ej] = {
             category: cat,
             cents: Math.round(cK),
-            signedCents: Math.round((foldK - exp.n.midi) * 100),
+            signedCents: Math.round((foldK - exp.midi) * 100),
             sungMidi: foldK,
           };
         }
@@ -467,7 +482,9 @@
   function analyzeSection(notes, start, end, samples) {
     const expected = [];
     for (let i = start; i <= end; i++) {
-      if (notes[i] && notes[i].midi != null) expected.push({ i, n: notes[i] });
+      if (notes[i] && notes[i].midi != null) {
+        expected.push({ i, n: notes[i], midi: expectedMidi(notes[i]) });
+      }
     }
     const plateaus = segmentPlateaus(samples);
     const assign = alignPlateausToExpected(expected, plateaus);
@@ -483,7 +500,7 @@
           cents: null,
           signedCents: null,
           sungMidi: null,
-          expectedMidi: n.midi,
+          expectedMidi: expectedMidi(n),
           lyric: n.lyric || "",
         });
       } else {
@@ -493,7 +510,7 @@
           cents: a.cents,
           signedCents: a.signedCents,
           sungMidi: a.sungMidi,
-          expectedMidi: n.midi,
+          expectedMidi: expectedMidi(n),
           lyric: n.lyric || "",
         });
       }

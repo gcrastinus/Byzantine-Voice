@@ -339,46 +339,49 @@ body {
   opacity: 0.95;
 }
 
-/* Tempo sits next to Match Pitch — fatter slider track, same length */
-.tempo-controls {
-  display: inline-flex;
+/* Tempo / Transpose rows inside Tempo & Transpose menu */
+.tempo-controls,
+.tempo-controls-block {
+  display: flex;
   align-items: center;
   gap: 0.45rem;
-  min-width: 11rem;
-  max-width: 15rem;
-  min-height: 3.4rem;
+  width: 100%;
+  min-height: 3.2rem;
   padding: 0.35rem 0.6rem;
-  /* Same outline weight/color as other toolbar buttons */
   border: 1.5px solid #6c6d76;
   border-radius: var(--radius);
   background: rgba(0, 0, 0, 0.15);
   box-sizing: border-box;
 }
 
-.tempo-controls .tempo-label {
+.tempo-controls .tempo-label,
+.tempo-label {
   flex: 0 0 auto;
-  /* Match toolbar button text size (.btn is 1.35rem) */
   font-size: 1.35rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--text);
 }
 
-.tempo-controls input[type="range"] {
+.tempo-controls input[type="range"],
+.transpose-slider-wrap input[type="range"] {
   flex: 1;
-  min-width: 5.5rem;
+  min-width: 8rem;
+  width: 100%;
   height: 1.65rem;
   accent-color: var(--accent, #4c8bf5);
   cursor: pointer;
 }
 
-/* Fatter track (WebKit / Firefox) without making the control longer */
-.tempo-controls input[type="range"]::-webkit-slider-runnable-track {
+/* Fatter track (WebKit / Firefox) */
+.tempo-controls input[type="range"]::-webkit-slider-runnable-track,
+.transpose-slider-wrap input[type="range"]::-webkit-slider-runnable-track {
   height: 10px;
   border-radius: 5px;
   background: #4a4b52;
 }
-.tempo-controls input[type="range"]::-webkit-slider-thumb {
+.tempo-controls input[type="range"]::-webkit-slider-thumb,
+.transpose-slider-wrap input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 18px;
@@ -389,12 +392,14 @@ body {
   border: 1.5px solid #c5d8ff;
   cursor: pointer;
 }
-.tempo-controls input[type="range"]::-moz-range-track {
+.tempo-controls input[type="range"]::-moz-range-track,
+.transpose-slider-wrap input[type="range"]::-moz-range-track {
   height: 10px;
   border-radius: 5px;
   background: #4a4b52;
 }
-.tempo-controls input[type="range"]::-moz-range-thumb {
+.tempo-controls input[type="range"]::-moz-range-thumb,
+.transpose-slider-wrap input[type="range"]::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -403,7 +408,8 @@ body {
   cursor: pointer;
 }
 
-.tempo-controls .tempo-val {
+.tempo-controls .tempo-val,
+.tempo-val {
   flex: 0 0 2.25rem;
   text-align: right;
   font-size: 1rem;
@@ -412,7 +418,71 @@ body {
   color: var(--muted);
 }
 
-/* Green “ready” status at the bottom of Upload & Save menu */
+/* Tempo & Transpose dropdown */
+.tempo-transpose-menu .play-menu-panel {
+  min-width: 18rem;
+  gap: 0.85rem;
+}
+
+.transpose-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.45rem 0.55rem 0.55rem;
+  border: 1.5px solid #6c6d76;
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.transpose-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.transpose-slider-wrap {
+  position: relative;
+  width: 100%;
+  padding: 0 0.35rem 1.35rem;
+  box-sizing: border-box;
+}
+
+.transpose-ticks {
+  position: absolute;
+  left: 0.35rem;
+  right: 0.35rem;
+  top: 1.55rem;
+  height: 1.2rem;
+  pointer-events: none;
+}
+
+.transpose-ticks .tick {
+  position: absolute;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.transpose-ticks .tick i {
+  display: block;
+  width: 2px;
+  height: 10px;
+  background: #e8e8ea;
+  border-radius: 1px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.transpose-ticks .tick b {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #d7d8de;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Green “ready” status at the bottom of Upload & Settings menu */
 .score-ready-box {
   margin-top: 0.35rem;
   padding: 0.55rem 0.7rem;
@@ -430,7 +500,31 @@ body {
 }
 
 .upload-save-menu .play-menu-panel {
-  min-width: 16.5rem;
+  min-width: 17rem;
+}
+
+.menu-section-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0.15rem 0 0.1rem;
+}
+
+.sound-mic-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sound-mic-section.is-mic-on {
+  border-color: rgba(61, 184, 122, 0.55);
+  background: rgba(61, 184, 122, 0.08);
 }
 
 .file-status {
@@ -481,15 +575,7 @@ body {
   line-height: 1.35;
 }
 
-/* —— Sound & Mic menu —— */
-.sound-mic-menu .play-menu-panel {
-  min-width: 17rem;
-}
-
-.sound-mic-menu.is-mic-on > .play-menu-toggle {
-  border-color: rgba(61, 184, 122, 0.65);
-  background: rgba(61, 184, 122, 0.12);
-}
+/* Sound status panel still floats under Upload & Settings */
 
 /* Match Turn Sound On button scale: same min-height / font weight */
 .mic-switch-row {
