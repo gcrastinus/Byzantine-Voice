@@ -1,0 +1,333 @@
+/* Chant Sight-Singing Trainer — minimal, desktop + tablet */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #1a1b1e;
+  --surface: #25262b;
+  --border: #3a3b40;
+  --text: #e8e8ea;
+  --muted: #9a9ba0;
+  --accent: #4c8bf5;
+  --accent-soft: rgba(76, 139, 245, 0.2);
+  --danger: #e05a5a;
+  --ok: #3db87a;
+  --toolbar-h: auto;
+  --radius: 8px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+/* —— Toolbar —— */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+  user-select: none;
+}
+
+.toolbar-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+}
+
+.toolbar-group + .toolbar-group {
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--border);
+}
+
+.btn,
+.file-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 3.4rem;
+  padding: 0.6rem 1.2rem;
+  font: inherit;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.btn:hover,
+.file-btn:hover {
+  border-color: var(--muted);
+  background: #2c2d32;
+}
+
+.btn:active,
+.file-btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn[aria-pressed="true"],
+.btn.is-on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: #c5d8ff;
+}
+
+#mic-btn.is-on {
+  background: rgba(61, 184, 122, 0.18);
+  border-color: var(--ok);
+  color: #9ee0bc;
+}
+
+/* —— Live pitch debug (pitch.js) —— */
+.pitch-readout {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+  min-width: 9rem;
+  padding: 0.4rem 0.7rem;
+  background: #121316;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.pitch-readout.has-pitch {
+  border-color: #3a6a4a;
+}
+
+.pitch-note {
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.pitch-readout.has-pitch .pitch-note {
+  color: #9ee0bc;
+}
+
+.pitch-bar {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(224, 90, 90, 0.45) 0%,
+    rgba(61, 184, 122, 0.35) 45%,
+    rgba(61, 184, 122, 0.35) 55%,
+    rgba(224, 90, 90, 0.45) 100%
+  );
+  overflow: hidden;
+}
+
+.pitch-bar-center {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.55);
+  transform: translateX(-50%);
+}
+
+.pitch-needle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  margin-left: -2.5px;
+  left: 50%;
+  background: #fff;
+  border-radius: 1px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  transition: left 40ms linear;
+}
+
+.mic-error {
+  flex-shrink: 0;
+  padding: 0.6rem 1rem;
+  font-size: 1.1rem;
+  color: #ffc9c9;
+  background: rgba(224, 90, 90, 0.18);
+  border-bottom: 1px solid rgba(224, 90, 90, 0.45);
+}
+
+.file-status {
+  font-size: 1.05rem;
+  color: var(--muted);
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slider-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+.slider-label input[type="range"] {
+  width: 10rem;
+  height: 2.2rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.slider-label span {
+  min-width: 4.2rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  font-size: 1.2rem;
+}
+
+.current-note {
+  min-width: 5.5rem;
+  padding: 0.2rem 0.7rem;
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  text-align: center;
+  color: #fff;
+  background: #121316;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-variant-numeric: tabular-nums;
+}
+
+.page-label {
+  font-size: 1.2rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 4.5rem;
+  text-align: center;
+}
+
+#prev-page,
+#next-page {
+  min-width: 3.4rem;
+  font-size: 2rem;
+  line-height: 1;
+  padding-left: 0.7rem;
+  padding-right: 0.7rem;
+}
+
+/* —— Stage / PDF view —— */
+.stage {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  background: #111214;
+}
+
+.drop-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.drop-hint code {
+  font-size: 0.9em;
+  color: var(--text);
+}
+
+.stage.is-dragover {
+  outline: 2px dashed var(--accent);
+  outline-offset: -8px;
+  background: #151820;
+}
+
+.canvas-wrap {
+  position: relative;
+  margin: 0 auto;
+  /* width set in JS to match PDF CSS width */
+  line-height: 0;
+}
+
+#page,
+#overlay {
+  display: block;
+  /* CSS size set in JS; bitmap size uses devicePixelRatio */
+  width: 100%;
+  height: auto;
+}
+
+#overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+/* —— Narrow / tablet tweaks —— */
+@media (max-width: 720px) {
+  .toolbar-group + .toolbar-group {
+    border-left: none;
+    padding-left: 0;
+  }
+
+  .slider-label input[type="range"] {
+    width: 4.25rem;
+  }
+
+  .current-note {
+    font-size: 1.4rem;
+    min-width: 3rem;
+  }
+
+  .file-status {
+    display: none;
+  }
+}

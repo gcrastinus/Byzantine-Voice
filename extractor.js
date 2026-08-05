@@ -1,0 +1,836 @@
+/**
+ * In-browser score extraction for MCI Finale PDFs (Maestro/Petrucci).
+ * Port of extract_score.py — same rules, same score.json schema.
+ *
+ * Staff lines: render page at scale 2, scan dark horizontal runs.
+ * Glyphs: pdf.js getTextContent(), resolve font via styles[id].fontFamily.
+ * Coordinates in schema: PDF points, origin top-left, y down.
+ *
+ * API: window.ScoreExtractor.extractPdf(pdfDoc, sourceName) → scoreJson
+ */
+(() => {
+  "use strict";
+
+  const MUSIC_FONTS = ["Maestro", "Petrucci"];
+  // Maestro/Petrucci notehead code points (must stay as UTF-8 string keys)
+  const NOTEHEADS = {
+    "\u0153": "quarter", // œ
+    "\u02D9": "half", // ˙  (dot above — Finale half-note head)
+    w: "whole",
+    W: "recit",
+  };
+  const ACCIDENTALS = { "#": 1, b: -1, n: 0 };
+  const SHARP_LETTERS = [3, 0, 4, 1, 5, 2, 6]; // F C G D A E B
+  const FLAT_LETTERS = [6, 2, 5, 1, 4]; // B E A D G
+  const LETTER_PC = [0, 2, 4, 5, 7, 9, 11]; // C D E F G A B
+
+  const STAFF_SCAN_SCALE = 2;
+  const DARK_LUMA = 128;
+  const MIN_RUN_FRAC = 0.3;
+
+  function isMusicFont(family) {
+    if (!family) return false;
+    const f = String(family);
+    return MUSIC_FONTS.some((m) => f.indexOf(m) !== -1);
+  }
+
+  function round(n, d) {
+    const p = Math.pow(10, d);
+    return Math.round(n * p) / p;
+  }
+
+  function median(arr) {
+    if (!arr.length) return 0;
+    const s = arr.slice().sort((a, b) => a - b);
+    const m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  }
+
+  /**
+   * Treble clef: step 0 = E4. Port of step_to_midi.
+   * @param {number} step
+   * @param {number} keyFifths
+   * @param {string|null} inline  '#', 'b', 'n', or null
+   */
+  function stepToMidi(step, keyFifths, inline) {
+    const absStep = 30 + step; // E4 = 4*7 + 2
+    const octave = Math.floor(absStep / 7);
+    const letter = ((absStep % 7) + 7) % 7;
+    let pc = LETTER_PC[letter];
+    let alter = 0;
+    if (keyFifths > 0 && SHARP_LETTERS.slice(0, keyFifths).indexOf(letter) !== -1) {
+      alter = 1;
+    } else if (
+      keyFifths < 0 &&
+      FLAT_LETTERS.slice(0, -keyFifths).indexOf(letter) !== -1
+    ) {
+      alter = -1;
+    }
+    if (inline != null && Object.prototype.hasOwnProperty.call(ACCIDENTALS, inline)) {
+      alter = ACCIDENTALS[inline];
+    }
+    return 12 * (octave + 1) + pc + alter;
+  }
+
+  /** PDF bottom-left y → top-left y (page.view = [x0,y0,x1,y1]). */
+  function yToTop(page, yPdf) {
+    const v = page.view;
+    return v[3] - yPdf;
+  }
+
+  /**
+   * Scan a rendered page for horizontal staff-line candidates.
+   * Returns [{ y, x0, x1 }] in PDF points, top-left origin, y down.
+   */
+  async function findStaffLinesByCanvas(page) {
+    const scale = STAFF_SCAN_SCALE;
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    const ctx = canvas.getContext("2d", { willReadFrequently: true, alpha: false });
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const img = ctx.getImageData(0, 0, w, h);
+    const data = img.data;
+    const minRun = Math.floor(w * MIN_RUN_FRAC);
+
+    // Per-row: longest dark horizontal run + its bounds
+    const lineRows = []; // { row, x0, x1, run }
+    for (let row = 0; row < h; row++) {
+      let best = 0;
+      let bestX0 = 0;
+      let bestX1 = 0;
+      let run = 0;
+      let runStart = 0;
+      const base = row * w * 4;
+      for (let col = 0; col < w; col++) {
+        const i = base + col * 4;
+        const luma = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        if (luma < DARK_LUMA) {
+          if (run === 0) runStart = col;
+          run++;
+          if (run > best) {
+            best = run;
+            bestX0 = runStart;
+            bestX1 = col;
+          }
+        } else {
+          run = 0;
+        }
+      }
+      if (best >= minRun) {
+        lineRows.push({ row, x0: bestX0, x1: bestX1, run: best });
+      }
+    }
+
+    // Merge vertically adjacent rows (line thickness) → center y + union x
+    const lines = [];
+    let i = 0;
+    while (i < lineRows.length) {
+      let j = i + 1;
+      let sumRow = lineRows[i].row;
+      let count = 1;
+      let x0 = lineRows[i].x0;
+      let x1 = lineRows[i].x1;
+      while (j < lineRows.length && lineRows[j].row === lineRows[j - 1].row + 1) {
+        sumRow += lineRows[j].row;
+        count++;
+        x0 = Math.min(x0, lineRows[j].x0);
+        x1 = Math.max(x1, lineRows[j].x1);
+        j++;
+      }
+      const centerRow = sumRow / count;
+      lines.push({
+        y: centerRow / scale,
+        x0: x0 / scale,
+        x1: x1 / scale,
+      });
+      i = j;
+    }
+    return lines;
+  }
+
+  /** Group 5 equal-gap lines into staves (port of find_staves grouping). */
+  function groupStaves(hl) {
+    hl = hl.slice().sort((a, b) => a.y - b.y);
+    const ys = hl.map((h) => h.y);
+    const staves = [];
+    let i = 0;
+    while (i + 4 < ys.length) {
+      const gaps = [];
+      for (let k = 0; k < 4; k++) gaps.push(ys[i + k + 1] - ys[i + k]);
+      const m = median(gaps);
+      if (m > 3 && gaps.every((g) => Math.abs(g - m) < 0.15 * m)) {
+        const slice = hl.slice(i, i + 5);
+        staves.push({
+          lineYs: ys.slice(i, i + 5).map((y) => round(y, 2)),
+          spacing: round(m, 3),
+          xStart: round(Math.min(...slice.map((h) => h.x0)), 1),
+          xEnd: round(Math.max(...slice.map((h) => h.x1)), 1),
+        });
+        i += 5;
+      } else {
+        i += 1;
+      }
+    }
+    return staves;
+  }
+
+  /**
+   * pdf.js styles[].fontFamily is often a generic fallback ("sans-serif").
+   * The real embedded name (e.g. "OLEIGD+Maestro") lives on page.commonObjs.
+   */
+  function resolveFontName(page, fontId, styles) {
+    try {
+      if (page.commonObjs && page.commonObjs.has(fontId)) {
+        const font = page.commonObjs.get(fontId);
+        if (font && font.name) return font.name;
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    const style = (styles && styles[fontId]) || {};
+    return style.fontFamily || style.fontName || fontId || "";
+  }
+
+  function getPdfjs() {
+    return window["pdfjs-dist/build/pdf"] || window.pdfjsLib;
+  }
+
+  /**
+   * Music glyphs via the operator list (NOT getTextContent).
+   *
+   * getTextContent merges consecutive noteheads into one item with a single y.
+   * Finale also uses TD (setLeadingMoveText) between glyphs instead of a fresh
+   * Tm — we must track the full text matrix like a PDF consumer.
+   */
+  async function musicChars(page) {
+    const pdfjs = getPdfjs();
+    const OPS = pdfjs.OPS;
+    const opList = await page.getOperatorList();
+    const out = [];
+
+    let fontId = null;
+    // Text matrix [a b c d e f] maps text space → user space
+    let textMatrix = [1, 0, 0, 1, 0, 0];
+    let textLineMatrix = [1, 0, 0, 1, 0, 0];
+    let leading = 0;
+
+    function cloneM(m) {
+      return m.slice();
+    }
+
+    /** Apply translation (tx, ty) in text space to text matrix (PDF Td/TD). */
+    function moveText(tx, ty) {
+      // e' = e + tx*a + ty*c;  f' = f + tx*b + ty*d
+      const a = textMatrix[0];
+      const b = textMatrix[1];
+      const c = textMatrix[2];
+      const d = textMatrix[3];
+      const e = textMatrix[4];
+      const f = textMatrix[5];
+      textMatrix = [a, b, c, d, e + tx * a + ty * c, f + tx * b + ty * d];
+    }
+
+    function nextLine() {
+      moveText(0, -leading);
+      textLineMatrix = cloneM(textMatrix);
+    }
+
+    /** Advance text matrix by glyph width in text-space units (thousandths). */
+    function advanceByWidth(widthThou) {
+      const tx = (widthThou != null ? widthThou : 500) / 1000;
+      moveText(tx, 0);
+    }
+
+    function emitGlyphs(glyphs) {
+      if (!fontId || !isMusicFont(resolveFontName(page, fontId, null))) {
+        // Still advance the text matrix so subsequent TD/show stay consistent
+        // when a non-music run is interleaved (rare on these pages).
+        const list = Array.isArray(glyphs) ? glyphs : [glyphs];
+        for (const g of list) {
+          if (typeof g === "number") {
+            moveText(-g / 1000, 0);
+          } else if (g && typeof g === "object") {
+            advanceByWidth(g.width);
+          }
+        }
+        return;
+      }
+
+      const list = Array.isArray(glyphs) ? glyphs : [glyphs];
+      for (const g of list) {
+        if (g == null) continue;
+        // TJ numbers: horizontal displacement in thousandths of text space
+        if (typeof g === "number") {
+          moveText(-g / 1000, 0);
+          continue;
+        }
+
+        let ch = "";
+        let widthThou = 500;
+        if (typeof g === "string") {
+          ch = g;
+        } else if (typeof g === "object") {
+          ch = g.unicode != null ? String(g.unicode) : "";
+          widthThou = g.width != null ? g.width : 500;
+        }
+
+        // Record position of this glyph, then advance
+        const x = textMatrix[4];
+        const yTop = yToTop(page, textMatrix[5]);
+        for (let i = 0; i < ch.length; i++) {
+          const c = ch[i];
+          if (c.trim()) {
+            out.push({ c, x, y: yTop });
+          }
+        }
+        advanceByWidth(widthThou);
+      }
+    }
+
+    for (let i = 0; i < opList.fnArray.length; i++) {
+      const fn = opList.fnArray[i];
+      const args = opList.argsArray[i];
+
+      if (fn === OPS.beginText) {
+        textMatrix = [1, 0, 0, 1, 0, 0];
+        textLineMatrix = [1, 0, 0, 1, 0, 0];
+      } else if (fn === OPS.setFont) {
+        fontId = args[0];
+      } else if (fn === OPS.setTextMatrix) {
+        if (args && args.length >= 6) {
+          textMatrix = [
+            args[0],
+            args[1],
+            args[2],
+            args[3],
+            args[4],
+            args[5],
+          ];
+          textLineMatrix = cloneM(textMatrix);
+        }
+      } else if (fn === OPS.setLeading) {
+        leading = args[0];
+      } else if (fn === OPS.moveText) {
+        // Td
+        moveText(args[0], args[1]);
+        textLineMatrix = cloneM(textMatrix);
+      } else if (fn === OPS.setLeadingMoveText) {
+        // TD: set leading = -ty, then Td(tx, ty)
+        leading = -args[1];
+        moveText(args[0], args[1]);
+        textLineMatrix = cloneM(textMatrix);
+      } else if (fn === OPS.nextLine) {
+        nextLine();
+      } else if (fn === OPS.showText) {
+        emitGlyphs(args[0]);
+      } else if (fn === OPS.showSpacedText) {
+        emitGlyphs(args[0]);
+      } else if (fn === OPS.nextLineShowText) {
+        nextLine();
+        emitGlyphs(args[0]);
+      } else if (fn === OPS.nextLineSetSpacingShowText) {
+        // args: [wordSpacing, charSpacing, text]
+        nextLine();
+        emitGlyphs(args[2]);
+      }
+    }
+
+    out.sort((a, b) => a.x - b.x || a.y - b.y);
+    return out;
+  }
+
+  /**
+   * Lyric / text words (non-music fonts) via getTextContent.
+   * Port of text_words: x, y (mid), yTop, text.
+   */
+  async function textWords(page) {
+    try {
+      await page.getOperatorList();
+    } catch (_) {
+      /* optional */
+    }
+    const tc = await page.getTextContent({ includeMarkedContent: false });
+    const styles = tc.styles || {};
+    const words = [];
+
+    for (const item of tc.items) {
+      if (!item || item.str == null) continue;
+      const realName = resolveFontName(page, item.fontName, styles);
+      if (isMusicFont(realName)) continue;
+
+      const raw = String(item.str).trim();
+      if (!raw) continue;
+
+      const tx = item.transform[4];
+      const ty = item.transform[5];
+      const yTop = yToTop(page, ty); // baseline from top
+      const fs = Math.abs(item.transform[3] || item.transform[0] || 10);
+      // Python yTop is the top of the word bbox; approximate from baseline.
+      const wordYTop = yTop - fs;
+
+      const parts = raw.split(/\s+/).filter(Boolean);
+      const totalW =
+        item.width != null ? item.width : Math.abs(item.transform[0]) * raw.length;
+      if (parts.length === 1) {
+        words.push({
+          x: tx,
+          y: wordYTop + fs / 2,
+          yTop: wordYTop,
+          text: parts[0],
+        });
+      } else {
+        const fullLen = raw.length || 1;
+        let searchFrom = 0;
+        for (const p of parts) {
+          const idx = raw.indexOf(p, searchFrom);
+          const charIdx = idx >= 0 ? idx : searchFrom;
+          if (idx >= 0) searchFrom = idx + p.length;
+          const x = tx + (charIdx / fullLen) * totalW;
+          words.push({
+            x,
+            y: wordYTop + fs / 2,
+            yTop: wordYTop,
+            text: p,
+          });
+        }
+      }
+    }
+    return words;
+  }
+
+  function staffOf(y, staves) {
+    let best = null;
+    let bd = 1e9;
+    for (let si = 0; si < staves.length; si++) {
+      const st = staves[si];
+      const mid = (st.lineYs[0] + st.lineYs[4]) / 2;
+      const d = Math.abs(y - mid);
+      if (d < bd) {
+        bd = d;
+        best = si;
+      }
+    }
+    if (best == null) return null;
+    return bd < 6 * staves[best].spacing ? best : null;
+  }
+
+  async function extractPage(page, pageIndex, gidxStart) {
+    let gidx = gidxStart;
+    const hl = await findStaffLinesByCanvas(page);
+    const staves = groupStaves(hl);
+    if (!staves.length) {
+      return { pageOut: null, gidx, noteCount: 0, staffCount: 0 };
+    }
+
+    const chars = await musicChars(page);
+    const words = await textWords(page);
+
+    const per = staves.map((st) => ({
+      clef: null,
+      keysig: 0,
+      keyx: null,
+      notes: [],
+      pending_acc: null,
+      raw: st,
+    }));
+
+    for (const ch of chars) {
+      const si = staffOf(ch.y, staves);
+      if (si == null) continue;
+      const st = per[si];
+      const c = ch.c;
+
+      if (c === "&" || c === "?") {
+        st.clef = c === "&" ? "treble" : "bass";
+        st.keyx = ch.x;
+      } else if (Object.prototype.hasOwnProperty.call(ACCIDENTALS, c)) {
+        const sp = st.raw.spacing;
+        if (st.keyx != null && ch.x - st.keyx < 8 * sp && st.notes.length === 0) {
+          st.keysig += c === "#" ? 1 : c === "b" ? -1 : 0;
+        } else {
+          st.pending_acc = c;
+        }
+      } else if (Object.prototype.hasOwnProperty.call(NOTEHEADS, c)) {
+        st.notes.push({
+          c,
+          x: ch.x,
+          y: ch.y,
+          acc: st.pending_acc,
+        });
+        st.pending_acc = null;
+      }
+      // ignore j/J flags, dots, breaths, etc.
+    }
+
+    const stavesOut = [];
+    for (let si = 0; si < per.length; si++) {
+      const st = per[si];
+      if (st.clef === "bass" || !st.notes.length) continue;
+      const raw = st.raw;
+      const sp = raw.spacing;
+      const bottom = raw.lineYs[4];
+      st.notes.sort((a, b) => a.x - b.x);
+
+      // chord filter: same x (±1pt) → keep top (smaller y)
+      const filtered = [];
+      for (const n of st.notes) {
+        if (filtered.length && Math.abs(n.x - filtered[filtered.length - 1].x) < 1.0) {
+          if (n.y < filtered[filtered.length - 1].y) {
+            filtered[filtered.length - 1] = n;
+          }
+          continue;
+        }
+        filtered.push(n);
+      }
+
+      // lyrics: first verse band below staff
+      const band = words
+        .filter(
+          (w) =>
+            raw.xStart - 5 <= w.x &&
+            w.x <= raw.xEnd + 20 &&
+            bottom + 0.5 * sp < w.yTop &&
+            w.yTop < bottom + 5.5 * sp
+        )
+        .sort((a, b) => a.x - b.x);
+
+      const notesOut = [];
+      for (const n of filtered) {
+        const step = Math.round((bottom - n.y) / (sp / 2));
+        const midi = stepToMidi(step, st.keysig, n.acc);
+        notesOut.push({
+          index: gidx,
+          type: n.c === "W" ? "recit" : "note",
+          glyph: NOTEHEADS[n.c],
+          x: round(n.x + sp * 0.6, 2),
+          y: round(n.y, 2),
+          step,
+          midi,
+          accidental: n.acc != null ? n.acc : null,
+          lyric: "",
+        });
+        gidx += 1;
+      }
+
+      for (const w of band) {
+        let target = null;
+        for (const no of notesOut) {
+          if (no.x <= w.x + 4) target = no;
+          else break;
+        }
+        if (target != null) {
+          target.lyric = (target.lyric + " " + w.text).trim();
+        }
+      }
+
+      stavesOut.push({
+        index: stavesOut.length,
+        xStart: raw.xStart,
+        xEnd: raw.xEnd,
+        lineYs: raw.lineYs,
+        spacing: raw.spacing,
+        clef: st.clef || "treble",
+        keySig: { fifths: st.keysig },
+        label: null,
+        notes: notesOut,
+      });
+    }
+
+    const vp1 = page.getViewport({ scale: 1 });
+    const pageOut =
+      stavesOut.length > 0
+        ? {
+            index: pageIndex,
+            width: round(vp1.width, 1),
+            height: round(vp1.height, 1),
+            staves: stavesOut,
+          }
+        : null;
+
+    const noteCount = stavesOut.reduce((s, st) => s + st.notes.length, 0);
+    return { pageOut, gidx, noteCount, staffCount: stavesOut.length };
+  }
+
+  /**
+   * Extract a half-open range of PDF pages [from0, to0).
+   * @param {number} from0 0-based start page
+   * @param {number} to0 exclusive end page
+   * @param {number} gidxStart sequential note index to continue from
+   */
+  async function extractPdfRange(pdfDoc, sourceName, from0, to0, gidxStart, opts) {
+    const pagesOut = [];
+    let gidx = gidxStart | 0;
+    let totalNotes = 0;
+    let totalStaves = 0;
+    const numPages = pdfDoc.numPages;
+    const start = Math.max(0, Math.min(numPages, from0 | 0));
+    const end = Math.max(start, Math.min(numPages, to0 | 0));
+
+    for (let pno = start; pno < end; pno++) {
+      if (opts && opts.onProgress) opts.onProgress(pno + 1, numPages);
+      if (opts && opts.shouldCancel && opts.shouldCancel()) {
+        return {
+          pages: pagesOut,
+          gidx,
+          totalNotes,
+          totalStaves,
+          from: start,
+          to: pno,
+          cancelled: true,
+        };
+      }
+      const page = await pdfDoc.getPage(pno + 1);
+      const { pageOut, gidx: next, noteCount, staffCount } = await extractPage(
+        page,
+        pno,
+        gidx
+      );
+      gidx = next;
+      totalNotes += noteCount;
+      totalStaves += staffCount;
+      if (pageOut) pagesOut.push(pageOut);
+
+      // Yield so the UI can paint / respond between heavy page scans
+      await new Promise((r) => setTimeout(r, 0));
+    }
+
+    return {
+      pages: pagesOut,
+      gidx,
+      totalNotes,
+      totalStaves,
+      from: start,
+      to: end,
+      cancelled: false,
+    };
+  }
+
+  /**
+   * Extract a full score from a pdf.js PDFDocumentProxy.
+   * @param {PDFDocumentProxy} pdfDoc
+   * @param {string} sourceName
+   * @param {{ onProgress?: (p: number, n: number) => void }} [opts]
+   */
+  async function extractPdf(pdfDoc, sourceName, opts) {
+    const numPages = pdfDoc.numPages;
+    const batch = await extractPdfRange(pdfDoc, sourceName, 0, numPages, 0, opts);
+    return {
+      score: {
+        version: 1,
+        source: sourceName || "document.pdf",
+        pages: batch.pages,
+      },
+      totalNotes: batch.totalNotes,
+      totalStaves: batch.totalStaves,
+    };
+  }
+
+  /**
+   * Progressive extractor: process `batchSize` pages at a time so the user can
+   * start singing on early pages while later pages finish in the background.
+   *
+   *   const job = ScoreExtractor.createProgressive(pdf, name, { batchSize: 3 });
+   *   await job.ensureThrough(2);  // pages 0..2 ready
+   *   job.cancel();
+   */
+  function createProgressive(pdfDoc, sourceName, opts) {
+    const options = opts || {};
+    const batchSize = Math.max(1, options.batchSize || 3);
+    const numPages = pdfDoc.numPages;
+    let nextPage = 0; // next 0-based page to extract
+    let gidx = 0;
+    let totalNotes = 0;
+    let totalStaves = 0;
+    const pagesAcc = [];
+    let busy = null; // in-flight promise
+    let cancelled = false;
+
+    function scoreSnapshot() {
+      return {
+        version: 1,
+        source: sourceName || "document.pdf",
+        pages: pagesAcc.slice(),
+      };
+    }
+
+    function status() {
+      return {
+        pagesDone: nextPage,
+        pagesTotal: numPages,
+        totalNotes,
+        totalStaves,
+        complete: nextPage >= numPages,
+        cancelled,
+        score: scoreSnapshot(),
+      };
+    }
+
+    function cancel() {
+      cancelled = true;
+    }
+
+    /**
+     * Extract the next batch (up to batchSize pages). No-op if complete/busy.
+     * @returns {Promise<object|null>} status after the batch, or null if skipped
+     */
+    async function extractNextBatch() {
+      if (cancelled || nextPage >= numPages) return status();
+      if (busy) return busy;
+
+      busy = (async () => {
+        try {
+          const from = nextPage;
+          const to = Math.min(nextPage + batchSize, numPages);
+          const batch = await extractPdfRange(pdfDoc, sourceName, from, to, gidx, {
+            onProgress: options.onProgress,
+            shouldCancel: () => cancelled,
+          });
+          if (cancelled) return status();
+
+          gidx = batch.gidx;
+          totalNotes += batch.totalNotes;
+          totalStaves += batch.totalStaves;
+          for (const p of batch.pages) pagesAcc.push(p);
+          nextPage = batch.cancelled ? batch.to : to;
+
+          if (options.onBatch) {
+            try {
+              options.onBatch(status());
+            } catch (e) {
+              console.warn("onBatch", e);
+            }
+          }
+          return status();
+        } finally {
+          busy = null;
+        }
+      })();
+
+      return busy;
+    }
+
+    /**
+     * Ensure pages 0..pageIndexInclusive (0-based) are extracted.
+     * Keeps pulling batches until that page is covered (or cancelled).
+     */
+    async function ensureThrough(pageIndexInclusive) {
+      const need = Math.min(numPages - 1, Math.max(0, pageIndexInclusive | 0));
+      while (!cancelled && nextPage <= need) {
+        await extractNextBatch();
+      }
+      return status();
+    }
+
+    /**
+     * Prefer having `lookahead` pages beyond `pageIndex` ready.
+     * Non-blocking if already far enough; otherwise extracts until ahead.
+     */
+    async function ensureAhead(pageIndex, lookahead) {
+      const ahead = lookahead != null ? lookahead : batchSize;
+      const target = Math.min(numPages - 1, (pageIndex | 0) + ahead);
+      return ensureThrough(target);
+    }
+
+    return {
+      batchSize,
+      numPages,
+      extractNextBatch,
+      ensureThrough,
+      ensureAhead,
+      cancel,
+      status,
+      get complete() {
+        return nextPage >= numPages;
+      },
+      get cancelled() {
+        return cancelled;
+      },
+    };
+  }
+
+  /** Flatten notes for tests / debug. */
+  function flattenNotes(score) {
+    const out = [];
+    if (!score || !score.pages) return out;
+    for (const p of score.pages) {
+      for (const st of p.staves || []) {
+        for (const n of st.notes || []) out.push(n);
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Compare extracted score to golden: note count + (midi, step, type) per index.
+   * x/y may differ by up to 1.5 pt.
+   */
+  function compareToGolden(extracted, golden) {
+    const a = flattenNotes(extracted);
+    const b = flattenNotes(golden);
+    const mismatches = [];
+    if (a.length !== b.length) {
+      mismatches.push({
+        kind: "count",
+        message: `note count ${a.length} vs golden ${b.length}`,
+      });
+    }
+    const n = Math.min(a.length, b.length);
+    for (let i = 0; i < n; i++) {
+      const ea = a[i];
+      const gb = b[i];
+      if (ea.midi !== gb.midi || ea.step !== gb.step || ea.type !== gb.type) {
+        mismatches.push({
+          kind: "pitch",
+          index: i,
+          got: { midi: ea.midi, step: ea.step, type: ea.type },
+          want: { midi: gb.midi, step: gb.step, type: gb.type },
+          xy: { got: [ea.x, ea.y], want: [gb.x, gb.y] },
+        });
+      } else {
+        const dx = Math.abs((ea.x || 0) - (gb.x || 0));
+        const dy = Math.abs((ea.y || 0) - (gb.y || 0));
+        if (dx > 1.5 || dy > 1.5) {
+          mismatches.push({
+            kind: "xy",
+            index: i,
+            got: [ea.x, ea.y],
+            want: [gb.x, gb.y],
+            d: [round(dx, 2), round(dy, 2)],
+          });
+        }
+      }
+    }
+    // For PASS criteria: same total note count, zero mismatches in (midi, step, type).
+    // xy mismatches are reported but do not fail the hard PASS if within tolerance.
+    const pitchMismatches = mismatches.filter((m) => m.kind === "pitch" || m.kind === "count");
+    const xyMismatches = mismatches.filter((m) => m.kind === "xy");
+    return {
+      pass: pitchMismatches.length === 0 && a.length === b.length,
+      extractedCount: a.length,
+      goldenCount: b.length,
+      pitchMismatches,
+      xyMismatches,
+      mismatches, // all
+    };
+  }
+
+  window.ScoreExtractor = {
+    extractPdf,
+    extractPdfRange,
+    createProgressive,
+    flattenNotes,
+    compareToGolden,
+    stepToMidi,
+    MUSIC_FONTS,
+    NOTEHEADS,
+    /** Default pages per progressive batch (UI may override). */
+    DEFAULT_BATCH_SIZE: 3,
+  };
+})();

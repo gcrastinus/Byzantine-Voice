@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Chant Sight-Singing Trainer</title>
+  <link rel="stylesheet" href="style.css?v=35" />
+  <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+  <header class="toolbar" role="banner">
+    <div class="toolbar-group toolbar-files">
+      <!-- Upload & Save: PDF open, save/load score, ready-to-play status -->
+      <div id="upload-save-menu" class="play-menu upload-save-menu">
+        <button type="button" id="upload-save-toggle" class="btn play-menu-toggle btn-primary"
+                aria-expanded="false" aria-controls="upload-save-panel"
+                title="Upload a PDF, save or load a score">
+          Upload &amp; Save <span class="caret" aria-hidden="true">▾</span>
+        </button>
+        <!-- Kept for follow.js primary-highlight logic -->
+        <span id="upload-pdf-btn" class="visually-hidden" aria-hidden="true"></span>
+        <div id="upload-save-panel" class="play-menu-panel upload-save-panel" hidden
+             role="region" aria-label="Upload and save options">
+          <label class="file-btn file-btn-block btn-primary" title="Open a chant PDF (notes extracted automatically)">
+            Upload PDF
+            <input type="file" id="pdf-input" accept="application/pdf,.pdf" hidden />
+          </label>
+          <button type="button" id="save-score-btn" class="btn btn-block" disabled
+                  title="Download the score the app built from your PDF">
+            Save auto-produced score
+          </button>
+          <label class="file-btn file-btn-block" title="Replace the auto score with your own score.json (advanced)">
+            Load custom score…
+            <input type="file" id="score-input" accept="application/json,.json" hidden />
+          </label>
+          <p class="play-menu-hint">
+            <strong>Save</strong> downloads the notes extracted from the PDF.
+            <strong>Load custom</strong> is optional if you need a hand-edited score.json.
+          </p>
+          <!-- Filled when extraction is complete (moved from bottom bar) -->
+          <div id="score-ready-box" class="score-ready-box" hidden role="status" aria-live="polite"></div>
+        </div>
+      </div>
+      <!-- Filename with extension (next to the menu) -->
+      <span id="file-status" class="file-status" aria-live="polite">No PDF loaded</span>
+    </div>
+
+    <div class="toolbar-group toolbar-audio">
+      <!-- Sound & Mic dropdown: mic switch + Turn Sound On -->
+      <div id="sound-mic-menu" class="play-menu sound-mic-menu">
+        <button type="button" id="sound-mic-toggle" class="btn play-menu-toggle"
+                aria-expanded="false" aria-controls="sound-mic-panel"
+                title="Sound unlock and microphone">
+          Sound &amp; Mic <span class="caret" aria-hidden="true">▾</span>
+        </button>
+        <div id="sound-mic-panel" class="play-menu-panel sound-mic-panel" hidden
+             role="region" aria-label="Sound and microphone">
+          <div class="mic-switch-row">
+            <div class="mic-switch-text">
+              <span class="mic-switch-title">Microphone</span>
+              <span id="mic-switch-state" class="mic-switch-state">Off</span>
+            </div>
+            <label class="switch" title="Turn microphone on or off">
+              <input type="checkbox" id="mic-switch" role="switch" aria-checked="false" />
+              <span class="switch-slider" aria-hidden="true"></span>
+            </label>
+            <!-- Kept for diagnose/app compatibility; not shown -->
+            <button type="button" id="mic-btn" class="visually-hidden" aria-pressed="false" tabindex="-1">
+              Mic Off
+            </button>
+          </div>
+          <button type="button" id="enable-sound-btn" class="btn btn-block btn-sound"
+                  title="Unlock browser sound and play a test beep">
+            Turn Sound On
+          </button>
+          <p class="play-menu-hint">
+            <strong>Match Pitch</strong> and <strong>Play All</strong> re-check audio every time.
+            Use <strong>Turn Sound On</strong> if you still hear silence (test beep).
+            Mic is for singing with Match Pitch, free practice, or Assess Singing.
+          </p>
+        </div>
+        <!-- Floats under Sound & Mic (like Diagnose yellow box), not a full-width banner -->
+        <div id="sound-status-panel" class="sound-status-panel" hidden>
+          <button type="button" id="sound-status-collapse" class="diag-collapse"
+                  title="Dismiss" aria-label="Dismiss sound message">×</button>
+          <div id="sound-status" class="sound-status-body" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar-group toolbar-practice">
+      <button type="button" id="match-pitch-btn" class="btn" hidden
+              title="Click to turn Match Pitch on; click again (or press Escape) to turn it off">
+        Match Pitch
+      </button>
+      <!-- Tempo next to Match Pitch (used by Play Music and drag-select) -->
+      <div id="tempo-controls" class="tempo-controls" hidden title="Playback speed for Play All and drag-select">
+        <label for="tempo-slider" class="tempo-label">Tempo</label>
+        <input type="range" id="tempo-slider" min="40" max="190" value="80" step="5"
+               aria-valuemin="40" aria-valuemax="190" aria-valuenow="80"
+               aria-label="Playback tempo in beats per minute" />
+        <span id="tempo-val" class="tempo-val">80</span>
+      </div>
+    </div>
+
+    <div class="toolbar-group toolbar-note">
+      <!-- Assess + floating yellow help/status (overlays PDF) -->
+      <div id="diag-wrap" class="diag-wrap">
+        <button type="button" id="diag-btn" class="btn" hidden aria-pressed="false"
+                title="Assess a section: pick start and end notes, sing freely, get a pitch report (no audio is saved)">
+          Assess Singing
+        </button>
+        <div id="diag-ui" class="diag-ui" hidden>
+          <div id="diag-panel" class="diag-panel" hidden>
+            <button type="button" id="diag-collapse" class="diag-collapse" title="Hide intro" aria-label="Hide assess intro">×</button>
+            <div id="diag-banner" class="diag-banner" role="status" aria-live="polite">
+              <div id="diag-banner-text" class="diag-banner-text"></div>
+            </div>
+          </div>
+          <!-- Live status + Sing section / Finish -->
+          <div id="diag-action-dock" class="diag-action-dock" hidden>
+            <div id="diag-status-line" class="diag-status-line" role="status" aria-live="polite"></div>
+            <div id="diag-action-bar" class="diag-actions"></div>
+          </div>
+          <div id="diag-report-panel" class="diag-report-panel" hidden>
+            <button type="button" id="diag-report-collapse" class="diag-collapse" title="Hide report" aria-label="Hide diagnostic report">×</button>
+            <div id="diag-report" class="diag-report" role="region" aria-label="Diagnostic report"></div>
+          </div>
+          <!-- Tab only while one-time intro is available and collapsed -->
+          <button type="button" id="diag-tab" class="diag-tab" hidden title="Show assess intro" aria-label="Show assess intro">▾</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Far right: Play All / Play Starting Here (secondary, low-emphasis) -->
+    <div class="toolbar-group toolbar-play-music">
+      <div id="play-controls" class="play-controls" hidden>
+        <button type="button" id="play-btn" class="btn btn-play-music"
+                title="Play the whole piece from the beginning at the Tempo setting">
+          Play All <span class="play-icon" aria-hidden="true">▶</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="mic-error" class="mic-error" hidden role="alert"></div>
+  <div id="score-banner" class="score-banner" hidden role="status"></div>
+  <div id="extract-test-banner" class="extract-test-banner" hidden role="status"></div>
+
+  <div id="countdown" class="countdown" hidden aria-hidden="true"></div>
+
+  <main id="stage" class="stage" role="main">
+    <div id="drop-hint" class="drop-hint">
+      <div class="drop-hint-card">
+        <p class="drop-hint-main">
+          Start here — open <strong>Upload &amp; Save</strong> above
+        </p>
+        <p class="drop-hint-sub">
+          Or drop a PDF anywhere on this page.
+        </p>
+        <p class="drop-hint-note">
+          Notes are extracted automatically for practice (MCI Finale PDFs).
+        </p>
+      </div>
+    </div>
+    <div id="canvas-wrap" class="canvas-wrap" hidden>
+      <canvas id="page"></canvas>
+      <canvas id="overlay"></canvas>
+    </div>
+  </main>
+
+  <!-- Floats over the foot of the sheet once you scroll into the bottom margin -->
+  <div id="page-advance-hint" class="page-advance-hint" hidden role="status" aria-live="polite"></div>
+
+  <!-- Bottom bar: processing status (while extracting) + page nav -->
+  <footer class="page-bar" role="contentinfo">
+    <div id="extract-banner" class="extract-banner" hidden role="status" aria-live="polite"></div>
+    <div class="page-bar-controls" role="navigation" aria-label="Page">
+      <button type="button" id="prev-page" class="btn page-bar-btn" aria-label="Previous page">‹ Prev</button>
+      <span id="page-label" class="page-label">— / —</span>
+      <button type="button" id="next-page" class="btn page-bar-btn" aria-label="Next page">Next ›</button>
+    </div>
+  </footer>
+
+  <script src="audio.js?v=6"></script>
+  <script src="extractor.js?v=5"></script>
+  <script src="app.js?v=22"></script>
+  <script src="follow.js?v=47"></script>
+  <script src="diagnose.js?v=17"></script>
+  <script src="pitch.js?v=12"></script>
+</body>
+</html>
