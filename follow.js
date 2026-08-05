@@ -597,7 +597,7 @@
 
   function showAudioBlocked() {
     const msg =
-      "No sound yet. Open Upload & Settings → Turn Sound On (you should hear a beep), then try again.";
+      "No sound yet. Open Settings → Turn Sound On (you should hear a beep), then try again.";
     console.warn(msg, window.AppAudio && window.AppAudio.getState());
     const b = document.getElementById("mic-error");
     if (b) {
@@ -1041,6 +1041,8 @@
   function setRunUi() {
     const uploadBtn = el("upload-pdf-btn");
     const uploadSaveToggle = el("upload-save-toggle");
+    const toolsToggle = el("tools-toggle");
+    const toolsMenu = el("tools-menu");
     const matchBtn = el("match-pitch-btn");
     const playBtn = el("play-btn");
     const playControls = el("play-controls");
@@ -1050,12 +1052,29 @@
     const matching = !!play.matchPitch;
     const freeBusy = !!(play.active && play.freeFollow);
 
-    // First load: Upload & Save blue. After score: Match Pitch blue.
+    // First load: Upload/Settings blue. After score: Match Pitch blue.
     if (uploadSaveToggle) {
       uploadSaveToggle.classList.toggle("btn-primary", !ready);
+      uploadSaveToggle.title = ready
+        ? "Upload & Settings: sound & mic, save or load a score, upload another PDF"
+        : "Upload a PDF first — then sound, mic, and other options unlock";
     }
     if (uploadBtn && uploadBtn.classList && typeof uploadBtn.classList.toggle === "function") {
       uploadBtn.classList.toggle("btn-primary", !ready);
+    }
+
+    // Phone Tools ▾ — grayed/disabled until a score is ready
+    if (toolsToggle) {
+      toolsToggle.classList.toggle("is-awaiting-score", !ready);
+      toolsToggle.disabled = !ready;
+      toolsToggle.title = ready
+        ? "Practice tools: Match Pitch, Transpose, Tempo, Assess, Play"
+        : "Upload a PDF first to use practice tools";
+      if (!ready && toolsMenu) {
+        toolsMenu.classList.remove("is-open");
+        toolsToggle.classList.remove("is-open");
+        toolsToggle.setAttribute("aria-expanded", "false");
+      }
     }
 
     if (
@@ -2398,6 +2417,27 @@
             st.classList.remove("is-open");
           }
         }
+        const toolsMenu = el("tools-menu");
+        if (
+          toolsMenu &&
+          toolsMenu.classList.contains("is-open") &&
+          e.target &&
+          toolsMenu.contains &&
+          !toolsMenu.contains(e.target)
+        ) {
+          // Assess panels can sit slightly outside the menu box
+          const inDiag =
+            typeof e.target.closest === "function" &&
+            e.target.closest(".diag-ui, .diag-panel, .diag-action-dock, .diag-report-panel");
+          if (!inDiag) {
+            toolsMenu.classList.remove("is-open");
+            const tt = el("tools-toggle");
+            if (tt) {
+              tt.classList.remove("is-open");
+              tt.setAttribute("aria-expanded", "false");
+            }
+          }
+        }
         // Clear note highlight only for empty background — never when pressing
         // toolbar controls (Play / Match Pitch / menus). Clearing on Play’s
         // pointerdown was rewriting the button and cancelling the click.
@@ -2407,7 +2447,7 @@
           e.target &&
           typeof e.target.closest === "function" &&
           e.target.closest(
-            ".toolbar, .page-bar, .diag-ui, .play-menu-panel, .sound-status-panel, .help-modal"
+            ".toolbar, .page-bar, .diag-ui, .play-menu-panel, .tools-panel, .tools-menu, .sound-status-panel, .help-modal"
           );
         if (!onScore && !onToolbar) {
           clearSeekHighlight();
@@ -2477,7 +2517,7 @@
         if (st && st.state && st.state !== "running" && st.state !== "none") {
           updateSoundUi(
             false,
-            "Sound was paused (tab was in the background or idle). Open <strong>Upload &amp; Settings</strong> and press <strong>Turn Sound On</strong>."
+            "Sound was paused (tab was in the background or idle). Open <strong>Settings</strong> and press <strong>Turn Sound On</strong>."
           );
         }
       });

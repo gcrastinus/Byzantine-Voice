@@ -4,19 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chant Sight-Singing Trainer</title>
-  <link rel="stylesheet" href="style.css?v=48" />
+  <link rel="stylesheet" href="style.css?v=50" />
   <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
   <header class="toolbar" role="banner">
     <div class="toolbar-group toolbar-files">
-      <!-- Upload & Settings: PDF, sound/mic, save/load score, ready status -->
+      <!-- Desktop: always “Upload & Settings”; phone: Upload → Settings after PDF -->
       <div id="upload-save-menu" class="play-menu upload-save-menu">
         <button type="button" id="upload-save-toggle" class="btn play-menu-toggle btn-primary"
                 aria-expanded="false" aria-controls="upload-save-panel"
                 title="Upload a PDF, sound &amp; mic, save or load a score">
-          Upload &amp; Settings <span class="caret" aria-hidden="true">▾</span>
+          <span class="us-label us-label-full">Upload &amp; Settings</span>
+          <span class="us-label us-label-upload">Upload</span>
+          <span class="us-label us-label-settings">Settings</span>
+          <span class="caret" aria-hidden="true">▾</span>
         </button>
         <!-- Kept for follow.js primary-highlight logic -->
         <span id="upload-pdf-btn" class="visually-hidden" aria-hidden="true"></span>
@@ -29,46 +32,53 @@
             Upload PDF
             <input type="file" id="pdf-input" accept="application/pdf,.pdf" hidden />
           </label>
-
-          <!-- Sound & Mic (moved from its own toolbar button) -->
-          <div id="sound-mic-menu" class="sound-mic-section">
-            <div class="menu-section-title">Sound &amp; Mic</div>
-            <div class="mic-switch-row">
-              <div class="mic-switch-text">
-                <span class="mic-switch-title">Microphone</span>
-                <span id="mic-switch-state" class="mic-switch-state">Off</span>
-              </div>
-              <label class="switch" title="Turn microphone on or off">
-                <input type="checkbox" id="mic-switch" role="switch" aria-checked="false" />
-                <span class="switch-slider" aria-hidden="true"></span>
-              </label>
-              <button type="button" id="mic-btn" class="visually-hidden" aria-pressed="false" tabindex="-1">
-                Mic Off
-              </button>
-            </div>
-            <button type="button" id="enable-sound-btn" class="btn btn-block btn-sound"
-                    title="Unlock browser sound and play a test beep">
-              Turn Sound On
-            </button>
-            <p class="play-menu-hint">
-              Use <strong>Turn Sound On</strong> if you hear silence (test beep).
-              Mic is for Match Pitch, free practice, or Assess Singing.
-            </p>
-          </div>
-
-          <button type="button" id="save-score-btn" class="btn btn-block" disabled
-                  title="Download the score the app built from your PDF">
-            Save auto-produced score
-          </button>
-          <label class="file-btn file-btn-block" title="Replace the auto score with your own score.json (advanced)">
-            Load custom score…
-            <input type="file" id="score-input" accept="application/json,.json" hidden />
-          </label>
-          <p class="play-menu-hint">
-            <strong>Save</strong> downloads the notes extracted from the PDF.
-            <strong>Load custom</strong> is optional if you need a hand-edited score.json.
+          <p id="upload-first-hint" class="play-menu-hint upload-first-hint">
+            Start with <strong>Upload PDF</strong>. Sound, mic, and other options unlock after a file is loaded.
           </p>
-          <div id="score-ready-box" class="score-ready-box" hidden role="status" aria-live="polite"></div>
+
+          <!-- Unlocked only after a PDF is uploaded (so users don’t fiddle with mic first) -->
+          <div id="upload-save-after-pdf" class="upload-save-after-pdf is-awaiting-pdf" aria-disabled="true">
+            <!-- Sound & Mic (moved from its own toolbar button) -->
+            <div id="sound-mic-menu" class="sound-mic-section">
+              <div class="menu-section-title">Sound &amp; Mic</div>
+              <div class="mic-switch-row">
+                <div class="mic-switch-text">
+                  <span class="mic-switch-title">Microphone</span>
+                  <span id="mic-switch-state" class="mic-switch-state">Off</span>
+                </div>
+                <label class="switch" title="Turn microphone on or off">
+                  <input type="checkbox" id="mic-switch" role="switch" aria-checked="false" disabled />
+                  <span class="switch-slider" aria-hidden="true"></span>
+                </label>
+                <button type="button" id="mic-btn" class="visually-hidden" aria-pressed="false" tabindex="-1">
+                  Mic Off
+                </button>
+              </div>
+              <button type="button" id="enable-sound-btn" class="btn btn-block btn-sound" disabled
+                      title="Upload a PDF first — then unlock browser sound">
+                Turn Sound On
+              </button>
+              <p class="play-menu-hint">
+                Use <strong>Turn Sound On</strong> if you hear silence (test beep).
+                Mic is for Match Pitch, free practice, or Assess Singing.
+              </p>
+            </div>
+
+            <button type="button" id="save-score-btn" class="btn btn-block" disabled
+                    title="Download the score the app built from your PDF">
+              Save auto-produced score
+            </button>
+            <label class="file-btn file-btn-block file-btn-load-score is-awaiting-pdf"
+                   title="Upload a PDF first (optional: replace auto score with your own score.json)">
+              Load custom score…
+              <input type="file" id="score-input" accept="application/json,.json" hidden disabled />
+            </label>
+            <p class="play-menu-hint">
+              <strong>Save</strong> downloads the notes extracted from the PDF.
+              <strong>Load custom</strong> is optional if you need a hand-edited score.json.
+            </p>
+            <div id="score-ready-box" class="score-ready-box" hidden role="status" aria-live="polite"></div>
+          </div>
         </div>
         <!-- Sound status floats under this menu -->
         <div id="sound-status-panel" class="sound-status-panel" hidden>
@@ -79,86 +89,99 @@
       </div>
     </div>
 
-    <div class="toolbar-group toolbar-practice">
-      <!-- Visible grayed-out until a score loads (setRunUi enables them) -->
-      <button type="button" id="match-pitch-btn" class="btn is-awaiting-score" disabled
-              title="Upload a PDF first to use Match Pitch">
-        Match Pitch
+    <!--
+      Practice tools: on desktop these sit in the toolbar bar.
+      On phone they collapse under Tools ▾ (grayed until a PDF/score is ready).
+    -->
+    <div id="tools-menu" class="tools-menu">
+      <button type="button" id="tools-toggle" class="btn play-menu-toggle tools-toggle is-awaiting-score"
+              disabled aria-expanded="false" aria-controls="tools-panel"
+              title="Upload a PDF first to use practice tools">
+        Tools <span class="caret" aria-hidden="true">▾</span>
       </button>
+      <div id="tools-panel" class="tools-panel" role="region" aria-label="Practice tools">
+        <div class="toolbar-group toolbar-practice">
+          <!-- Visible grayed-out until a score loads (setRunUi enables them) -->
+          <button type="button" id="match-pitch-btn" class="btn is-awaiting-score" disabled
+                  title="Upload a PDF first to use Match Pitch">
+            Match Pitch
+          </button>
 
-      <!-- Transpose: same single-row format as Tempo (label · i · slider) -->
-      <div id="transpose-controls" class="tempo-controls transpose-controls-bar is-awaiting-score"
-           data-title-idle="Upload a PDF first to use Transpose"
-           data-title-ready="Shift all played and matched pitches by half steps"
-           title="Upload a PDF first to use Transpose" aria-disabled="true">
-        <label for="transpose-slider" class="tempo-label">Transpose</label>
-        <span class="info-eye" tabindex="0" role="button"
-              aria-label="Transpose help">
-          <span class="info-eye-glyph" aria-hidden="true">i</span>
-          <div class="info-eye-tip" role="tooltip">
-            Moves every note by <strong>half steps</strong> (not whole steps).<br /><br />
-            Range: one octave down (−12) to half an octave up (+6).<br />
-            Bold marks = full octaves; short marks = half octaves.<br />
-            Default is written pitch (<strong>0</strong>). Slide left to lower for men’s range.<br />
-            Release the slider to hear the first three notes at the new pitch.<br /><br />
-            <strong>Match Pitch</strong> and <strong>Assess Singing</strong> use this same transpose.
-          </div>
-        </span>
-        <div class="transpose-slider-wrap transpose-slider-wrap-bar">
-          <input type="range" id="transpose-slider" min="-12" max="6" value="0" step="1" disabled
-                 aria-valuemin="-12" aria-valuemax="6" aria-valuenow="0"
-                 aria-label="Transpose by half steps: down one octave to up half an octave" />
-          <div class="transpose-ticks" aria-hidden="true">
-            <span class="tick tick-octave" style="left: 0%"><i></i></span>
-            <span class="tick tick-half" style="left: 33.333%"><i></i></span>
-            <span class="tick tick-octave" style="left: 66.667%"><i></i></span>
-            <span class="tick tick-half" style="left: 100%"><i></i></span>
-          </div>
-        </div>
-      </div>
-
-      <div id="tempo-controls" class="tempo-controls is-awaiting-score"
-           title="Upload a PDF first to set Tempo" aria-disabled="true">
-        <label for="tempo-slider" class="tempo-label">Tempo</label>
-        <input type="range" id="tempo-slider" min="40" max="190" value="80" step="5" disabled
-               aria-valuemin="40" aria-valuemax="190" aria-valuenow="80"
-               aria-label="Playback tempo in beats per minute" />
-        <span id="tempo-val" class="tempo-val">80</span>
-      </div>
-    </div>
-
-    <div class="toolbar-group toolbar-note">
-      <div id="diag-wrap" class="diag-wrap">
-        <button type="button" id="diag-btn" class="btn is-awaiting-score" disabled aria-pressed="false"
-                title="Upload a PDF first to use Assess Singing">
-          Assess Singing
-        </button>
-        <div id="diag-ui" class="diag-ui" hidden>
-          <div id="diag-panel" class="diag-panel" hidden>
-            <button type="button" id="diag-collapse" class="diag-collapse" title="Hide intro" aria-label="Hide assess intro">×</button>
-            <div id="diag-banner" class="diag-banner" role="status" aria-live="polite">
-              <div id="diag-banner-text" class="diag-banner-text"></div>
+          <!-- Transpose: same single-row format as Tempo (label · i · slider) -->
+          <div id="transpose-controls" class="tempo-controls transpose-controls-bar is-awaiting-score"
+               data-title-idle="Upload a PDF first to use Transpose"
+               data-title-ready="Shift all played and matched pitches by half steps"
+               title="Upload a PDF first to use Transpose" aria-disabled="true">
+            <label for="transpose-slider" class="tempo-label">Transpose</label>
+            <span class="info-eye" tabindex="0" role="button"
+                  aria-label="Transpose help">
+              <span class="info-eye-glyph" aria-hidden="true">i</span>
+              <div class="info-eye-tip" role="tooltip">
+                Moves every note by <strong>half steps</strong> (not whole steps).<br /><br />
+                Range: one octave down (−12) to half an octave up (+6).<br />
+                Bold marks = full octaves; short marks = half octaves.<br />
+                Default is written pitch (<strong>0</strong>). Slide left to lower for men’s range.<br />
+                Release the slider to hear the first three notes at the new pitch.<br /><br />
+                <strong>Match Pitch</strong> and <strong>Assess Singing</strong> use this same transpose.
+              </div>
+            </span>
+            <div class="transpose-slider-wrap transpose-slider-wrap-bar">
+              <input type="range" id="transpose-slider" min="-12" max="6" value="0" step="1" disabled
+                     aria-valuemin="-12" aria-valuemax="6" aria-valuenow="0"
+                     aria-label="Transpose by half steps: down one octave to up half an octave" />
+              <div class="transpose-ticks" aria-hidden="true">
+                <span class="tick tick-octave" style="left: 0%"><i></i></span>
+                <span class="tick tick-half" style="left: 33.333%"><i></i></span>
+                <span class="tick tick-octave" style="left: 66.667%"><i></i></span>
+                <span class="tick tick-half" style="left: 100%"><i></i></span>
+              </div>
             </div>
           </div>
-          <div id="diag-action-dock" class="diag-action-dock" hidden>
-            <div id="diag-status-line" class="diag-status-line" role="status" aria-live="polite"></div>
-            <div id="diag-action-bar" class="diag-actions"></div>
-          </div>
-          <div id="diag-report-panel" class="diag-report-panel" hidden>
-            <button type="button" id="diag-report-collapse" class="diag-collapse" title="Hide report" aria-label="Hide diagnostic report">×</button>
-            <div id="diag-report" class="diag-report" role="region" aria-label="Diagnostic report"></div>
-          </div>
-          <button type="button" id="diag-tab" class="diag-tab" hidden title="Show assess intro" aria-label="Show assess intro">▾</button>
-        </div>
-      </div>
-    </div>
 
-    <div class="toolbar-group toolbar-play-music">
-      <div id="play-controls" class="play-controls">
-        <button type="button" id="play-btn" class="btn btn-play-music is-awaiting-score" disabled
-                title="Upload a PDF first to play the score">
-          Play All <span class="play-icon" aria-hidden="true">▶</span>
-        </button>
+          <div id="tempo-controls" class="tempo-controls is-awaiting-score"
+               title="Upload a PDF first to set Tempo" aria-disabled="true">
+            <label for="tempo-slider" class="tempo-label">Tempo</label>
+            <input type="range" id="tempo-slider" min="40" max="190" value="80" step="5" disabled
+                   aria-valuemin="40" aria-valuemax="190" aria-valuenow="80"
+                   aria-label="Playback tempo in beats per minute" />
+            <span id="tempo-val" class="tempo-val">80</span>
+          </div>
+        </div>
+
+        <div class="toolbar-group toolbar-note">
+          <div id="diag-wrap" class="diag-wrap">
+            <button type="button" id="diag-btn" class="btn is-awaiting-score" disabled aria-pressed="false"
+                    title="Upload a PDF first to use Assess Singing">
+              Assess Singing
+            </button>
+            <div id="diag-ui" class="diag-ui" hidden>
+              <div id="diag-panel" class="diag-panel" hidden>
+                <button type="button" id="diag-collapse" class="diag-collapse" title="Hide intro" aria-label="Hide assess intro">×</button>
+                <div id="diag-banner" class="diag-banner" role="status" aria-live="polite">
+                  <div id="diag-banner-text" class="diag-banner-text"></div>
+                </div>
+              </div>
+              <div id="diag-action-dock" class="diag-action-dock" hidden>
+                <div id="diag-status-line" class="diag-status-line" role="status" aria-live="polite"></div>
+                <div id="diag-action-bar" class="diag-actions"></div>
+              </div>
+              <div id="diag-report-panel" class="diag-report-panel" hidden>
+                <button type="button" id="diag-report-collapse" class="diag-collapse" title="Hide report" aria-label="Hide diagnostic report">×</button>
+                <div id="diag-report" class="diag-report" role="region" aria-label="Diagnostic report"></div>
+              </div>
+              <button type="button" id="diag-tab" class="diag-tab" hidden title="Show assess intro" aria-label="Show assess intro">▾</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar-group toolbar-play-music">
+          <div id="play-controls" class="play-controls">
+            <button type="button" id="play-btn" class="btn btn-play-music is-awaiting-score" disabled
+                    title="Upload a PDF first to play the score">
+              Play All <span class="play-icon" aria-hidden="true">▶</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -176,7 +199,9 @@
         <div class="drop-hint-col drop-hint-col-main">
           <div class="drop-hint-card">
             <p class="drop-hint-main">
-              Start here — open <strong>Upload &amp; Settings</strong> above
+              Start here — open
+              <strong class="hint-us-label hint-us-full">Upload &amp; Settings</strong><strong class="hint-us-label hint-us-upload">Upload</strong><strong class="hint-us-label hint-us-settings">Settings</strong>
+              above
             </p>
             <p class="drop-hint-sub">
               Or drop a PDF anywhere on this page.
@@ -194,7 +219,7 @@
             <p class="drop-hint-mci-line">Metropolitan Cantor Institute</p>
             <p class="drop-hint-mci-line">Byzantine Ruthenian Catholic Church</p>
             <p class="drop-hint-mci-spacer" aria-hidden="true">&nbsp;</p>
-            <p class="drop-hint-mci-line">sheet music available at:</p>
+            <p class="drop-hint-mci-line">Sheet music available at:</p>
             <p class="drop-hint-mci-link-wrap">
               <a class="drop-hint-mci-link"
                  href="https://mci.archpitt.org/sheetmusic/"
@@ -227,7 +252,8 @@
       <button type="button" id="help-close" class="diag-collapse" title="Close help" aria-label="Close help">×</button>
       <h2 id="help-title">Help</h2>
       <div class="help-body">
-        <p><strong>Upload &amp; Settings</strong> — Open a chant PDF, turn sound and mic on, save or load a score. The current file name appears at the top of this menu. When extraction finishes, a green ready box shows how many notes were found.</p>
+        <p><strong>Upload &amp; Settings</strong> — On a computer this menu is always named <strong>Upload &amp; Settings</strong>. On phones it says <strong>Upload</strong> until a PDF is loaded, then <strong>Settings</strong>. Open it to upload a chant PDF first; sound, mic, and save/load options stay grayed out until a file is loaded so you are not asked to configure them first. When extraction finishes, a green ready box shows how many notes were found.</p>
+        <p><strong>Tools</strong> (phones) — Match Pitch, Transpose, Tempo, Assess Singing, and Play All. Grayed out until a PDF is ready; then open the dropdown to use them. On a computer these controls stay on the main toolbar.</p>
         <p><strong>Match Pitch</strong> — Click a note to hear it, then match the pitch with your voice. Click the button again (or press Escape) to turn it off.</p>
         <p><strong>Transpose</strong> — Shift every played and matched pitch by half steps (one octave down to half an octave up). Default is written pitch (0). Hover the circled <strong>i</strong> for more detail. Release the slider to hear the first three notes at the new pitch. Match Pitch and Assess Singing use the same transpose.</p>
         <p><strong>Tempo</strong> — Speed for Play All, Play Starting Here, and drag-select playback.</p>
@@ -247,8 +273,8 @@
 
   <script src="audio.js?v=6"></script>
   <script src="extractor.js?v=7"></script>
-  <script src="app.js?v=26"></script>
-  <script src="follow.js?v=56"></script>
+  <script src="app.js?v=28"></script>
+  <script src="follow.js?v=58"></script>
   <script src="diagnose.js?v=18"></script>
   <script src="pitch.js?v=13"></script>
 </body>

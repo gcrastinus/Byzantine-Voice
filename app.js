@@ -270,7 +270,54 @@
 
   function updateSaveScoreBtn() {
     if (!els.saveScoreBtn) return;
+    // Still require a score; also stays disabled while the whole after-PDF block is locked
     els.saveScoreBtn.disabled = !state.score || !state.notes.length;
+  }
+
+  /**
+   * Inside Upload & Settings: only Upload PDF is active until a PDF is loaded.
+   * Sound, mic, save, and load custom stay grayed so users do not think they
+   * must configure audio before opening a score.
+   */
+  function updateUploadMenuAfterPdf() {
+    const hasPdf = !!state.pdfDoc;
+    if (document.body && document.body.classList) {
+      document.body.classList.toggle("has-pdf", hasPdf);
+    }
+    const after = $("upload-save-after-pdf");
+    if (after) {
+      after.classList.toggle("is-awaiting-pdf", !hasPdf);
+      after.setAttribute("aria-disabled", hasPdf ? "false" : "true");
+    }
+    const micSwitch = $("mic-switch");
+    if (micSwitch) {
+      micSwitch.disabled = !hasPdf;
+      if (!hasPdf) {
+        micSwitch.checked = false;
+        micSwitch.setAttribute("aria-checked", "false");
+      }
+    }
+    const soundBtn = $("enable-sound-btn");
+    if (soundBtn) {
+      soundBtn.disabled = !hasPdf;
+      soundBtn.title = hasPdf
+        ? "Unlock browser sound and play a test beep"
+        : "Upload a PDF first — then unlock browser sound";
+    }
+    const scoreInput = $("score-input");
+    if (scoreInput) {
+      scoreInput.disabled = !hasPdf;
+      const loadLabel = scoreInput.closest("label");
+      if (loadLabel) {
+        loadLabel.classList.toggle("is-awaiting-pdf", !hasPdf);
+        loadLabel.title = hasPdf
+          ? "Replace the auto score with your own score.json (advanced)"
+          : "Upload a PDF first (optional: replace auto score with your own score.json)";
+      }
+    }
+    const firstHint = $("upload-first-hint");
+    if (firstHint) firstHint.hidden = hasPdf;
+    updateSaveScoreBtn();
   }
 
   /**
@@ -1632,7 +1679,7 @@
     els.canvasWrap.hidden = false;
     setFileStatusDisplay(state.pdfName);
     updateScoreBanner();
-    updateSaveScoreBtn();
+    updateUploadMenuAfterPdf();
     await renderPage(1);
 
     // In-browser extraction (cache by fileName + fileSize)
@@ -1778,7 +1825,7 @@
     els.saveScoreBtn.addEventListener("click", downloadScoreJson);
   }
 
-  // Upload & Save ▾ menu (upload PDF / save score / load custom / ready status)
+  // Settings / Upload ▾ menu (upload PDF / save score / load custom / ready status)
   const uploadSaveMenu = $("upload-save-menu");
   const uploadSaveToggle = $("upload-save-toggle");
   const uploadSavePanel = $("upload-save-panel");
@@ -1787,20 +1834,57 @@
     uploadSavePanel.hidden = !open;
     uploadSaveToggle.setAttribute("aria-expanded", open ? "true" : "false");
     uploadSaveToggle.classList.toggle("is-open", open);
+    if (open) setToolsMenuOpen(false);
   }
   // Alias for any older callers
   function setScoreMenuOpen(open) {
     setUploadSaveMenuOpen(open);
   }
+
+  // Phone Tools ▾ (Match Pitch / Transpose / Tempo / Assess / Play)
+  const toolsMenu = $("tools-menu");
+  const toolsToggle = $("tools-toggle");
+  function setToolsMenuOpen(open) {
+    if (!toolsMenu || !toolsToggle) return;
+    const on = !!open;
+    toolsMenu.classList.toggle("is-open", on);
+    toolsToggle.classList.toggle("is-open", on);
+    toolsToggle.setAttribute("aria-expanded", on ? "true" : "false");
+  }
+  if (toolsToggle && toolsMenu) {
+    toolsToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (toolsToggle.disabled) return;
+      const willOpen = !toolsMenu.classList.contains("is-open");
+      setToolsMenuOpen(willOpen);
+      if (willOpen) setUploadSaveMenuOpen(false);
+    });
+  }
+
   if (uploadSaveToggle && uploadSavePanel) {
     uploadSaveToggle.addEventListener("click", (e) => {
       e.stopPropagation();
       setUploadSaveMenuOpen(!!uploadSavePanel.hidden);
     });
     document.addEventListener("pointerdown", (e) => {
-      if (!uploadSaveMenu || !uploadSavePanel || uploadSavePanel.hidden) return;
-      if (e.target && uploadSaveMenu.contains && !uploadSaveMenu.contains(e.target)) {
-        setUploadSaveMenuOpen(false);
+      const t = e.target;
+      if (uploadSaveMenu && uploadSavePanel && !uploadSavePanel.hidden) {
+        if (t && uploadSaveMenu.contains && !uploadSaveMenu.contains(t)) {
+          setUploadSaveMenuOpen(false);
+        }
+      }
+      if (toolsMenu && toolsMenu.classList.contains("is-open")) {
+        if (t && toolsMenu.contains && !toolsMenu.contains(t)) {
+          // Keep open when interacting with Assess floating UI that may sit outside
+          if (
+            t &&
+            typeof t.closest === "function" &&
+            t.closest(".diag-ui, .diag-panel, .diag-action-dock, .diag-report-panel")
+          ) {
+            return;
+          }
+          setToolsMenuOpen(false);
+        }
       }
     });
     if (els.saveScoreBtn) {
@@ -1903,6 +1987,7 @@
       els.dropHint.hidden = true;
       els.canvasWrap.hidden = false;
       setFileStatusDisplay(pdfName);
+      updateUploadMenuAfterPdf();
       setScore(score);
       setExtractBanner(
         totalNotes ? readyToPlayMessage(totalNotes) + "  ·  EXTRACTTEST" : "NO NOTES FOUND",
@@ -1951,7 +2036,7 @@
 
   updatePageChrome();
   updateScoreBanner();
-  updateSaveScoreBtn();
+  updateUploadMenuAfterPdf();
   setFileStatusDisplay("No PDF loaded");
   if (els.sensitivityVal) els.sensitivityVal.textContent = `${state.sensitivityCents}¢`;
   if (els.advanceHoldVal) els.advanceHoldVal.textContent = `${state.advanceHoldMs}ms`;
