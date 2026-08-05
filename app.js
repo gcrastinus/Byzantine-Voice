@@ -164,6 +164,10 @@
   };
 
   // —— IndexedDB cache for extracted scores ——
+  // Bump SCORE_CACHE_VER whenever extractor output changes in a way that
+  // old cached scores must not be reused (e.g. eighth-flag support).
+  // Cache keys include this version so stale entries are simply ignored.
+  const SCORE_CACHE_VER = "ex8"; // ex8 = Maestro j/J flags → glyph "eighth"
   const IDB_NAME = "byzantine-voice-scores";
   const IDB_STORE = "scores";
   const IDB_VERSION = 1;
@@ -269,6 +273,29 @@
     els.saveScoreBtn.disabled = !state.score || !state.notes.length;
   }
 
+  /**
+   * Shorten a filename so it fits at the top of Upload & Settings (display only).
+   * Keeps the extension when possible.
+   */
+  function shortFileName(name, maxLen) {
+    const max = maxLen != null ? maxLen : 28;
+    const s = String(name || "").trim();
+    if (!s) return "No PDF loaded";
+    if (s.length <= max) return s;
+    const dot = s.lastIndexOf(".");
+    const ext = dot > 0 && s.length - dot <= 6 ? s.slice(dot) : "";
+    const base = ext ? s.slice(0, s.length - ext.length) : s;
+    const keep = Math.max(4, max - ext.length - 1);
+    return base.slice(0, keep) + "…" + ext;
+  }
+
+  function setFileStatusDisplay(name) {
+    if (!els.fileStatus) return;
+    const full = name || "No PDF loaded";
+    els.fileStatus.textContent = shortFileName(full, 26);
+    els.fileStatus.title = full === "No PDF loaded" ? "" : full;
+  }
+
   // =====================================================================
   // Coordinate math
   //
@@ -294,6 +321,25 @@
   });
 
   // —— Score helpers ——
+
+  /** Console histogram of note.glyph values (debug=1 or force). */
+  function logGlyphHistogram(notes, label) {
+    const hist = Object.create(null);
+    for (const n of notes || []) {
+      const g = (n && n.glyph) || "(null)";
+      hist[g] = (hist[g] || 0) + 1;
+    }
+    const sample = (notes || [])
+      .slice(0, 12)
+      .map((n) => (n && n.glyph) || "?")
+      .join(" ");
+    console.info(
+      `[Byzantine Voice] glyphs (${label || "score"}):`,
+      hist,
+      "first12:",
+      sample
+    );
+  }
 
   function isValidScore(json) {
     return json && typeof json === "object" && Array.isArray(json.pages);
@@ -987,7 +1033,7 @@
       ensureExtractAhead(num);
     } catch (err) {
       console.error("renderPage failed", err);
-      els.fileStatus.textContent = "Render error";
+      setFileStatusDisplay("Render error");
     } finally {
       state.rendering = false;
       if (state.pendingPage != null) {
@@ -1155,6 +1201,11 @@
     if (options.override) {
       state.scoreOverride = true;
       state.extractComplete = true;
+    }
+    // Always log once on full score apply so eighth detection is easy to verify
+    // without ?debug=1 (Play uses note.glyph; if all "quarter", flags never attached).
+    if (!options.partial && state.notes.length) {
+      logGlyphHistogram(state.notes, options.override ? "override" : "extract");
     }
 
     updateScoreBanner();
@@ -1338,8 +1389,14 @@
     state.extractPagesTotal = pdfDoc.numPages;
     state.extractComplete = false;
 
+    // Key must change when extractor semantics change (SCORE_CACHE_VER),
+    // otherwise an older run without eighth flags is reused forever.
     const cacheKey =
-      name && fileSize != null ? `${name}::${fileSize}` : name ? `${name}::unknown` : null;
+      name && fileSize != null
+        ? `${SCORE_CACHE_VER}::${name}::${fileSize}`
+        : name
+          ? `${SCORE_CACHE_VER}::${name}::unknown`
+          : null;
     state.cacheKey = cacheKey;
 
     if (cacheKey && !options.skipCache) {
@@ -1350,6 +1407,7 @@
         state.extractComplete = true;
         state.extractPagesDone = pdfDoc.numPages;
         if (n) {
+          if (state.debugExtract) logGlyphHistogram(state.notes, "cache");
           setExtractBanner(readyToPlayMessage(n) + "  ·  CACHED", "ok");
           return;
         }
@@ -1572,7 +1630,7 @@
     state.extractPagesTotal = pdf.numPages;
     els.dropHint.hidden = true;
     els.canvasWrap.hidden = false;
-    els.fileStatus.textContent = state.pdfName;
+    setFileStatusDisplay(state.pdfName);
     updateScoreBanner();
     updateSaveScoreBtn();
     await renderPage(1);
@@ -1613,9 +1671,9 @@
       readyToPlayMessage(state.notes.length) + "  ·  OVERRIDE",
       "ok"
     );
-    els.fileStatus.textContent = state.pdfName
-      ? `${state.pdfName} + ${file.name}`
-      : file.name;
+    setFileStatusDisplay(
+      state.pdfName ? `${state.pdfName} + ${file.name}` : file.name
+    );
   }
 
   // —— UI events ——
@@ -1796,7 +1854,7 @@
       })
       .catch((e) => {
         console.warn("?pdf= auto-load failed:", e.message);
-        els.fileStatus.textContent = "Could not load " + want;
+        setFileStatusDisplay("Could not load " + want);
       });
   }
 
@@ -1844,7 +1902,7 @@
       state.scoreOverride = false;
       els.dropHint.hidden = true;
       els.canvasWrap.hidden = false;
-      els.fileStatus.textContent = pdfName;
+      setFileStatusDisplay(pdfName);
       setScore(score);
       setExtractBanner(
         totalNotes ? readyToPlayMessage(totalNotes) + "  ·  EXTRACTTEST" : "NO NOTES FOUND",
@@ -1894,8 +1952,38 @@
   updatePageChrome();
   updateScoreBanner();
   updateSaveScoreBtn();
+  setFileStatusDisplay("No PDF loaded");
   if (els.sensitivityVal) els.sensitivityVal.textContent = `${state.sensitivityCents}¢`;
   if (els.advanceHoldVal) els.advanceHoldVal.textContent = `${state.advanceHoldMs}ms`;
+
+  // Help modal (?)
+  const helpBtn = $("help-btn");
+  const helpModal = $("help-modal");
+  const helpClose = $("help-close");
+  function setHelpOpen(open) {
+    if (!helpModal) return;
+    helpModal.hidden = !open;
+  }
+  if (helpBtn) {
+    helpBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setHelpOpen(true);
+    });
+  }
+  if (helpClose) {
+    helpClose.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setHelpOpen(false);
+    });
+  }
+  if (helpModal) {
+    helpModal.addEventListener("click", (e) => {
+      if (e.target === helpModal) setHelpOpen(false);
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && helpModal && !helpModal.hidden) setHelpOpen(false);
+  });
 
   if (EXTRACT_TEST) {
     runExtractTest();

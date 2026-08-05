@@ -215,8 +215,8 @@
     /** Only for computer Play timeline (not for Begin hold lengths). */
     tempo: PLAY_TEMPO_DEFAULT,
     /**
-     * User pitch transpose in semitones / half steps (−24 … +12).
-     * Default 0 = written pitch (slider sits 2/3 from the low end).
+     * User pitch transpose in half steps (−12 … +6): one octave down to
+     * half an octave up. Default 0 = written pitch (slider ~2/3 from left).
      */
     transposeSemis: 0,
     voicedMs: 0,
@@ -448,9 +448,11 @@
       const syl = Math.max(1, syllableCount(n));
       return Math.max(RECIT_MIN_BEATS, syl * RECIT_BEATS_PER_SYLLABLE);
     }
-    const g = String(n.glyph || "quarter").toLowerCase();
+    const g = String(n.glyph || "quarter")
+      .toLowerCase()
+      .replace(/\s+/g, "");
     let beats = GLYPH_BEATS[g];
-    if (beats == null) beats = 1;
+    if (beats == null) beats = 1; // unknown → quarter (filled heads without flags)
     if (n.dotted && !g.startsWith("dotted")) beats *= 1.5;
     return beats;
   }
@@ -1065,50 +1067,131 @@
       document.body.classList.toggle("score-ready", ready);
     }
 
-    const tempoTransposeMenu = el("tempo-transpose-menu");
-    if (playControls) {
-      playControls.hidden = !ready;
+    const tempoControls = el("tempo-controls");
+    const transposeControls = el("transpose-controls");
+    const tempoSlider = el("tempo-slider");
+    const transposeSlider = el("transpose-slider");
+    const infoEye = transposeControls && transposeControls.querySelector(".info-eye");
+
+    // Always visible: grayed/disabled until a score is loaded
+    if (playControls) playControls.hidden = false;
+    if (tempoControls) {
+      tempoControls.hidden = false;
+      tempoControls.classList.toggle("is-awaiting-score", !ready);
+      tempoControls.setAttribute("aria-disabled", ready ? "false" : "true");
+      tempoControls.title = ready
+        ? "Playback speed for Play All and drag-select"
+        : "Upload a PDF first to set Tempo";
     }
-    if (tempoTransposeMenu) {
-      tempoTransposeMenu.hidden = !ready;
-      if (!ready) setTempoTransposeMenuOpen(false);
+    if (transposeControls) {
+      transposeControls.hidden = false;
+      transposeControls.classList.toggle("is-awaiting-score", !ready);
+      transposeControls.setAttribute("aria-disabled", ready ? "false" : "true");
+      transposeControls.title = ready
+        ? "Shift all played and matched pitches by half steps"
+        : "Upload a PDF first to use Transpose";
+    }
+    if (tempoSlider) tempoSlider.disabled = !ready;
+    if (transposeSlider) transposeSlider.disabled = !ready;
+    if (infoEye) {
+      // Always allow keyboard focus so the help tip stays available
+      infoEye.tabIndex = 0;
+      infoEye.setAttribute("aria-disabled", "false");
+    }
+    // Parent title must not cover the circled-i tip while hovering it
+    if (transposeControls && !transposeControls.__tipTitleWired) {
+      transposeControls.__tipTitleWired = true;
+      const eye = transposeControls.querySelector(".info-eye");
+      if (eye) {
+        const clearTitle = () => {
+          transposeControls.dataset._savedTitle = transposeControls.title || "";
+          transposeControls.removeAttribute("title");
+          const lab = transposeControls.querySelector("label");
+          if (lab) {
+            lab.dataset._savedTitle = lab.title || "";
+            lab.removeAttribute("title");
+          }
+        };
+        const restoreTitle = () => {
+          const t =
+            transposeControls.dataset._savedTitle ||
+            (scoreReady()
+              ? transposeControls.dataset.titleReady ||
+                "Shift all played and matched pitches by half steps"
+              : transposeControls.dataset.titleIdle ||
+                "Upload a PDF first to use Transpose");
+          // Prefer data-title-* attributes set in HTML
+          const ready = scoreReady();
+          const pref = ready
+            ? transposeControls.getAttribute("data-title-ready")
+            : transposeControls.getAttribute("data-title-idle");
+          transposeControls.title = pref || t || "";
+        };
+        eye.addEventListener("mouseenter", clearTitle);
+        eye.addEventListener("focus", clearTitle);
+        eye.addEventListener("mouseleave", restoreTitle);
+        eye.addEventListener("blur", restoreTitle);
+      }
+    }
+    if (transposeControls) {
+      const readyTitle = transposeControls.getAttribute("data-title-ready");
+      const idleTitle = transposeControls.getAttribute("data-title-idle");
+      if (!transposeControls.querySelector(".info-eye:hover")) {
+        transposeControls.title = ready
+          ? readyTitle || "Shift all played and matched pitches by half steps"
+          : idleTitle || "Upload a PDF first to use Transpose";
+      }
     }
 
     if (matchBtn) {
-      matchBtn.hidden = !ready;
+      matchBtn.hidden = false;
+      matchBtn.classList.toggle("is-awaiting-score", !ready);
       // Toggle: click again anytime to turn off (never stuck on)
       matchBtn.textContent = matching ? "Match Pitch · On" : "Match Pitch";
-      matchBtn.classList.toggle("is-playing", matching);
+      matchBtn.classList.toggle("is-playing", matching && ready);
       // Blue primary when score is ready and Match Pitch is idle
       matchBtn.classList.toggle("btn-primary", ready && !matching);
       matchBtn.setAttribute("aria-pressed", matching ? "true" : "false");
-      // Always allow turning Match Pitch OFF; only block turning ON while Play runs
-      matchBtn.disabled = !matching && (listening || freeBusy);
-      matchBtn.title = matching
-        ? "Match Pitch is on — click this button again to turn it off"
-        : "Click to turn on, then click a note to hear it and match with your voice";
+      // Disabled until score; when ready, allow off anytime / block on while Play runs
+      matchBtn.disabled = !ready || (!matching && (listening || freeBusy));
+      matchBtn.title = !ready
+        ? "Upload a PDF first to use Match Pitch"
+        : matching
+          ? "Match Pitch is on — click this button again to turn it off"
+          : "Click to turn on, then click a note to hear it and match with your voice";
     }
 
     if (playBtn) {
+      playBtn.hidden = false;
+      playBtn.classList.toggle("is-awaiting-score", !ready);
       let html;
       let label;
       let title;
-      if (listening) {
+      if (!ready) {
+        html = 'Play All <span class="play-icon" aria-hidden="true">▶</span>';
+        label = "Play all (upload a PDF first)";
+        title = "Upload a PDF first to play the score";
+        playBtn.classList.remove("is-playing");
+        playBtn.disabled = true;
+      } else if (listening) {
         html = 'Pause <span class="pause-icon" aria-hidden="true">⏸</span>';
         label = "Pause";
         title = "Pause playback";
         playBtn.classList.add("is-playing");
+        playBtn.disabled = false;
       } else if (hasPlayStartSelection()) {
         html =
           'Play Starting Here <span class="play-icon" aria-hidden="true">▶</span>';
         label = "Play starting from the selected note";
         title = "Play from the selected note to the end at the Tempo setting";
         playBtn.classList.remove("is-playing");
+        playBtn.disabled = false;
       } else {
         html = 'Play All <span class="play-icon" aria-hidden="true">▶</span>';
         label = "Play all from the beginning";
         title = "Play the whole piece from the beginning at the Tempo setting";
         playBtn.classList.remove("is-playing");
+        playBtn.disabled = false;
       }
       // Only rewrite DOM when label changes — rewriting on pointerdown was
       // cancelling the subsequent click (Play did nothing).
@@ -1118,10 +1201,14 @@
     }
 
     if (diagBtn) {
-      // Hidden until a score is loaded (same as Match Pitch / Play Music)
-      diagBtn.hidden = !ready;
+      diagBtn.hidden = false;
+      diagBtn.classList.toggle("is-awaiting-score", !ready);
+      diagBtn.disabled = !ready;
       // Light yellow outline once a score is ready (tool cue, not a warning)
       diagBtn.classList.toggle("btn-assess-ready", ready);
+      diagBtn.title = ready
+        ? "Assess a section: pick start and end notes, sing freely, get a pitch report (no audio is saved)"
+        : "Upload a PDF first to use Assess Singing";
     }
   }
 
@@ -1212,21 +1299,19 @@
     if (val) val.textContent = String(t);
   }
 
-  /** Transpose: −24 … +12 semitones (half steps), continuous. Default 0. */
+  /** Transpose: −12 … +6 half steps (semitones). Default 0. */
   function clampTranspose(semis) {
     const n = Math.round(Number(semis));
     if (!Number.isFinite(n)) return 0;
-    return Math.max(-24, Math.min(12, n));
+    return Math.max(-12, Math.min(6, n));
   }
 
-  /** Display: exact octaves as −2/−1/0/+1; otherwise signed half-step count. */
+  /** Display: −1 / 0 for exact octaves; otherwise signed half-step count. */
   function transposeLabel(semis) {
     const t = semis | 0;
     if (t === 0) return "0";
-    if (t % 12 === 0) {
-      const oct = t / 12;
-      return oct > 0 ? `+${oct}` : String(oct);
-    }
+    if (t === -12) return "−1";
+    if (t === 6) return "+½";
     return t > 0 ? `+${t}` : String(t);
   }
 
@@ -1234,27 +1319,22 @@
     const t = clampTranspose(semis);
     play.transposeSemis = t;
     const slider = el("transpose-slider");
-    const val = el("transpose-val");
     if (slider) {
       slider.value = String(t);
       slider.setAttribute("aria-valuenow", String(t));
-    }
-    if (val) {
-      val.textContent = transposeLabel(t);
-      if (t === 0) {
-        val.title = "Written pitch";
-      } else if (t % 12 === 0) {
-        const oct = Math.abs(t / 12);
-        val.title =
-          t < 0
-            ? `${oct} octave${oct === 1 ? "" : "s"} down`
-            : `${oct} octave${oct === 1 ? "" : "s"} up`;
-      } else {
+      // No on-screen number; expose value on the control for hover / a11y
+      let tip;
+      if (t === 0) tip = "Written pitch (0)";
+      else if (t === -12) tip = "1 octave down (−12)";
+      else if (t === 6) tip = "Half an octave up (+6)";
+      else {
         const abs = Math.abs(t);
-        val.title =
+        tip =
           (t < 0 ? `${abs} half step${abs === 1 ? "" : "s"} down` : `${abs} half step${abs === 1 ? "" : "s"} up`) +
-          " (from written pitch)";
+          ` (${transposeLabel(t)})`;
       }
+      slider.title = tip;
+      slider.setAttribute("aria-valuetext", tip);
     }
   }
 
@@ -1281,14 +1361,7 @@
     }
   }
 
-  function setTempoTransposeMenuOpen(open) {
-    const panel = el("tempo-transpose-panel");
-    const toggle = el("tempo-transpose-toggle");
-    if (!panel || !toggle) return;
-    panel.hidden = !open;
-    toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    toggle.classList.toggle("is-open", open);
-  }
+
 
   function isRecitNote(n) {
     return !!(n && (n.type === "recit" || n.glyph === "recit"));
@@ -2325,19 +2398,6 @@
             st.classList.remove("is-open");
           }
         }
-        const ttMenu = el("tempo-transpose-menu");
-        const ttPanel = el("tempo-transpose-panel");
-        if (
-          ttMenu &&
-          ttPanel &&
-          !ttPanel.hidden &&
-          e.target &&
-          ttMenu.contains &&
-          !ttMenu.contains(e.target)
-        ) {
-          setTempoTransposeMenuOpen(false);
-        }
-
         // Clear note highlight only for empty background — never when pressing
         // toolbar controls (Play / Match Pitch / menus). Clearing on Play’s
         // pointerdown was rewriting the button and cancelling the click.
@@ -2346,7 +2406,9 @@
         const onToolbar =
           e.target &&
           typeof e.target.closest === "function" &&
-          e.target.closest(".toolbar, .page-bar, .diag-ui, .play-menu-panel, .sound-status-panel");
+          e.target.closest(
+            ".toolbar, .page-bar, .diag-ui, .play-menu-panel, .sound-status-panel, .help-modal"
+          );
         if (!onScore && !onToolbar) {
           clearSeekHighlight();
         }
@@ -2423,17 +2485,6 @@
     // No permanent banner on load — only show the floating box when needed
     setSoundStatusOpen(false);
 
-    // Tempo & Transpose menu
-    const tempoTransposeToggle = el("tempo-transpose-toggle");
-    if (tempoTransposeToggle) {
-      tempoTransposeToggle.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const panel = el("tempo-transpose-panel");
-        if (!panel) return;
-        setTempoTransposeMenuOpen(!!panel.hidden);
-      });
-    }
-
     // Tempo slider (computer Play only)
     const tempoSlider = el("tempo-slider");
     if (tempoSlider) {
@@ -2445,14 +2496,13 @@
       syncTempoUi(PLAY_TEMPO_DEFAULT);
     }
 
-    // Transpose: whole octaves; release plays first three notes at new pitch
+    // Transpose on the main bar; release plays first three notes at new pitch
     const transposeSlider = el("transpose-slider");
     if (transposeSlider) {
       syncTransposeUi(transposeSlider.value);
       transposeSlider.addEventListener("input", () => {
         syncTransposeUi(transposeSlider.value);
       });
-      // change fires when the user releases the thumb
       transposeSlider.addEventListener("change", () => {
         syncTransposeUi(transposeSlider.value);
         previewTranspose();

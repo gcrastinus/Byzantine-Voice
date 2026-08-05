@@ -114,6 +114,43 @@ body {
   cursor: not-allowed;
 }
 
+/**
+ * Pre-score preview: controls stay visible but grayed and inert until a PDF
+ * has notes ready. Used on Match Pitch, Transpose, Tempo, Assess, Play All.
+ */
+.btn.is-awaiting-score:disabled,
+.btn.is-awaiting-score[disabled] {
+  opacity: 0.42;
+  filter: grayscale(0.55);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.tempo-controls.is-awaiting-score,
+.transpose-controls-bar.is-awaiting-score {
+  opacity: 0.42;
+  filter: grayscale(0.55);
+  cursor: not-allowed;
+  /* Block slider interaction, but allow the circled-i tip (see below) */
+  user-select: none;
+}
+
+.tempo-controls.is-awaiting-score input,
+.transpose-controls-bar.is-awaiting-score input,
+.tempo-controls.is-awaiting-score label,
+.transpose-controls-bar.is-awaiting-score label {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* Keep info tip usable even while controls are grayed out */
+.transpose-controls-bar.is-awaiting-score .info-eye {
+  pointer-events: auto;
+  opacity: 1;
+  filter: none;
+  cursor: help;
+}
+
 /* Score menu: file picker styled like a full-width menu button */
 .file-btn-block {
   display: flex;
@@ -339,19 +376,186 @@ body {
   opacity: 0.95;
 }
 
-/* Tempo / Transpose rows inside Tempo & Transpose menu */
+/* Filename at top of Upload & Settings (not clickable) */
+.file-status-in-menu {
+  display: block;
+  margin: 0 0 0.45rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: text;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tempo / Transpose on the main toolbar bar */
 .tempo-controls,
 .tempo-controls-block {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  width: 100%;
-  min-height: 3.2rem;
+  min-width: 11rem;
+  max-width: 15rem;
+  min-height: 3.4rem;
   padding: 0.35rem 0.6rem;
   border: 1.5px solid #6c6d76;
   border-radius: var(--radius);
   background: rgba(0, 0, 0, 0.15);
   box-sizing: border-box;
+}
+
+/**
+ * Transpose: label · i · track (no numeric readout — value on title / aria).
+ * Track: three equal half-octave bands (−12…−6 | −6…0 | 0…+6);
+ * default 0 sits at 2/3 (top of middle band).
+ */
+.tempo-controls.transpose-controls-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 17.5rem;
+  min-width: 17.5rem;
+  max-width: 17.5rem;
+  padding: 0.35rem 0.6rem 0.5rem;
+  /* Must stay visible so the circled-i tooltip is not clipped to an empty bar */
+  overflow: visible;
+}
+
+.tempo-controls.transpose-controls-bar .tempo-label {
+  flex: 0 0 auto;
+}
+
+.tempo-controls.transpose-controls-bar .info-eye {
+  flex: 0 0 auto;
+}
+
+.tempo-controls.transpose-controls-bar .transpose-slider-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+}
+
+/* Circled i + hover tip for Transpose help */
+.info-eye {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  flex-shrink: 0;
+  border: 1.5px solid #8a8b95;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  cursor: help;
+  outline: none;
+}
+
+.info-eye-glyph {
+  font-size: 0.9rem;
+  font-weight: 800;
+  font-style: italic;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1;
+  color: #d7d8de;
+  opacity: 0.95;
+}
+
+.info-eye-tip {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: calc(100% + 10px);
+  z-index: 80;
+  width: min(20rem, 72vw);
+  min-height: 3rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1a1408;
+  background: rgba(255, 248, 220, 0.99);
+  border: 1px solid rgba(180, 130, 40, 0.55);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  text-align: left;
+  white-space: normal;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.info-eye-tip strong {
+  color: #3a2a08;
+}
+
+.info-eye:hover .info-eye-tip,
+.info-eye:focus .info-eye-tip,
+.info-eye:focus-visible .info-eye-tip {
+  display: block;
+}
+
+/* Long track: ticks inset to match range thumb travel (half of 18px thumb) */
+.transpose-slider-wrap {
+  position: relative;
+  min-width: 0;
+  padding: 0 0 0.65rem;
+  box-sizing: border-box;
+}
+
+.transpose-slider-wrap input[type="range"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  height: 1.65rem;
+}
+
+.transpose-ticks {
+  position: absolute;
+  /* Align with browser range thumb centers (≈ half thumb width) */
+  left: 9px;
+  right: 9px;
+  top: 1.4rem;
+  height: 0.55rem;
+  pointer-events: none;
+}
+
+.transpose-ticks .tick {
+  position: absolute;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Major: full-octave marks (−1 oct at left, written pitch at 2/3) */
+.transpose-ticks .tick-octave i {
+  display: block;
+  width: 2.5px;
+  height: 9px;
+  background: #f0f1f5;
+  border-radius: 1px;
+}
+
+/* Minor: half-octave marks (shorter) */
+.transpose-ticks .tick-half i {
+  display: block;
+  width: 1.5px;
+  height: 5px;
+  margin-top: 2px;
+  background: #9a9ba5;
+  border-radius: 1px;
 }
 
 .tempo-controls .tempo-label,
@@ -363,10 +567,18 @@ body {
   color: var(--text);
 }
 
-.tempo-controls input[type="range"],
-.transpose-slider-wrap input[type="range"] {
+.tempo-controls input[type="range"] {
   flex: 1;
-  min-width: 8rem;
+  min-width: 5.5rem;
+  width: 100%;
+  height: 1.65rem;
+  accent-color: var(--accent, #4c8bf5);
+  cursor: pointer;
+}
+
+.transpose-slider-wrap input[type="range"] {
+  flex: none;
+  min-width: 0;
   width: 100%;
   height: 1.65rem;
   accent-color: var(--accent, #4c8bf5);
@@ -416,81 +628,6 @@ body {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
-}
-
-/* Tempo & Transpose dropdown */
-.tempo-transpose-menu .play-menu-panel {
-  min-width: 18rem;
-  gap: 0.85rem;
-}
-
-.transpose-block {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.45rem 0.55rem 0.55rem;
-  border: 1.5px solid #6c6d76;
-  border-radius: var(--radius);
-  background: rgba(0, 0, 0, 0.15);
-}
-
-.transpose-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.transpose-slider-wrap {
-  position: relative;
-  width: 100%;
-  padding: 0 0.35rem 1.35rem;
-  box-sizing: border-box;
-}
-
-.transpose-ticks {
-  position: absolute;
-  left: 0.35rem;
-  right: 0.35rem;
-  top: 1.55rem;
-  height: 1.2rem;
-  pointer-events: none;
-}
-
-.transpose-ticks .tick {
-  position: absolute;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.1rem;
-}
-
-/* Full-octave marks (bold, taller) */
-.transpose-ticks .tick-octave i {
-  display: block;
-  width: 2.5px;
-  height: 12px;
-  background: #f0f1f5;
-  border-radius: 1px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
-}
-
-.transpose-ticks .tick-octave b {
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: #e8e8ea;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Half-octave marks (shorter, no number) */
-.transpose-ticks .tick-half i {
-  display: block;
-  width: 1.5px;
-  height: 6px;
-  margin-top: 3px;
-  background: #9a9ba5;
-  border-radius: 1px;
 }
 
 /* Green “ready” status at the bottom of Upload & Settings menu */
@@ -796,13 +933,13 @@ body {
   line-height: 1.2;
 }
 
-/* —— Bottom bar: processing status (while extracting) + page nav —— */
+/* —— Bottom bar: help + processing status + page nav —— */
 .page-bar {
   flex-shrink: 0;
   z-index: 10;
   display: flex;
   align-items: center;
-  gap: 1rem 1.25rem;
+  gap: 0.75rem 1.1rem;
   padding: 0.55rem 1.25rem;
   background: var(--surface);
   border-top: 1px solid var(--border);
@@ -810,12 +947,101 @@ body {
   min-height: 4rem;
 }
 
-/* Yellow while extracting (ready status moved into Upload & Save menu) */
+.help-btn {
+  flex: 0 0 auto;
+  width: 3.4rem;
+  min-width: 3.4rem;
+  min-height: 3.4rem;
+  padding: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  border: 1.5px solid #6c6d76;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.help-btn:hover {
+  border-color: #85868f;
+  background: #2c2d32;
+}
+
+/* Help modal overlay */
+.help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.55);
+  box-sizing: border-box;
+}
+
+.help-modal[hidden] {
+  display: none !important;
+}
+
+.help-modal-card {
+  position: relative;
+  width: min(36rem, 100%);
+  max-height: min(80vh, 40rem);
+  overflow: auto;
+  padding: 1.15rem 1.35rem 1.25rem;
+  background: var(--surface);
+  border: 1.5px solid #6c6d76;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+}
+
+.help-modal-card h2 {
+  margin: 0 2rem 0.75rem 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.help-body {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.help-body p {
+  margin: 0 0 0.75rem;
+}
+
+.help-body p:last-child {
+  margin-bottom: 0;
+}
+
+.help-body strong {
+  color: #d7e5ff;
+}
+
+.help-credits-heading {
+  margin: 1.15rem 0 0.45rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.help-credits {
+  margin: 0;
+  padding-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+
+.help-credits strong {
+  color: #d7e5ff;
+}
+
+/* Yellow while extracting (ready status moved into Upload & Settings menu) */
 .page-bar .extract-banner {
   flex: 1 1 auto;
   min-width: 0;
   max-width: min(52%, 28rem);
-  margin: 0 0 0 4vw;
+  margin: 0;
   padding: 0.55rem 0.95rem;
   font-size: 1.15rem;
   font-weight: 800;
@@ -1309,13 +1535,54 @@ body {
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1.5rem;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
   color: var(--muted);
   pointer-events: none;
   z-index: 1;
+}
+
+/* Two columns: 60% instructions | 40% MCI reference */
+.drop-hint-split {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.drop-hint-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.75rem;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.drop-hint-col-main {
+  flex: 0 0 60%;
+  width: 60%;
+}
+
+.drop-hint-col-mci {
+  flex: 0 0 40%;
+  width: 40%;
+}
+
+/* Thin vertical rule only through the middle 60% of stage height */
+.drop-hint-divider {
+  position: absolute;
+  left: 60%;
+  top: 20%;
+  bottom: 20%;
+  width: 0;
+  border-left: 1px solid rgba(154, 155, 165, 0.45);
+  transform: translateX(-0.5px);
+  pointer-events: none;
 }
 
 .drop-hint-card {
@@ -1358,9 +1625,76 @@ body {
   max-width: 28rem;
 }
 
+/* Right column: same structure, softer weight / dimmer so left stays primary */
+.drop-hint-card-mci {
+  max-width: 22rem;
+}
+
+.drop-hint-mci-line {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.05rem, 2.1vw, 1.35rem);
+  font-weight: 500;
+  line-height: 1.4;
+  color: #6a6b74;
+  letter-spacing: 0.01em;
+}
+
+.drop-hint-mci-spacer {
+  margin: 0.35rem 0 0.55rem;
+  line-height: 0.6;
+  height: 0.6em;
+  opacity: 0;
+}
+
+.drop-hint-mci-link-wrap {
+  margin: 0.15rem 0 0;
+  max-width: 100%;
+}
+
+.drop-hint-mci-link {
+  pointer-events: auto;
+  display: inline-block;
+  font-size: clamp(0.95rem, 1.7vw, 1.1rem);
+  font-weight: 500;
+  line-height: 1.4;
+  color: #5a6a8a;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  word-break: break-all;
+}
+
+.drop-hint-mci-link:hover {
+  color: #7a8cb0;
+}
+
 .drop-hint code {
   font-size: 0.9em;
   color: var(--text);
+}
+
+@media (max-width: 720px) {
+  .drop-hint-split {
+    flex-direction: column;
+  }
+  .drop-hint-col-main,
+  .drop-hint-col-mci {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+  .drop-hint-divider {
+    left: 12%;
+    right: 12%;
+    top: auto;
+    bottom: auto;
+    width: auto;
+    height: 0;
+    border-left: none;
+    border-top: 1px solid rgba(154, 155, 165, 0.45);
+    transform: none;
+    /* horizontal rule across middle band of the stacked layout */
+    position: relative;
+    margin: 0.25rem 0;
+  }
 }
 
 .stage.is-dragover {
