@@ -1113,7 +1113,7 @@ body.has-pdf .upload-first-hint {
 
 .lit-cal-btn-welcome {
   pointer-events: auto;
-  margin-top: 1.1rem;
+  margin-top: 1.15rem;
   min-height: 2.75rem;
   padding: 0.5rem 0.9rem;
   font-size: clamp(0.95rem, 1.8vw, 1.1rem);
@@ -1882,6 +1882,21 @@ body.has-pdf .upload-first-hint {
 
 .drop-hint-mci-link:hover {
   color: #7a8cb0;
+}
+
+/**
+ * Thin horizontal rule under sheet-music link (same stroke as the vertical
+ * column divider). Only the middle ~50% of the right-column card width.
+ */
+.drop-hint-mci-hrule {
+  width: 50%;
+  max-width: 11rem;
+  height: 0;
+  margin: 1.15rem auto 0;
+  border: none;
+  border-top: 1px solid rgba(154, 155, 165, 0.45);
+  pointer-events: none;
+  align-self: center;
 }
 
 .drop-hint code {
