@@ -215,7 +215,7 @@
     /** Only for computer Play timeline (not for Begin hold lengths). */
     tempo: PLAY_TEMPO_DEFAULT,
     /**
-     * User pitch transpose in semitones (whole octaves: −24 … +12).
+     * User pitch transpose in semitones / half steps (−24 … +12).
      * Default 0 = written pitch (slider sits 2/3 from the low end).
      */
     transposeSemis: 0,
@@ -1212,17 +1212,22 @@
     if (val) val.textContent = String(t);
   }
 
-  /** Whole-octave transpose: −24 … +12 semitones (step 12). Default 0. */
+  /** Transpose: −24 … +12 semitones (half steps), continuous. Default 0. */
   function clampTranspose(semis) {
-    const n = Math.round(Number(semis) / 12) * 12;
+    const n = Math.round(Number(semis));
+    if (!Number.isFinite(n)) return 0;
     return Math.max(-24, Math.min(12, n));
   }
 
+  /** Display: exact octaves as −2/−1/0/+1; otherwise signed half-step count. */
   function transposeLabel(semis) {
-    const oct = (semis | 0) / 12;
-    if (oct === 0) return "0";
-    if (oct > 0) return `+${oct}`;
-    return String(oct);
+    const t = semis | 0;
+    if (t === 0) return "0";
+    if (t % 12 === 0) {
+      const oct = t / 12;
+      return oct > 0 ? `+${oct}` : String(oct);
+    }
+    return t > 0 ? `+${t}` : String(t);
   }
 
   function syncTransposeUi(semis) {
@@ -1236,12 +1241,20 @@
     }
     if (val) {
       val.textContent = transposeLabel(t);
-      val.title =
-        t === 0
-          ? "Written pitch"
-          : t < 0
-            ? `${Math.abs(t / 12)} octave${t === -12 ? "" : "s"} down`
-            : "1 octave up";
+      if (t === 0) {
+        val.title = "Written pitch";
+      } else if (t % 12 === 0) {
+        const oct = Math.abs(t / 12);
+        val.title =
+          t < 0
+            ? `${oct} octave${oct === 1 ? "" : "s"} down`
+            : `${oct} octave${oct === 1 ? "" : "s"} up`;
+      } else {
+        const abs = Math.abs(t);
+        val.title =
+          (t < 0 ? `${abs} half step${abs === 1 ? "" : "s"} down` : `${abs} half step${abs === 1 ? "" : "s"} up`) +
+          " (from written pitch)";
+      }
     }
   }
 

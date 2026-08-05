@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chant Sight-Singing Trainer</title>
-  <link rel="stylesheet" href="style.css?v=36" />
+  <link rel="stylesheet" href="style.css?v=37" />
   <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -100,32 +100,30 @@
             <span id="tempo-val" class="tempo-val">80</span>
           </div>
 
-          <div class="transpose-block" title="Shift all played and matched pitches by whole octaves">
+          <div class="transpose-block" title="Shift all played and matched pitches by half steps">
             <div class="transpose-header">
               <label for="transpose-slider" class="tempo-label">Transpose</label>
               <span id="transpose-val" class="tempo-val">0</span>
             </div>
             <div class="transpose-slider-wrap">
-              <!-- -2 oct … +1 oct; default 0 is 2/3 from left (written pitch) -->
-              <input type="range" id="transpose-slider" min="-24" max="12" value="0" step="12"
+              <!-- −2 oct … +1 oct in half-step steps; default 0 is 2/3 from left -->
+              <input type="range" id="transpose-slider" min="-24" max="12" value="0" step="1"
                      aria-valuemin="-24" aria-valuemax="12" aria-valuenow="0"
-                     aria-label="Transpose in octaves: down two to up one" list="transpose-ticks" />
-              <datalist id="transpose-ticks">
-                <option value="-24" label="-2"></option>
-                <option value="-12" label="-1"></option>
-                <option value="0" label="0"></option>
-                <option value="12" label="+1"></option>
-              </datalist>
+                     aria-label="Transpose by half steps: down two octaves to up one" />
               <div class="transpose-ticks" aria-hidden="true">
-                <span class="tick" style="left: 0%"><i></i><b>−2</b></span>
-                <span class="tick" style="left: 33.333%"><i></i><b>−1</b></span>
-                <span class="tick" style="left: 66.667%"><i></i><b>0</b></span>
-                <span class="tick" style="left: 100%"><i></i><b>+1</b></span>
+                <!-- Bold = full octave; short = half octave -->
+                <span class="tick tick-octave" style="left: 0%"><i></i><b>−2</b></span>
+                <span class="tick tick-half" style="left: 16.667%"><i></i></span>
+                <span class="tick tick-octave" style="left: 33.333%"><i></i><b>−1</b></span>
+                <span class="tick tick-half" style="left: 50%"><i></i></span>
+                <span class="tick tick-octave" style="left: 66.667%"><i></i><b>0</b></span>
+                <span class="tick tick-half" style="left: 83.333%"><i></i></span>
+                <span class="tick tick-octave" style="left: 100%"><i></i><b>+1</b></span>
               </div>
             </div>
             <p class="play-menu-hint">
-              Whole octaves only. Default is written pitch (mark <strong>0</strong>).
-              Slide left to lower for men’s range. Release to hear the first three notes.
+              Continuous half steps (−24 to +12). Bold marks are full octaves; short marks are half octaves.
+              Default is written pitch (<strong>0</strong>). Slide left to lower. Release to hear the first three notes.
             </p>
           </div>
         </div>
@@ -206,7 +204,7 @@
   <script src="audio.js?v=6"></script>
   <script src="extractor.js?v=5"></script>
   <script src="app.js?v=24"></script>
-  <script src="follow.js?v=49"></script>
+  <script src="follow.js?v=50"></script>
   <script src="diagnose.js?v=18"></script>
   <script src="pitch.js?v=13"></script>
 </body>
