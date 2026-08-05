@@ -1165,18 +1165,22 @@
     if (matchBtn) {
       matchBtn.hidden = false;
       matchBtn.classList.toggle("is-awaiting-score", !ready);
-      // Toggle: click again anytime to turn off (never stuck on)
-      matchBtn.textContent = matching ? "Match Pitch · On" : "Match Pitch";
+      // Active → "Stop" so it is obvious you can click to turn Match Pitch off
+      matchBtn.textContent = matching ? "Stop" : "Match Pitch";
       matchBtn.classList.toggle("is-playing", matching && ready);
       // Blue primary when score is ready and Match Pitch is idle
       matchBtn.classList.toggle("btn-primary", ready && !matching);
       matchBtn.setAttribute("aria-pressed", matching ? "true" : "false");
+      matchBtn.setAttribute(
+        "aria-label",
+        matching ? "Stop Match Pitch" : "Match Pitch"
+      );
       // Disabled until score; when ready, allow off anytime / block on while Play runs
       matchBtn.disabled = !ready || (!matching && (listening || freeBusy));
       matchBtn.title = !ready
         ? "Upload a PDF first to use Match Pitch"
         : matching
-          ? "Match Pitch is on — click this button again to turn it off"
+          ? "Stop Match Pitch"
           : "Click to turn on, then click a note to hear it and match with your voice";
     }
 

@@ -2010,167 +2010,205 @@ body.has-pdf .upload-first-hint {
   cursor: pointer;
 }
 
-/* —— Phone / narrow: collapse practice controls into Tools ▾ —— */
-@media (max-width: 720px) {
-  .toolbar {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 0.5rem;
-    padding: 0.55rem 0.65rem;
-  }
+/**
+ * Compact / phone toolbar: Upload (+ Settings label) + Tools ▾ only.
+ * Applied when body.compact-toolbar is set by JS (actual wrap) or narrow
+ * screens — not only a fixed pixel breakpoint.
+ */
+body.compact-toolbar .toolbar {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+}
 
-  .toolbar-group + .toolbar-group {
-    border-left: none;
-    padding-left: 0;
-  }
+body.compact-toolbar .toolbar-group + .toolbar-group {
+  border-left: none;
+  padding-left: 0;
+}
 
-  /* Phone labels: short names; hide full “Upload & Settings” */
-  .us-label-full,
-  .hint-us-full {
-    display: none;
-  }
+/* Short names; hide full “Upload & Settings” */
+body.compact-toolbar .us-label-full,
+body.compact-toolbar .hint-us-full {
+  display: none;
+}
 
-  /* Upload until PDF/score ready, then Settings */
-  body:not(.score-ready) .us-label-upload {
-    display: inline;
-  }
-  body:not(.score-ready) .us-label-settings {
-    display: none;
-  }
-  body.score-ready .us-label-upload {
-    display: none;
-  }
-  body.score-ready .us-label-settings {
-    display: inline;
-  }
+body.compact-toolbar:not(.score-ready) .us-label-upload {
+  display: inline;
+}
+body.compact-toolbar:not(.score-ready) .us-label-settings {
+  display: none;
+}
+body.compact-toolbar.score-ready .us-label-upload {
+  display: none;
+}
+body.compact-toolbar.score-ready .us-label-settings {
+  display: inline;
+}
 
-  body:not(.score-ready) .hint-us-upload {
-    display: inline;
-  }
-  body:not(.score-ready) .hint-us-settings {
-    display: none;
-  }
-  body.score-ready .hint-us-upload {
-    display: none;
-  }
-  body.score-ready .hint-us-settings {
-    display: inline;
-  }
+body.compact-toolbar:not(.score-ready) .hint-us-upload {
+  display: inline;
+}
+body.compact-toolbar:not(.score-ready) .hint-us-settings {
+  display: none;
+}
+body.compact-toolbar.score-ready .hint-us-upload {
+  display: none;
+}
+body.compact-toolbar.score-ready .hint-us-settings {
+  display: inline;
+}
 
-  .toolbar-files {
-    flex: 0 0 auto;
-  }
+body.compact-toolbar .toolbar-files {
+  flex: 0 0 auto;
+}
 
-  .tools-menu {
-    flex: 0 0 auto;
-    margin-left: auto;
-    gap: 0;
-  }
+body.compact-toolbar .tools-menu {
+  flex: 0 0 auto;
+  margin-left: auto;
+  gap: 0;
+}
 
-  .tools-toggle {
-    display: inline-flex;
-  }
+body.compact-toolbar .tools-toggle {
+  display: inline-flex;
+}
 
-  /* Grayed Tools until score (same treatment as other awaiting controls) */
-  .tools-toggle.is-awaiting-score:disabled,
-  .tools-toggle.is-awaiting-score[disabled] {
-    opacity: 0.42;
-    filter: grayscale(0.55);
-    cursor: not-allowed;
-  }
+body.compact-toolbar .tools-toggle.is-awaiting-score:disabled,
+body.compact-toolbar .tools-toggle.is-awaiting-score[disabled] {
+  opacity: 0.42;
+  filter: grayscale(0.55);
+  cursor: not-allowed;
+}
 
-  .tools-toggle.is-open {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-  }
+body.compact-toolbar .tools-toggle.is-open {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
 
-  /* Dropdown list of all practice controls */
-  .tools-panel {
-    display: none;
-    position: absolute;
-    top: calc(100% + 6px);
-    right: 0;
-    left: auto;
-    z-index: 40;
-    flex: none;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    gap: 0.55rem;
-    min-width: min(92vw, 18.5rem);
-    max-width: min(96vw, 22rem);
-    max-height: min(70vh, 32rem);
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding: 0.75rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-  }
+/* Dropdown list of all practice controls */
+body.compact-toolbar .tools-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: auto;
+  z-index: 40;
+  flex: none;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0.55rem;
+  min-width: min(92vw, 18.5rem);
+  max-width: min(96vw, 22rem);
+  max-height: min(70vh, 32rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
 
-  .tools-menu.is-open .tools-panel {
-    display: flex;
-  }
+body.compact-toolbar .tools-menu.is-open .tools-panel {
+  display: flex;
+}
 
-  .tools-panel .toolbar-group {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    gap: 0.5rem;
-    margin: 0;
-    padding: 0;
-    border: none;
-  }
+body.compact-toolbar .tools-panel .toolbar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
 
-  .tools-panel .toolbar-play-music {
-    margin-left: 0;
-  }
+body.compact-toolbar .tools-panel .toolbar-play-music {
+  margin-left: 0;
+}
 
-  .tools-panel .btn,
-  .tools-panel .file-btn {
-    width: 100%;
-    justify-content: center;
-  }
+body.compact-toolbar .tools-panel .btn,
+body.compact-toolbar .tools-panel .file-btn {
+  width: 100%;
+  justify-content: center;
+}
 
-  .tools-panel .tempo-controls,
-  .tools-panel .transpose-controls-bar {
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-  }
+body.compact-toolbar .tools-panel .tempo-controls,
+body.compact-toolbar .tools-panel .transpose-controls-bar {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
 
-  .tools-panel .play-controls {
-    width: 100%;
-  }
+body.compact-toolbar .tools-panel .play-controls {
+  width: 100%;
+}
 
-  .tools-panel .diag-wrap {
-    width: 100%;
-    align-items: stretch;
-  }
+body.compact-toolbar .tools-panel .diag-wrap {
+  width: 100%;
+  align-items: stretch;
+}
 
-  .tools-panel #diag-btn {
-    width: 100%;
-  }
+body.compact-toolbar .tools-panel #diag-btn {
+  width: 100%;
+}
 
-  /* Assess UI may extend below the dropdown */
-  .tools-panel .diag-ui {
-    left: 50%;
-    transform: translateX(-50%);
-  }
+body.compact-toolbar .tools-panel .diag-ui {
+  left: 50%;
+  transform: translateX(-50%);
+}
 
-  .slider-label input[type="range"] {
-    width: 4.25rem;
-  }
+body.compact-toolbar .slider-label input[type="range"] {
+  width: 4.25rem;
+}
 
-  .current-note {
-    font-size: 0.95rem;
-    min-width: 3rem;
-    max-width: 8rem;
-  }
+body.compact-toolbar .current-note {
+  font-size: 0.95rem;
+  min-width: 3rem;
+  max-width: 8rem;
+}
 
-  .file-status {
-    display: none;
-  }
+body.compact-toolbar .file-status {
+  display: none;
+}
+
+/* While measuring wrap, force full desktop bar (no Tools toggle) */
+body.toolbar-measuring .tools-toggle {
+  display: none !important;
+}
+body.toolbar-measuring .tools-panel {
+  display: flex !important;
+  position: static !important;
+  flex: 1 1 auto !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 0.75rem 1.1rem !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+body.toolbar-measuring .tools-panel .toolbar-group {
+  flex-direction: row !important;
+  width: auto !important;
+}
+body.toolbar-measuring .tools-panel .btn,
+body.toolbar-measuring .tools-panel .file-btn {
+  width: auto !important;
+}
+body.toolbar-measuring .tools-panel .tempo-controls,
+body.toolbar-measuring .tools-panel .transpose-controls-bar {
+  width: auto !important;
+  max-width: 15rem !important;
+}
+body.toolbar-measuring .tools-panel .toolbar-play-music {
+  margin-left: auto !important;
 }

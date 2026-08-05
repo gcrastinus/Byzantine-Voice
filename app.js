@@ -1898,13 +1898,77 @@
     }
   }
 
+  /**
+   * Compact toolbar (Upload + Tools ▾) when the full practice bar would wrap
+   * to two lines, or on narrow phone widths. Class: body.compact-toolbar.
+   */
+  function updateCompactToolbar() {
+    const toolbar = document.querySelector(".toolbar");
+    if (!toolbar || !document.body) return;
+
+    const wasCompact = document.body.classList.contains("compact-toolbar");
+    // Measure with full desktop layout so we know if it *would* wrap
+    document.body.classList.remove("compact-toolbar");
+    document.body.classList.add("toolbar-measuring");
+    // Force layout
+    void toolbar.offsetHeight;
+
+    const barH = toolbar.getBoundingClientRect().height;
+    const sampleBtn =
+      toolbar.querySelector("#upload-save-toggle") ||
+      toolbar.querySelector(".btn");
+    const btnH = sampleBtn
+      ? sampleBtn.getBoundingClientRect().height
+      : 54;
+    // One row ≈ button height + vertical padding; two rows is clearly taller
+    const oneRowMax = btnH * 1.55 + 20;
+    const wraps = barH > oneRowMax;
+    const narrow =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(max-width: 720px)").matches;
+
+    document.body.classList.remove("toolbar-measuring");
+
+    // Hysteresis: once compact, require a bit more room before expanding again
+    let compact = wraps || narrow;
+    if (wasCompact && !narrow) {
+      // Only leave compact if desktop layout clearly fits in one row
+      compact = wraps;
+    }
+
+    document.body.classList.toggle("compact-toolbar", compact);
+    if (!compact && toolsMenu && toolsMenu.classList.contains("is-open")) {
+      setToolsMenuOpen(false);
+    }
+  }
+
   let resizeTimer = null;
-  window.addEventListener("resize", () => {
+  let compactToolbarTimer = null;
+  function onViewportResize() {
     updatePageAdvanceHint();
+    clearTimeout(compactToolbarTimer);
+    compactToolbarTimer = setTimeout(updateCompactToolbar, 80);
     if (!state.pdfDoc) return;
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => renderPage(state.pageNum), 120);
-  });
+  }
+  window.addEventListener("resize", onViewportResize);
+  // Initial + after fonts/layout settle
+  updateCompactToolbar();
+  if (typeof requestAnimationFrame === "function") {
+    requestAnimationFrame(() => updateCompactToolbar());
+  }
+  setTimeout(updateCompactToolbar, 250);
+  if (typeof ResizeObserver === "function") {
+    const tb = document.querySelector(".toolbar");
+    if (tb) {
+      const ro = new ResizeObserver(() => {
+        clearTimeout(compactToolbarTimer);
+        compactToolbarTimer = setTimeout(updateCompactToolbar, 60);
+      });
+      ro.observe(tb);
+    }
+  }
 
   // Scroll fires at display rate; coalesce onto one frame.
   let hintRaf = 0;
