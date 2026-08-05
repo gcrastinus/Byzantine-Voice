@@ -1,0 +1,42 @@
+# Keeps a same-origin snapshot of the MCI home page so the Liturgical Calendar
+# panel works on GitHub Pages (static hosting cannot proxy mci.archpitt.org).
+#
+# Schedule: every 6 hours + on manual "Run workflow".
+# Result: data/mci-home.html + data/mci-meta.json committed when content changes.
+
+name: Refresh MCI calendar snapshot
+
+on:
+  schedule:
+    # 00:15, 06:15, 12:15, 18:15 UTC
+    - cron: "15 0,6,12,18 * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/refresh-mci-calendar.yml"
+      - "scripts/refresh_mci_calendar.py"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch MCI home page
+        run: python3 scripts/refresh_mci_calendar.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/mci-home.html data/mci-meta.json
+          if git diff --staged --quiet; then
+            echo "No calendar content change."
+          else
+            git commit -m "chore: refresh MCI liturgical calendar snapshot"
+            git push
+          fi

@@ -1096,6 +1096,137 @@ body.has-pdf .upload-first-hint {
   margin: 0 0 0.75rem;
 }
 
+/* Liturgical calendar button (welcome + Upload & Settings) */
+.lit-cal-btn {
+  font-size: 1.05rem;
+  font-weight: 650;
+  border-color: #6a7a9a;
+  color: #c8d4ee;
+  background: rgba(76, 139, 245, 0.12);
+}
+
+.lit-cal-btn:hover {
+  border-color: #8aa0c8;
+  background: rgba(76, 139, 245, 0.22);
+  color: #e8eefc;
+}
+
+.lit-cal-btn-welcome {
+  pointer-events: auto;
+  margin-top: 1.1rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.9rem;
+  font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+  white-space: normal;
+  text-align: center;
+  line-height: 1.3;
+  max-width: 100%;
+}
+
+/* Liturgical calendar modal (live MCI sidebar) */
+.lit-cal-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.55);
+  box-sizing: border-box;
+}
+
+.lit-cal-modal[hidden] {
+  display: none !important;
+}
+
+.lit-cal-modal-card {
+  position: relative;
+  width: min(34rem, 100%);
+  max-height: min(82vh, 42rem);
+  overflow: auto;
+  padding: 1.15rem 1.35rem 1.25rem;
+  background: var(--surface);
+  border: 1.5px solid #6c6d76;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+}
+
+.lit-cal-modal-card h2 {
+  margin: 0 2rem 0.55rem 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.lit-cal-source {
+  margin: 0 0 0.75rem;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.lit-cal-source a {
+  color: #8ab0f0;
+}
+
+.lit-cal-status {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.lit-cal-status.is-error {
+  color: #e8a0a0;
+}
+
+.lit-cal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.lit-cal-section-title {
+  margin: 0 0 0.45rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3rem;
+}
+
+.lit-cal-entry {
+  margin: 0 0 0.55rem;
+  font-size: 0.98rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.lit-cal-entry strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.lit-cal-entry a {
+  color: #8ab0f0;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  word-break: break-word;
+}
+
+.lit-cal-entry a:hover {
+  color: #b0c8f8;
+}
+
+.lit-cal-more {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+}
+
+.lit-cal-more a {
+  color: #8ab0f0;
+}
+
 .help-body p:last-child {
   margin-bottom: 0;
 }

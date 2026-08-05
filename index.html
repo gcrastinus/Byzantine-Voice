@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chant Sight-Singing Trainer</title>
-  <link rel="stylesheet" href="style.css?v=50" />
+  <link rel="stylesheet" href="style.css?v=51" />
   <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -32,6 +32,10 @@
             Upload PDF
             <input type="file" id="pdf-input" accept="application/pdf,.pdf" hidden />
           </label>
+          <button type="button" id="lit-cal-btn-menu" class="btn btn-block lit-cal-btn"
+                  title="Live Byzantine liturgical calendar from the Metropolitan Cantor Institute">
+            Liturgical Calendar
+          </button>
           <p id="upload-first-hint" class="play-menu-hint upload-first-hint">
             Start with <strong>Upload PDF</strong>. Sound, mic, and other options unlock after a file is loaded.
           </p>
@@ -226,6 +230,10 @@
                  target="_blank"
                  rel="noopener noreferrer">https://mci.archpitt.org/sheetmusic/</a>
             </p>
+            <button type="button" id="lit-cal-btn-welcome" class="btn lit-cal-btn lit-cal-btn-welcome"
+                    title="Live Byzantine liturgical calendar from the Metropolitan Cantor Institute">
+              Byzantine Liturgical Calendar
+            </button>
           </div>
         </div>
       </div>
@@ -246,12 +254,29 @@
     </div>
   </footer>
 
+  <!-- Liturgical calendar (live from mci.archpitt.org sidebar) -->
+  <div id="lit-cal-modal" class="lit-cal-modal" hidden>
+    <div class="lit-cal-modal-card" role="dialog" aria-modal="true" aria-labelledby="lit-cal-title">
+      <button type="button" id="lit-cal-close" class="diag-collapse" title="Close calendar" aria-label="Close calendar">×</button>
+      <h2 id="lit-cal-title">Byzantine Liturgical Calendar</h2>
+      <p class="lit-cal-source">
+        Live from the
+        <a href="https://mci.archpitt.org/" target="_blank" rel="noopener noreferrer">Metropolitan Cantor Institute</a>
+        (mci.archpitt.org). Click a service link to open its PDF in a new tab — save it, then use
+        <strong>Upload PDF</strong> here to practice.
+      </p>
+      <div id="lit-cal-status" class="lit-cal-status" role="status" aria-live="polite">Loading…</div>
+      <div id="lit-cal-body" class="lit-cal-body" hidden></div>
+    </div>
+  </div>
+
   <!-- Help overlay -->
   <div id="help-modal" class="help-modal" hidden>
     <div class="help-modal-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
       <button type="button" id="help-close" class="diag-collapse" title="Close help" aria-label="Close help">×</button>
       <h2 id="help-title">Help</h2>
       <div class="help-body">
+        <p><strong>Byzantine Liturgical Calendar</strong> — Opens a live panel of the MCI home-page calendar and Vigil Divine Liturgy propers (dates, service names, and sheet-music links). Links open PDFs on the MCI site in a new tab; save the file and upload it here to practice. Content is re-fetched each time you open the panel so new months stay current.</p>
         <p><strong>Upload &amp; Settings</strong> — On a computer this menu is always named <strong>Upload &amp; Settings</strong>. On phones it says <strong>Upload</strong> until a PDF is loaded, then <strong>Settings</strong>. Open it to upload a chant PDF first; sound, mic, and save/load options stay grayed out until a file is loaded so you are not asked to configure them first. When extraction finishes, a green ready box shows how many notes were found.</p>
         <p><strong>Tools</strong> (phones) — Match Pitch, Transpose, Tempo, Assess Singing, and Play All. Grayed out until a PDF is ready; then open the dropdown to use them. On a computer these controls stay on the main toolbar.</p>
         <p><strong>Match Pitch</strong> — Click a note to hear it, then match the pitch with your voice. Click the button again (or press Escape) to turn it off.</p>
@@ -273,8 +298,8 @@
 
   <script src="audio.js?v=6"></script>
   <script src="extractor.js?v=7"></script>
-  <script src="app.js?v=28"></script>
-  <script src="follow.js?v=58"></script>
+  <script src="app.js?v=30"></script>
+  <script src="follow.js?v=59"></script>
   <script src="diagnose.js?v=18"></script>
   <script src="pitch.js?v=13"></script>
 </body>

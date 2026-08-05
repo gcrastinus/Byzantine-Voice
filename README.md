@@ -33,9 +33,33 @@ Optional:
 3. **Settings → Pages → Build and deployment**: Source = **Deploy from a branch**, branch **main** (or `master`), folder **/ (root)**. Save.
 4. After a minute, open `https://<user>.github.io/<repo>/`.
 
+### Liturgical calendar “live feed” on GitHub Pages
+
+Browsers cannot read `mci.archpitt.org` directly (CORS). The calendar still works seamlessly if you use one of these:
+
+**A. Automatic snapshot (recommended with GitHub Pages — no extra accounts)**
+
+1. Push this repo (includes `data/mci-home.html` and `.github/workflows/refresh-mci-calendar.yml`).
+2. On GitHub: **Settings → Actions → General → Workflow permissions → Read and write**.
+3. **Actions → “Refresh MCI calendar snapshot” → Run workflow** once (then it runs every 6 hours).
+4. Open the Pages site and click **Byzantine Liturgical Calendar**. The app loads `data/mci-home.html` from *your* site (same origin), which tracks the MCI sidebar.
+
+When MCI updates September dates, the next scheduled run (or a manual Run workflow) refreshes the snapshot and Pages serves the new list.
+
+**B. True live proxy (optional Cloudflare Worker)**
+
+1. Deploy `workers/mci-proxy.js` as a Cloudflare Worker (free).
+2. In `app.js`, set `MCI_LIVE_PROXY` to your worker URL, **or** open the app with  
+   `?mciProxy=https://your-worker.workers.dev`
+3. Each calendar open hits MCI live through the worker.
+
+**C. Local Mac**
+
+Double-click `serve.command` → `http://localhost:8765` — `serve.py` proxies MCI live at `/api/mci-home`.
+
 ## Local try (optional)
 
-Double-click `serve.command` (first time: right-click → Open, because macOS Gatekeeper blocks unsigned scripts). Then open **http://localhost:8765** — type the `http://` explicitly; Safari sometimes upgrades a bare `localhost` to https and fails to connect. Or from a terminal: `python3 -m http.server 8080` → `http://localhost:8080`. Add `?extracttest=1` to verify extraction.
+Double-click `serve.command` (first time: right-click → Open, because macOS Gatekeeper blocks unsigned scripts). Then open **http://localhost:8765** — type the `http://` explicitly; Safari sometimes upgrades a bare `localhost` to https and fails to connect. Or from a terminal: `python3 serve.py`. Add `?extracttest=1` to verify extraction.
 
 Opening `index.html` by double-click (file://) also works now — the app has no ES modules and the pitch detector is built in. If Safari refuses mic permission on file://, use the served or hosted URL instead.
 

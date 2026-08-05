@@ -2041,6 +2041,367 @@
   if (els.sensitivityVal) els.sensitivityVal.textContent = `${state.sensitivityCents}¢`;
   if (els.advanceHoldVal) els.advanceHoldVal.textContent = `${state.advanceHoldMs}ms`;
 
+  // —— Byzantine Liturgical Calendar (live from mci.archpitt.org sidebar) ——
+  const MCI_HOME = "https://mci.archpitt.org/";
+  /**
+   * Optional true live proxy (Cloudflare Worker — see workers/mci-proxy.js).
+   * Leave empty to rely on: local serve.py → GitHub snapshot → public proxies.
+   * Override anytime with ?mciProxy=https://your-worker.workers.dev
+   */
+  const MCI_LIVE_PROXY =
+    (queryParams.get("mciProxy") || "").trim() ||
+    ""; // e.g. "https://byzantine-voice-mci.YOUR.workers.dev"
+  const litCalModal = $("lit-cal-modal");
+  const litCalBody = $("lit-cal-body");
+  const litCalStatus = $("lit-cal-status");
+  const litCalClose = $("lit-cal-close");
+  let litCalFetchSeq = 0;
+
+  function setLitCalOpen(open) {
+    if (!litCalModal) return;
+    litCalModal.hidden = !open;
+    if (open) {
+      // Close Upload & Settings if open
+      if (typeof setUploadSaveMenuOpen === "function") setUploadSaveMenuOpen(false);
+      loadLiturgicalCalendar();
+    }
+  }
+
+  /** Resolve relative MCI URLs to absolute https://mci.archpitt.org/... */
+  function absMciUrl(href) {
+    if (!href || !String(href).trim()) return null;
+    const h = String(href).trim();
+    if (h === "#" || h.startsWith("javascript:")) return null;
+    // Broken leftover paths on the MCI site (empty anchors)
+    if (h.indexOf("/public_html/") !== -1) return null;
+    try {
+      return new URL(h, MCI_HOME).href;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /**
+   * Fetch MCI homepage HTML for the calendar panel.
+   *
+   * Browsers cannot read mci.archpitt.org directly (no CORS). Priority:
+   *  1) Optional Cloudflare Worker (true live) — MCI_LIVE_PROXY / ?mciProxy=
+   *  2) Local serve.py  /api/mci-home  (true live on your Mac)
+   *  3) Same-origin GitHub snapshot  data/mci-home.html  (Pages-friendly;
+   *     refreshed by GitHub Actions every few hours)
+   *  4) Direct + public CORS proxies (best-effort)
+   */
+  async function fetchMciHomeHtml() {
+    const candidates = [];
+    const bust = "t=" + Date.now();
+
+    if (MCI_LIVE_PROXY) {
+      candidates.push({
+        via: "cloud-proxy",
+        url: MCI_LIVE_PROXY,
+        meta: null,
+      });
+    }
+
+    if (location.protocol === "http:" || location.protocol === "https:") {
+      candidates.push({
+        via: "local-proxy",
+        url: new URL("api/mci-home", location.href).href + "?" + bust,
+        meta: null,
+      });
+      // GitHub Pages / Netlify / any static host that ships data/
+      candidates.push({
+        via: "pages-snapshot",
+        url: new URL("data/mci-home.html", location.href).href + "?" + bust,
+        metaUrl: new URL("data/mci-meta.json", location.href).href + "?" + bust,
+      });
+    }
+
+    candidates.push({ via: "direct", url: MCI_HOME, meta: null });
+    candidates.push({
+      via: "allorigins",
+      url: "https://api.allorigins.win/raw?url=" + encodeURIComponent(MCI_HOME),
+      meta: null,
+    });
+    candidates.push({
+      via: "isomorphic-git-cors",
+      url: "https://cors.isomorphic-git.org/" + MCI_HOME,
+      meta: null,
+    });
+
+    let lastErr = null;
+    for (const c of candidates) {
+      try {
+        const r = await fetch(c.url, {
+          mode: "cors",
+          cache: "no-store",
+          credentials: "omit",
+        });
+        if (!r.ok) {
+          lastErr = new Error(c.via + " HTTP " + r.status);
+          continue;
+        }
+        const t = await r.text();
+        if (
+          t &&
+          t.length > 500 &&
+          (t.indexOf("sidebar2") !== -1 || /Liturgical\s+Calendar/i.test(t))
+        ) {
+          let fetchedAt = null;
+          if (c.metaUrl) {
+            try {
+              const mr = await fetch(c.metaUrl, {
+                mode: "cors",
+                cache: "no-store",
+                credentials: "omit",
+              });
+              if (mr.ok) {
+                const meta = await mr.json();
+                if (meta && meta.fetchedAt) fetchedAt = meta.fetchedAt;
+              }
+            } catch (_) {
+              /* meta optional */
+            }
+          }
+          return { html: t, via: c.via, fetchedAt };
+        }
+        lastErr = new Error(c.via + " returned unexpected content");
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw lastErr || new Error("Could not reach mci.archpitt.org");
+  }
+
+  function describeLitCalSource(via, fetchedAt) {
+    if (via === "cloud-proxy" || via === "local-proxy" || via === "direct") {
+      return "Live from MCI home page";
+    }
+    if (via === "pages-snapshot") {
+      const when = fetchedAt
+        ? " · snapshot " + fetchedAt.replace("T", " ").replace("Z", " UTC")
+        : "";
+      return "From site calendar snapshot (auto-refreshed)" + when;
+    }
+    return "From MCI via " + via;
+  }
+
+  /**
+   * Pull the two sidebar sections: Liturgical Calendar + Vigil Divine Liturgy propers.
+   * Structure is .newsbox blocks under #sidebar2 with matching h1 titles.
+   */
+  function parseMciCalendarSections(html) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const sidebar = doc.querySelector("#sidebar2");
+    if (!sidebar) throw new Error("MCI sidebar not found — site layout may have changed");
+
+    const wanted = [
+      { key: "calendar", match: /liturgical\s+calendar/i, title: "Liturgical Calendar" },
+      {
+        key: "vigil",
+        match: /vigil\s+divine\s+liturgy\s+propers/i,
+        title: "Vigil Divine Liturgy Propers",
+      },
+    ];
+    const found = [];
+
+    const boxes = sidebar.querySelectorAll(".newsbox");
+    for (const box of boxes) {
+      const h1 = box.querySelector("h1");
+      if (!h1) continue;
+      const hText = (h1.textContent || "").replace(/\s+/g, " ").trim();
+      const want = wanted.find((w) => w.match.test(hText));
+      if (!want) continue;
+      if (found.some((f) => f.key === want.key)) continue;
+
+      const entries = [];
+      const moreLinks = [];
+      for (const p of box.querySelectorAll("p")) {
+        // Skip empty paragraphs
+        const text = (p.textContent || "").replace(/\s+/g, " ").trim();
+        if (!text) continue;
+        // "complete liturgical calendar" footer link — keep as more-link
+        const onlyLinks = p.querySelectorAll("a");
+        const isCalendarClass = p.classList && p.classList.contains("calendar");
+        if (!isCalendarClass && /complete\s+liturgical\s+calendar/i.test(text)) {
+          for (const a of onlyLinks) {
+            const href = absMciUrl(a.getAttribute("href"));
+            const label = (a.textContent || "").replace(/\s+/g, " ").trim();
+            if (href && label) moreLinks.push({ href, label });
+          }
+          continue;
+        }
+        if (!isCalendarClass && !p.querySelector("a")) continue;
+
+        // Build a light clone with absolute links
+        const parts = [];
+        const walk = (node) => {
+          if (node.nodeType === 3) {
+            const t = node.textContent;
+            if (t) parts.push({ type: "text", text: t });
+            return;
+          }
+          if (node.nodeType !== 1) return;
+          const tag = node.tagName.toLowerCase();
+          if (tag === "a") {
+            const href = absMciUrl(node.getAttribute("href"));
+            const label = (node.textContent || "").replace(/\s+/g, " ").trim();
+            if (href && label) parts.push({ type: "link", href, label });
+            else if (label) parts.push({ type: "text", text: label });
+            return;
+          }
+          if (tag === "br") {
+            parts.push({ type: "text", text: " " });
+            return;
+          }
+          for (const child of node.childNodes) walk(child);
+        };
+        walk(p);
+        // Merge adjacent text, collapse whitespace in display
+        const merged = [];
+        for (const part of parts) {
+          if (part.type === "text") {
+            const t = part.text.replace(/\s+/g, " ");
+            if (!t) continue;
+            if (merged.length && merged[merged.length - 1].type === "text") {
+              merged[merged.length - 1].text += t;
+            } else {
+              merged.push({ type: "text", text: t });
+            }
+          } else {
+            merged.push(part);
+          }
+        }
+        if (merged.length) entries.push(merged);
+      }
+      found.push({
+        key: want.key,
+        title: want.title,
+        entries,
+        moreLinks,
+      });
+    }
+
+    if (!found.length) {
+      throw new Error("Could not find Liturgical Calendar sections on the MCI page");
+    }
+    // Stable order: calendar first, then vigil
+    found.sort((a, b) => {
+      const ia = wanted.findIndex((w) => w.key === a.key);
+      const ib = wanted.findIndex((w) => w.key === b.key);
+      return ia - ib;
+    });
+    return found;
+  }
+
+  function renderLitCalSections(sections) {
+    if (!litCalBody) return;
+    litCalBody.innerHTML = "";
+    for (const sec of sections) {
+      const wrap = document.createElement("section");
+      wrap.className = "lit-cal-section";
+      const h = document.createElement("h3");
+      h.className = "lit-cal-section-title";
+      h.textContent = sec.title;
+      wrap.appendChild(h);
+      for (const entry of sec.entries) {
+        const p = document.createElement("p");
+        p.className = "lit-cal-entry";
+        for (const part of entry) {
+          if (part.type === "link") {
+            const a = document.createElement("a");
+            a.href = part.href;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.textContent = part.label;
+            p.appendChild(a);
+          } else {
+            // Bold leading date phrases roughly like the MCI site
+            const span = document.createElement("span");
+            const t = part.text;
+            const m = t.match(/^(\s*)([A-Za-z]+\s+\d{1,2}(?:\s*[-–]\s*)?)/);
+            if (m) {
+              const strong = document.createElement("strong");
+              strong.textContent = m[2];
+              span.appendChild(strong);
+              span.appendChild(document.createTextNode(t.slice(m[0].length)));
+            } else {
+              span.textContent = t;
+            }
+            p.appendChild(span);
+          }
+        }
+        wrap.appendChild(p);
+      }
+      for (const more of sec.moreLinks || []) {
+        const p = document.createElement("p");
+        p.className = "lit-cal-more";
+        const a = document.createElement("a");
+        a.href = more.href;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = more.label;
+        p.appendChild(a);
+        wrap.appendChild(p);
+      }
+      litCalBody.appendChild(wrap);
+    }
+  }
+
+  async function loadLiturgicalCalendar() {
+    if (!litCalStatus || !litCalBody) return;
+    const seq = ++litCalFetchSeq;
+    litCalBody.hidden = true;
+    litCalBody.innerHTML = "";
+    litCalStatus.hidden = false;
+    litCalStatus.classList.remove("is-error");
+    litCalStatus.textContent = "Loading live calendar from mci.archpitt.org…";
+    try {
+      const { html, via, fetchedAt } = await fetchMciHomeHtml();
+      if (seq !== litCalFetchSeq) return;
+      const sections = parseMciCalendarSections(html);
+      renderLitCalSections(sections);
+      litCalBody.hidden = false;
+      litCalStatus.classList.remove("is-error");
+      litCalStatus.textContent =
+        describeLitCalSource(via, fetchedAt) +
+        " · links open PDFs in a new tab";
+    } catch (err) {
+      if (seq !== litCalFetchSeq) return;
+      litCalStatus.classList.add("is-error");
+      litCalStatus.innerHTML =
+        "Could not load the live calendar. " +
+        (err && err.message ? err.message + " " : "") +
+        'Open the MCI site directly: <a href="' +
+        MCI_HOME +
+        '" target="_blank" rel="noopener noreferrer">mci.archpitt.org</a>';
+      litCalBody.hidden = true;
+    }
+  }
+
+  function wireLitCalButton(btn) {
+    if (!btn) return;
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setLitCalOpen(true);
+    });
+  }
+  wireLitCalButton($("lit-cal-btn-welcome"));
+  wireLitCalButton($("lit-cal-btn-menu"));
+
+  if (litCalClose) {
+    litCalClose.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setLitCalOpen(false);
+    });
+  }
+  if (litCalModal) {
+    litCalModal.addEventListener("click", (e) => {
+      if (e.target === litCalModal) setLitCalOpen(false);
+    });
+  }
+
   // Help modal (?)
   const helpBtn = $("help-btn");
   const helpModal = $("help-modal");
@@ -2067,8 +2428,16 @@
     });
   }
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && helpModal && !helpModal.hidden) setHelpOpen(false);
+    if (e.key !== "Escape") return;
+    if (litCalModal && !litCalModal.hidden) {
+      setLitCalOpen(false);
+      return;
+    }
+    if (helpModal && !helpModal.hidden) setHelpOpen(false);
   });
+
+  // Exclude lit-cal from pointer handlers that clear UI
+  // (toolbar already covered; modal is outside toolbar)
 
   if (EXTRACT_TEST) {
     runExtractTest();

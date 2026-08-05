@@ -2447,7 +2447,7 @@
           e.target &&
           typeof e.target.closest === "function" &&
           e.target.closest(
-            ".toolbar, .page-bar, .diag-ui, .play-menu-panel, .tools-panel, .tools-menu, .sound-status-panel, .help-modal"
+            ".toolbar, .page-bar, .diag-ui, .play-menu-panel, .tools-panel, .tools-menu, .sound-status-panel, .help-modal, .lit-cal-modal"
           );
         if (!onScore && !onToolbar) {
           clearSeekHighlight();
