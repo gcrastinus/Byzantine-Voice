@@ -134,15 +134,32 @@ def extract(path):
             raw = st["raw"]
             sp = raw["spacing"]
             bottom = raw["lineYs"][4]
-            st["notes"].sort(key=lambda n: n["x"])
-            # chord filter: same x (±1pt) → keep top (higher = smaller y)
-            filtered = []
+            st["notes"].sort(key=lambda n: (n["x"], n["y"]))
+            # Multi-voice: collapse each column to top head only (monophonic play).
+            # Wider x tolerance than 1pt — Finale sometimes staggers chord tones.
+            x_tol = max(4.5, sp * 1.05)
+            y_stack_min = sp * 0.4
+            clusters = []
             for n in st["notes"]:
-                if filtered and abs(n["x"] - filtered[-1]["x"]) < 1.0:
-                    if n["y"] < filtered[-1]["y"]:
-                        filtered[-1] = n
-                    continue
-                filtered.append(n)
+                if clusters and abs(n["x"] - clusters[-1]["ref_x"]) <= x_tol:
+                    clusters[-1]["members"].append(n)
+                    m = clusters[-1]["members"]
+                    clusters[-1]["ref_x"] = sum(t["x"] for t in m) / len(m)
+                else:
+                    clusters.append({"members": [n], "ref_x": n["x"]})
+            filtered = []
+            for cl in clusters:
+                mem = cl["members"]
+                top = min(mem, key=lambda t: t["y"])  # smaller y = higher on page
+                y_span = max(t["y"] for t in mem) - min(t["y"] for t in mem)
+                x_span = max(t["x"] for t in mem) - min(t["x"] for t in mem)
+                if len(mem) >= 2 and y_span > y_stack_min:
+                    filtered.append(top)  # multi-voice column
+                elif len(mem) >= 2 and x_span < 1.25:
+                    filtered.append(top)  # duplicate
+                else:
+                    mem_sorted = sorted(mem, key=lambda t: (t["x"], t["y"]))
+                    filtered.extend(mem_sorted)
             # Attach flags (j/J = 8th, k/K = 16th) to nearest filled head
             for f in st["flags"]:
                 best, best_score = None, 1e9

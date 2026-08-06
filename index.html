@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chant Sight-Singing Trainer</title>
-  <link rel="stylesheet" href="style.css?v=57" />
+  <link rel="stylesheet" href="style.css?v=58" />
   <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -184,6 +184,10 @@
                     title="Upload a PDF first to play the score">
               Play All <span class="play-icon" aria-hidden="true">▶</span>
             </button>
+            <!-- Shown when the current PDF page has stacked/harmony noteheads -->
+            <div id="harmony-hint" class="harmony-hint" hidden role="status">
+              This page has multi-voice chords. The app follows one melody note per beat (top voice), not full harmony.
+            </div>
           </div>
         </div>
       </div>
@@ -193,6 +197,9 @@
   <div id="mic-error" class="mic-error" hidden role="alert"></div>
   <div id="score-banner" class="score-banner" hidden role="status"></div>
   <div id="extract-test-banner" class="extract-test-banner" hidden role="status"></div>
+
+  <!-- Shown when you scroll near the bottom of a multi-page score -->
+  <div id="page-advance-hint" class="page-advance-hint" hidden aria-live="polite"></div>
 
   <div id="countdown" class="countdown" hidden aria-hidden="true"></div>
 
@@ -299,8 +306,8 @@
   </div>
 
   <script src="audio.js?v=6"></script>
-  <script src="extractor.js?v=9"></script>
-  <script src="app.js?v=35"></script>
+  <script src="extractor.js?v=12"></script>
+  <script src="app.js?v=39"></script>
   <script src="follow.js?v=61"></script>
   <script src="diagnose.js?v=18"></script>
   <script src="pitch.js?v=13"></script>

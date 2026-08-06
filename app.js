@@ -76,6 +76,7 @@
     nextPage: $("next-page"),
     pageLabel: $("page-label"),
     pageAdvanceHint: $("page-advance-hint"),
+    harmonyHint: $("harmony-hint"),
     uploadSaveToggle: $("upload-save-toggle"),
   };
 
@@ -167,8 +168,8 @@
   // Bump SCORE_CACHE_VER whenever extractor output changes in a way that
   // old cached scores must not be reused (e.g. eighth-flag support).
   // Cache keys include this version so stale entries are simply ignored.
-  // ex10 = flags only from music font; no lyric j/J → false eighths (James/John)
-  const SCORE_CACHE_VER = "ex10";
+  // ex13 = geometric top-voice filter (column stacks → highest pitch only)
+  const SCORE_CACHE_VER = "ex13";
   const IDB_NAME = "byzantine-voice-scores";
   const IDB_STORE = "scores";
   const IDB_VERSION = 1;
@@ -416,6 +417,156 @@
 
   function isValidScore(json) {
     return json && typeof json === "object" && Array.isArray(json.pages);
+  }
+
+  /**
+   * Geometric top-voice filter (runs on the flattened note list every setScore).
+   *
+   * If several noteheads sit in one vertical column (close in x, spread in y
+   * within about one staff height), keep ONLY the top musical pitch — never
+   * arpeggiate SATB chords. Relies on geometry + midi, not staffIndex, so a
+   * bad staff split cannot leave three voices as sequential notes.
+   *
+   * Monophonic music (no vertical stacks) is unchanged.
+   */
+  function ensureTopVoiceOnly(notes) {
+    if (!notes || !notes.length) return notes || [];
+
+    // Work per PDF page so systems on other pages never interact
+    const byPage = new Map();
+    for (const n of notes) {
+      const p = n.pdfPage != null ? n.pdfPage : 1;
+      if (!byPage.has(p)) byPage.set(p, []);
+      byPage.get(p).push(n);
+    }
+
+    const out = [];
+    let stacks = 0;
+    let removed = 0;
+
+    for (const list of byPage.values()) {
+      const sp =
+        (list[0] && list[0].staffSpacing) ||
+        4.32;
+      const xTol = Math.max(5, sp * 1.2); // ~5pt — Finale chord stagger
+      const yStackMin = sp * 0.35; // distinct pitches in a column
+      const ySameSystem = sp * 5.5; // don't merge two systems at same x
+
+      const sorted = list.slice().sort((a, b) => {
+        const ax = a.x != null ? a.x : 0;
+        const bx = b.x != null ? b.x : 0;
+        if (ax !== bx) return ax - bx;
+        const ay = a.y != null ? a.y : 0;
+        const by = b.y != null ? b.y : 0;
+        return ay - by;
+      });
+
+      const used = new Array(sorted.length).fill(false);
+
+      for (let i = 0; i < sorted.length; i++) {
+        if (used[i]) continue;
+        const a = sorted[i];
+        const ax = a.x != null ? Number(a.x) : 0;
+        const ay = a.y != null ? Number(a.y) : 0;
+        if (!Number.isFinite(ax) || !Number.isFinite(ay)) {
+          out.push(a);
+          used[i] = true;
+          continue;
+        }
+
+        // Gather geometrically stacked notes (same column, same system)
+        const cluster = [a];
+        const idxs = [i];
+        used[i] = true;
+        for (let j = i + 1; j < sorted.length; j++) {
+          if (used[j]) continue;
+          const b = sorted[j];
+          const bx = b.x != null ? Number(b.x) : NaN;
+          const by = b.y != null ? Number(b.y) : NaN;
+          if (!Number.isFinite(bx) || !Number.isFinite(by)) continue;
+          if (bx - ax > xTol) break; // sorted by x
+          if (Math.abs(bx - ax) <= xTol && Math.abs(by - ay) <= ySameSystem) {
+            cluster.push(b);
+            idxs.push(j);
+            used[j] = true;
+          }
+        }
+
+        if (cluster.length === 1) {
+          out.push(cluster[0]);
+          continue;
+        }
+
+        let yMin = Infinity;
+        let yMax = -Infinity;
+        for (const n of cluster) {
+          const y = Number(n.y);
+          if (y < yMin) yMin = y;
+          if (y > yMax) yMax = y;
+        }
+        const ySpan = yMax - yMin;
+
+        if (ySpan > yStackMin) {
+          // Multi-voice column: keep highest pitch (prefer midi; else top of page)
+          stacks += 1;
+          removed += cluster.length - 1;
+          let best = cluster[0];
+          for (let k = 1; k < cluster.length; k++) {
+            const n = cluster[k];
+            const bm = best.midi;
+            const nm = n.midi;
+            if (
+              bm != null &&
+              nm != null &&
+              Number.isFinite(bm) &&
+              Number.isFinite(nm)
+            ) {
+              if (nm > bm) best = n;
+              else if (nm === bm && Number(n.y) < Number(best.y)) best = n;
+            } else if (Number(n.y) < Number(best.y)) {
+              // top-left: smaller y = higher on page
+              best = n;
+            }
+          }
+          out.push(best);
+        } else {
+          // Same height (duplicates / jitter): keep left-to-right all, or one if x-identical
+          cluster.sort((p, q) => Number(p.x) - Number(q.x) || Number(p.y) - Number(q.y));
+          const x0 = Number(cluster[0].x);
+          const x1 = Number(cluster[cluster.length - 1].x);
+          if (x1 - x0 < 1.25) {
+            out.push(cluster[0]);
+            removed += cluster.length - 1;
+          } else {
+            for (const n of cluster) out.push(n);
+          }
+        }
+      }
+    }
+
+    out.sort((a, b) => {
+      const ap = a.pdfPage != null ? a.pdfPage : 0;
+      const bp = b.pdfPage != null ? b.pdfPage : 0;
+      if (ap !== bp) return ap - bp;
+      const as = a.staffIndex != null ? a.staffIndex : 0;
+      const bs = b.staffIndex != null ? b.staffIndex : 0;
+      if (as !== bs) return as - bs;
+      return (a.x || 0) - (b.x || 0) || (a.y || 0) - (b.y || 0);
+    });
+    for (let i = 0; i < out.length; i++) {
+      out[i].globalIndex = i;
+    }
+    if (stacks > 0 || removed > 0) {
+      console.info(
+        "[Byzantine Voice] top-voice geometric filter:",
+        "stacks=" + stacks,
+        "removed=" + removed,
+        notes.length + "→" + out.length
+      );
+    }
+    // Do NOT "stabilize" middle pitches toward neighbors — that could rewrite
+    // real contours (e.g. A–B–A). Only geometric multi-voice collapse remains.
+    return out;
   }
 
   /**
@@ -1124,6 +1275,7 @@
     els.prevPage.disabled = !n || p <= 1;
     els.nextPage.disabled = !n || p >= n;
     updatePageAdvanceHint();
+    updateHarmonyHint();
   }
 
   /**
@@ -1137,15 +1289,19 @@
     if (!hint || !stage) return;
 
     const hasNext = !!state.pdfDoc && state.pageNum < state.pageCount;
-    const maxScroll = stage.scrollHeight - stage.clientHeight;
+    const maxScroll = Math.max(0, stage.scrollHeight - stage.clientHeight);
     // Purely a function of where the view is — not of whether anything is
     // playing. Someone just reading around the score should learn what happens
     // at the foot of a page without having to start a run to find out.
-    const nearBottom = maxScroll - stage.scrollTop < PAGE_HINT_SLACK_PX;
+    // Short pages (maxScroll ≈ 0): still show the cue so multi-page is obvious.
+    const nearBottom =
+      maxScroll <= 8 || maxScroll - stage.scrollTop < PAGE_HINT_SLACK_PX;
 
-    if (!hasNext || !nearBottom) {
+    if (!hasNext || !nearBottom || !state.pdfDoc) {
       // Leave it in the DOM so it fades out; pointer-events:none keeps it inert.
       hint.classList.remove("is-visible");
+      // Keep element present but inert when hidden via class only
+      if (!hasNext || !state.pdfDoc) hint.hidden = true;
       return;
     }
 
@@ -1159,6 +1315,30 @@
     if (!hint.classList.contains("is-visible")) {
       requestAnimationFrame(() => hint.classList.add("is-visible"));
     }
+  }
+
+  /**
+   * When the viewed page has stacked multi-voice noteheads (same x, several
+   * pitches), show a small notice near Play All. The trainer keeps the top voice.
+   */
+  function updateHarmonyHint() {
+    const hint = els.harmonyHint;
+    if (!hint) return;
+    if (!state.score || !state.pdfDoc || !Array.isArray(state.score.pages)) {
+      hint.hidden = true;
+      return;
+    }
+    const pageIndex0 = (state.pageNum | 0) - 1;
+    let page = null;
+    for (const p of state.score.pages) {
+      const idx = p.index != null ? p.index : 0;
+      if (idx === pageIndex0) {
+        page = p;
+        break;
+      }
+    }
+    const show = !!(page && page.hasHarmonyStacks);
+    hint.hidden = !show;
   }
 
   /** Scroll the stage to the top of the current PDF page. */
@@ -1270,7 +1450,7 @@
       : new Set();
 
     state.score = scoreJson;
-    state.notes = flattenNotes(scoreJson);
+    state.notes = ensureTopVoiceOnly(flattenNotes(scoreJson));
     if (options.override) {
       state.scoreOverride = true;
       state.extractComplete = true;
@@ -1283,6 +1463,8 @@
 
     updateScoreBanner();
     updateSaveScoreBtn();
+    updateHarmonyHint();
+    updatePageAdvanceHint();
 
     // Full replace (first batch, cache, override): reset practice cursor
     if (!options.partial) {

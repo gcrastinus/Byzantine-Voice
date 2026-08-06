@@ -450,10 +450,42 @@ body.has-pdf .upload-first-hint {
 
 /* —— Play Music (far right) —— */
 .play-controls {
+  position: relative;
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.45rem 0.65rem;
+}
+
+/* Multi-voice / chord page notice (near Play All) */
+.harmony-hint {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: auto;
+  z-index: 45;
+  max-width: min(22rem, 92vw);
+  padding: 0.55rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #1a1408;
+  background: rgba(250, 220, 120, 0.97);
+  border: 1px solid rgba(180, 130, 40, 0.55);
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  white-space: normal;
+  pointer-events: none;
+}
+
+.harmony-hint[hidden] {
+  display: none !important;
+}
+
+body.compact-toolbar .harmony-hint {
+  right: auto;
+  left: 0;
+  max-width: min(18rem, 88vw);
 }
 
 .play-controls .play-icon,
