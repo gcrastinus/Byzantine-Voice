@@ -46,17 +46,27 @@
     return MUSIC_FONTS.some((m) => f.indexOf(m) !== -1);
   }
 
-  /** True for Maestro code points we care about even if font name is unresolved. */
-  function isKnownMusicChar(c) {
+  /**
+   * Glyphs we may keep when the music font name failed to resolve (pdf.js
+   * commonObjs lag). Must NOT include ordinary Latin letters that appear in
+   * Times New Roman lyrics — especially w/W (whole/recit heads in Maestro but
+   * also the letter “w” in words). Treating those without a music font invented
+   * ghost notes buried in the text under the staff (false path lines).
+   *
+   * Safe without font: œ half-head, flags j/J/k/K, clefs, augmentation dots.
+   * Require music font: w, W, accidentals b/n/#.
+   */
+  function isSafeUnresolvedMusicChar(c) {
     if (!c) return false;
-    return (
-      Object.prototype.hasOwnProperty.call(NOTEHEADS, c) ||
-      Object.prototype.hasOwnProperty.call(FLAG_WEIGHT, c) ||
-      Object.prototype.hasOwnProperty.call(ACCIDENTALS, c) ||
-      c === "&" ||
-      c === "?" ||
-      c === "."
-    );
+    if (c === "\u0153" || c === "\u02D9") return true; // filled / half heads
+    if (Object.prototype.hasOwnProperty.call(FLAG_WEIGHT, c)) return true;
+    if (c === "&" || c === "?" || c === ".") return true;
+    return false;
+  }
+
+  /** @deprecated use isSafeUnresolvedMusicChar — kept for tests / exports */
+  function isKnownMusicChar(c) {
+    return isSafeUnresolvedMusicChar(c);
   }
 
   function round(n, d) {
@@ -279,9 +289,10 @@
       const list = Array.isArray(glyphs) ? glyphs : [glyphs];
 
       // Always walk the list so the text matrix advances correctly.
-      // Emit a glyph if the active font is Maestro/Petrucci OR the character is
-      // a known music code point (œ, j/J flags, …). Font names sometimes fail to
-      // resolve until commonObjs is ready — that used to drop all flags.
+      // Emit if font is Maestro/Petrucci, OR a *safe* unresolved music glyph
+      // (flags/œ — not Latin w/W from lyrics). Unresolved font names used to
+      // drop all flags; the first fix was too broad and pulled lyric “w” in as
+      // whole notes under the staff.
       for (const g of list) {
         if (g == null) continue;
         // TJ numbers: horizontal displacement in thousandths of text space
@@ -310,7 +321,7 @@
         for (let i = 0; i < ch.length; i++) {
           const c = ch[i];
           if (!c || !c.trim()) continue;
-          if (musicFont || isKnownMusicChar(c)) {
+          if (musicFont || isSafeUnresolvedMusicChar(c)) {
             out.push({ c, x, y: yTop });
           }
         }

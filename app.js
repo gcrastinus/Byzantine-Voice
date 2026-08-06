@@ -167,7 +167,8 @@
   // Bump SCORE_CACHE_VER whenever extractor output changes in a way that
   // old cached scores must not be reused (e.g. eighth-flag support).
   // Cache keys include this version so stale entries are simply ignored.
-  const SCORE_CACHE_VER = "ex8"; // ex8 = Maestro j/J flags → glyph "eighth"
+  // ex9 = do not treat lyric Latin w/W as whole/recit (false low notes under staff)
+  const SCORE_CACHE_VER = "ex9";
   const IDB_NAME = "byzantine-voice-scores";
   const IDB_STORE = "scores";
   const IDB_VERSION = 1;
