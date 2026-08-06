@@ -1055,22 +1055,32 @@
     // First load: Upload/Settings blue. After score: Match Pitch blue.
     if (uploadSaveToggle) {
       uploadSaveToggle.classList.toggle("btn-primary", !ready);
-      uploadSaveToggle.title = ready
-        ? "Upload & Settings: sound & mic, save or load a score, upload another PDF"
+      const hasPdfTitle =
+        typeof document !== "undefined" &&
+        document.body &&
+        document.body.classList &&
+        document.body.classList.contains("has-pdf");
+      uploadSaveToggle.title = hasPdfTitle
+        ? "Settings: sound & mic, save or load a score, upload another PDF"
         : "Upload a PDF first — then sound, mic, and other options unlock";
     }
     if (uploadBtn && uploadBtn.classList && typeof uploadBtn.classList.toggle === "function") {
       uploadBtn.classList.toggle("btn-primary", !ready);
     }
 
-    // Phone Tools ▾ — grayed/disabled until a score is ready
+    // Compact Tools ▾ — grayed until a PDF is loaded (items inside still wait for score)
+    const hasPdf =
+      typeof document !== "undefined" &&
+      document.body &&
+      document.body.classList &&
+      document.body.classList.contains("has-pdf");
     if (toolsToggle) {
-      toolsToggle.classList.toggle("is-awaiting-score", !ready);
-      toolsToggle.disabled = !ready;
-      toolsToggle.title = ready
+      toolsToggle.classList.toggle("is-awaiting-score", !hasPdf);
+      toolsToggle.disabled = !hasPdf;
+      toolsToggle.title = hasPdf
         ? "Practice tools: Match Pitch, Transpose, Tempo, Assess, Play"
         : "Upload a PDF first to use practice tools";
-      if (!ready && toolsMenu) {
+      if (!hasPdf && toolsMenu) {
         toolsMenu.classList.remove("is-open");
         toolsToggle.classList.remove("is-open");
         toolsToggle.setAttribute("aria-expanded", "false");

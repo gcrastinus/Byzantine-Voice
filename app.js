@@ -167,8 +167,8 @@
   // Bump SCORE_CACHE_VER whenever extractor output changes in a way that
   // old cached scores must not be reused (e.g. eighth-flag support).
   // Cache keys include this version so stale entries are simply ignored.
-  // ex9 = do not treat lyric Latin w/W as whole/recit (false low notes under staff)
-  const SCORE_CACHE_VER = "ex9";
+  // ex10 = flags only from music font; no lyric j/J → false eighths (James/John)
+  const SCORE_CACHE_VER = "ex10";
   const IDB_NAME = "byzantine-voice-scores";
   const IDB_STORE = "scores";
   const IDB_VERSION = 1;
@@ -319,6 +319,31 @@
     const firstHint = $("upload-first-hint");
     if (firstHint) firstHint.hidden = hasPdf;
     updateSaveScoreBtn();
+    // Compact Tools unlocks with PDF (items inside stay gray until notes ready)
+    const toolsToggle = $("tools-toggle");
+    if (toolsToggle) {
+      toolsToggle.disabled = !hasPdf;
+      toolsToggle.classList.toggle("is-awaiting-score", !hasPdf);
+      toolsToggle.title = hasPdf
+        ? "Practice tools: Match Pitch, Transpose, Tempo, Assess, Play"
+        : "Upload a PDF first to use practice tools";
+      if (!hasPdf) {
+        const tm = $("tools-menu");
+        if (tm) tm.classList.remove("is-open");
+        toolsToggle.classList.remove("is-open");
+        toolsToggle.setAttribute("aria-expanded", "false");
+      }
+    }
+    // Compact label is Upload → Settings based on has-pdf; remeasure bar
+    if (typeof window.updateCompactToolbar === "function") {
+      window.updateCompactToolbar();
+    } else {
+      setTimeout(() => {
+        if (typeof window.updateCompactToolbar === "function") {
+          window.updateCompactToolbar();
+        }
+      }, 0);
+    }
   }
 
   /**
@@ -1900,41 +1925,45 @@
   }
 
   /**
-   * Compact toolbar (Upload + Tools ▾) when the full practice bar would wrap
-   * to two lines, or on narrow phone widths. Class: body.compact-toolbar.
+   * Compact toolbar (Upload|Settings + Tools ▾) when the full practice bar
+   * would not fit on one line (phone, narrow window, or wrapped two-line bar).
+   * Wide screens: hide Tools button and show Match / Transpose / Tempo / etc.
    */
   function updateCompactToolbar() {
     const toolbar = document.querySelector(".toolbar");
     if (!toolbar || !document.body) return;
 
     const wasCompact = document.body.classList.contains("compact-toolbar");
-    // Measure with full desktop layout so we know if it *would* wrap
+    // Measure with full desktop one-line layout
     document.body.classList.remove("compact-toolbar");
     document.body.classList.add("toolbar-measuring");
-    // Force layout
-    void toolbar.offsetHeight;
+    void toolbar.offsetWidth;
 
-    const barH = toolbar.getBoundingClientRect().height;
-    const sampleBtn =
-      toolbar.querySelector("#upload-save-toggle") ||
-      toolbar.querySelector(".btn");
-    const btnH = sampleBtn
-      ? sampleBtn.getBoundingClientRect().height
-      : 54;
-    // One row ≈ button height + vertical padding; two rows is clearly taller
-    const oneRowMax = btnH * 1.55 + 20;
-    const wraps = barH > oneRowMax;
+    const filesEl = toolbar.querySelector(".toolbar-files");
+    const toolsEl = document.getElementById("tools-menu");
+    const panelEl = document.getElementById("tools-panel");
+    const barW = toolbar.clientWidth;
+    const filesW = filesEl ? filesEl.getBoundingClientRect().width : 0;
+    // Natural width of all practice tools in a single row
+    const toolsW = panelEl
+      ? panelEl.scrollWidth
+      : toolsEl
+        ? toolsEl.scrollWidth
+        : 0;
+    const gap = 16;
+    const needed = filesW + toolsW + gap;
+    // A little slack so we don't flicker at the exact edge
+    const overflow = needed > barW - 8;
     const narrow =
       typeof window.matchMedia === "function" &&
-      window.matchMedia("(max-width: 720px)").matches;
+      window.matchMedia("(max-width: 820px)").matches;
 
     document.body.classList.remove("toolbar-measuring");
 
-    // Hysteresis: once compact, require a bit more room before expanding again
-    let compact = wraps || narrow;
+    // Hysteresis: once compact, need ~40px spare before expanding again
+    let compact = overflow || narrow;
     if (wasCompact && !narrow) {
-      // Only leave compact if desktop layout clearly fits in one row
-      compact = wraps;
+      compact = needed > barW - 48;
     }
 
     document.body.classList.toggle("compact-toolbar", compact);
@@ -1942,6 +1971,9 @@
       setToolsMenuOpen(false);
     }
   }
+
+  // Allow other modules / PDF load to remeasure
+  window.updateCompactToolbar = updateCompactToolbar;
 
   let resizeTimer = null;
   let compactToolbarTimer = null;

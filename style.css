@@ -2027,35 +2027,35 @@ body.compact-toolbar .toolbar-group + .toolbar-group {
   padding-left: 0;
 }
 
-/* Short names; hide full “Upload & Settings” */
+/* Compact labels: “Upload” until a PDF is loaded, then “Settings” */
 body.compact-toolbar .us-label-full,
 body.compact-toolbar .hint-us-full {
   display: none;
 }
 
-body.compact-toolbar:not(.score-ready) .us-label-upload {
+body.compact-toolbar:not(.has-pdf) .us-label-upload {
   display: inline;
 }
-body.compact-toolbar:not(.score-ready) .us-label-settings {
+body.compact-toolbar:not(.has-pdf) .us-label-settings {
   display: none;
 }
-body.compact-toolbar.score-ready .us-label-upload {
+body.compact-toolbar.has-pdf .us-label-upload {
   display: none;
 }
-body.compact-toolbar.score-ready .us-label-settings {
+body.compact-toolbar.has-pdf .us-label-settings {
   display: inline;
 }
 
-body.compact-toolbar:not(.score-ready) .hint-us-upload {
+body.compact-toolbar:not(.has-pdf) .hint-us-upload {
   display: inline;
 }
-body.compact-toolbar:not(.score-ready) .hint-us-settings {
+body.compact-toolbar:not(.has-pdf) .hint-us-settings {
   display: none;
 }
-body.compact-toolbar.score-ready .hint-us-upload {
+body.compact-toolbar.has-pdf .hint-us-upload {
   display: none;
 }
-body.compact-toolbar.score-ready .hint-us-settings {
+body.compact-toolbar.has-pdf .hint-us-settings {
   display: inline;
 }
 
@@ -2174,19 +2174,32 @@ body.compact-toolbar .file-status {
   display: none;
 }
 
-/* While measuring wrap, force full desktop bar (no Tools toggle) */
+/**
+ * Measure pass: lay out the full desktop tool row on one line (no wrap) so we
+ * can see if it would overflow the toolbar width → need compact Upload+Tools.
+ */
 body.toolbar-measuring .tools-toggle {
   display: none !important;
+}
+body.toolbar-measuring .toolbar {
+  flex-wrap: nowrap !important;
+  overflow: hidden !important;
+}
+body.toolbar-measuring .tools-menu {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: visible !important;
 }
 body.toolbar-measuring .tools-panel {
   display: flex !important;
   position: static !important;
-  flex: 1 1 auto !important;
+  flex: 0 0 auto !important;
   flex-direction: row !important;
-  flex-wrap: wrap !important;
+  flex-wrap: nowrap !important;
   align-items: center !important;
   gap: 0.75rem 1.1rem !important;
-  min-width: 0 !important;
+  width: max-content !important;
+  min-width: max-content !important;
   max-width: none !important;
   max-height: none !important;
   overflow: visible !important;
@@ -2198,17 +2211,21 @@ body.toolbar-measuring .tools-panel {
 }
 body.toolbar-measuring .tools-panel .toolbar-group {
   flex-direction: row !important;
+  flex-wrap: nowrap !important;
   width: auto !important;
+  flex: 0 0 auto !important;
 }
 body.toolbar-measuring .tools-panel .btn,
 body.toolbar-measuring .tools-panel .file-btn {
   width: auto !important;
+  flex: 0 0 auto !important;
 }
 body.toolbar-measuring .tools-panel .tempo-controls,
 body.toolbar-measuring .tools-panel .transpose-controls-bar {
   width: auto !important;
   max-width: 15rem !important;
+  flex: 0 0 auto !important;
 }
 body.toolbar-measuring .tools-panel .toolbar-play-music {
-  margin-left: auto !important;
+  margin-left: 0.5rem !important;
 }

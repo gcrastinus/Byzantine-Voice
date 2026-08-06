@@ -48,18 +48,16 @@
 
   /**
    * Glyphs we may keep when the music font name failed to resolve (pdf.js
-   * commonObjs lag). Must NOT include ordinary Latin letters that appear in
-   * Times New Roman lyrics — especially w/W (whole/recit heads in Maestro but
-   * also the letter “w” in words). Treating those without a music font invented
-   * ghost notes buried in the text under the staff (false path lines).
+   * commonObjs lag). Must NOT include ordinary Latin letters from lyrics:
+   *   w/W → false whole/recit heads under the staff
+   *   j/J/k/K → false eighth flags on nearby noteheads (e.g. “James”, “John”)
    *
-   * Safe without font: œ half-head, flags j/J/k/K, clefs, augmentation dots.
-   * Require music font: w, W, accidentals b/n/#.
+   * Safe without font: œ, half-head (˙), clefs, augmentation dots.
+   * Flags and w/W/accidentals require a Maestro/Petrucci font.
    */
   function isSafeUnresolvedMusicChar(c) {
     if (!c) return false;
     if (c === "\u0153" || c === "\u02D9") return true; // filled / half heads
-    if (Object.prototype.hasOwnProperty.call(FLAG_WEIGHT, c)) return true;
     if (c === "&" || c === "?" || c === ".") return true;
     return false;
   }
@@ -459,11 +457,17 @@
   /**
    * Pair flag glyphs with the nearest filled notehead (œ).
    * Flags may sit above or below the head (stem up/down).
-   * Validated on 08-15_Dormition_DL.pdf staff 1 (notes 1,2,5,6,9,10,13,14).
+   * Validated on 08-15_Dormition_DL.pdf staff 1 (notes 1,2,5,6,9,10,13,14):
+   *   |dx|≈5pt, |dy|≈11pt with sp≈4.32 (~2.5× spacing).
+   * Lyric letters “j/J” under the staff are ~22–30pt below heads — reject those
+   * with a tighter dy cap so “James” / “John” / “likewise” are not eighths.
    */
   function attachFlagsToNotes(notes, flags, spacing) {
     if (!notes || !notes.length || !flags || !flags.length) return;
     const sp = spacing > 0 ? spacing : 4.32;
+    const maxDx = sp * 3.5;
+    // Real stem flags: ~2–3× spacing; lyrics sit much farther below the head
+    const maxDy = sp * 3.8;
     for (const f of flags) {
       let best = null;
       let bestScore = Infinity;
@@ -472,11 +476,9 @@
         if (n.c !== "\u0153") continue;
         const dx = f.x - n.x;
         const dy = Math.abs(f.y - n.y);
-        // Flag is near the stem: often slightly right of head, above or below
-        // Dormition sample: |dx|≈5pt, |dy|≈11pt with sp≈4.32
-        if (Math.abs(dx) > sp * 3.5) continue;
-        if (dy > sp * 8) continue;
-        // Prefer closer in x; y can be far along the stem
+        if (Math.abs(dx) > maxDx) continue;
+        if (dy > maxDy) continue;
+        // Prefer closer in x; y can run along the stem
         const score = Math.abs(dx) * 1.4 + dy * 0.35;
         if (score < bestScore) {
           bestScore = score;
