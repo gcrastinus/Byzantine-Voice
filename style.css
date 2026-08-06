@@ -143,8 +143,9 @@ body.has-pdf .upload-first-hint {
   gap: 0.75rem 1.1rem;
 }
 
+/* Hidden unless body.compact-toolbar — never show Tools on a full-width bar */
 .tools-toggle {
-  display: none; /* phone-only; shown in @media */
+  display: none !important;
 }
 
 .tools-panel {
@@ -2111,7 +2112,7 @@ body.compact-toolbar .tools-menu {
 }
 
 body.compact-toolbar .tools-toggle {
-  display: inline-flex;
+  display: inline-flex !important;
 }
 
 body.compact-toolbar .tools-toggle.is-awaiting-score:disabled,
@@ -2216,31 +2217,32 @@ body.compact-toolbar .file-status {
 }
 
 /**
- * Measure pass: lay out the full desktop tool row on one line (no wrap) so we
- * can see if it would overflow the toolbar width → need compact Upload+Tools.
+ * Measure pass: full desktop bar — Tools button hidden, all practice controls
+ * laid out as they would on a wide screen so we can test fit.
  */
 body.toolbar-measuring .tools-toggle {
   display: none !important;
 }
 body.toolbar-measuring .toolbar {
-  flex-wrap: nowrap !important;
-  overflow: hidden !important;
+  flex-wrap: wrap !important;
+  overflow: visible !important;
 }
 body.toolbar-measuring .tools-menu {
   flex: 1 1 auto !important;
   min-width: 0 !important;
   overflow: visible !important;
+  margin-left: 0 !important;
 }
 body.toolbar-measuring .tools-panel {
   display: flex !important;
   position: static !important;
-  flex: 0 0 auto !important;
+  flex: 1 1 auto !important;
   flex-direction: row !important;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important;
   align-items: center !important;
   gap: 0.75rem 1.1rem !important;
-  width: max-content !important;
-  min-width: max-content !important;
+  width: auto !important;
+  min-width: 0 !important;
   max-width: none !important;
   max-height: none !important;
   overflow: visible !important;
@@ -2249,6 +2251,16 @@ body.toolbar-measuring .tools-panel {
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+/* For scrollWidth: natural one-row width of the tool strip */
+body.toolbar-measuring .tools-panel-measure-row {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  width: max-content !important;
+  min-width: max-content !important;
+  gap: 0.75rem 1.1rem !important;
+  align-items: center !important;
 }
 body.toolbar-measuring .tools-panel .toolbar-group {
   flex-direction: row !important;
@@ -2268,5 +2280,5 @@ body.toolbar-measuring .tools-panel .transpose-controls-bar {
   flex: 0 0 auto !important;
 }
 body.toolbar-measuring .tools-panel .toolbar-play-music {
-  margin-left: 0.5rem !important;
+  margin-left: auto !important;
 }

@@ -1925,45 +1925,62 @@
   }
 
   /**
-   * Compact toolbar (Upload|Settings + Tools ▾) when the full practice bar
-   * would not fit on one line (phone, narrow window, or wrapped two-line bar).
-   * Wide screens: hide Tools button and show Match / Transpose / Tempo / etc.
+   * Compact toolbar (Upload|Settings + Tools ▾) ONLY when Match Pitch / Tempo /
+   * Transpose / Assess / Play would need a second toolbar row.
+   * Wide screens: no Tools button — those controls stay on the bar (grayed
+   * until a PDF is ready).
    */
   function updateCompactToolbar() {
     const toolbar = document.querySelector(".toolbar");
     if (!toolbar || !document.body) return;
 
     const wasCompact = document.body.classList.contains("compact-toolbar");
-    // Measure with full desktop one-line layout
+    // Measure full desktop layout: all tools on one row, Tools button hidden
     document.body.classList.remove("compact-toolbar");
     document.body.classList.add("toolbar-measuring");
     void toolbar.offsetWidth;
 
-    const filesEl = toolbar.querySelector(".toolbar-files");
-    const toolsEl = document.getElementById("tools-menu");
-    const panelEl = document.getElementById("tools-panel");
     const barW = toolbar.clientWidth;
+    // Layout not ready yet — don't force compact (avoids Tools on first paint)
+    if (barW < 80) {
+      document.body.classList.remove("toolbar-measuring");
+      return;
+    }
+
+    const filesEl = toolbar.querySelector(".toolbar-files");
+    const panelEl = document.getElementById("tools-panel");
+    const sampleBtn =
+      toolbar.querySelector("#match-pitch-btn") ||
+      toolbar.querySelector("#upload-save-toggle") ||
+      toolbar.querySelector(".btn");
+
     const filesW = filesEl ? filesEl.getBoundingClientRect().width : 0;
-    // Natural width of all practice tools in a single row
-    const toolsW = panelEl
-      ? panelEl.scrollWidth
-      : toolsEl
-        ? toolsEl.scrollWidth
-        : 0;
-    const gap = 16;
+
+    // Measure natural one-row width of tools (no wrap)
+    let toolsW = 0;
+    if (panelEl) {
+      panelEl.classList.add("tools-panel-measure-row");
+      void panelEl.offsetWidth;
+      toolsW = panelEl.scrollWidth;
+      panelEl.classList.remove("tools-panel-measure-row");
+    }
+    const gap = 12;
     const needed = filesW + toolsW + gap;
-    // A little slack so we don't flicker at the exact edge
-    const overflow = needed > barW - 8;
-    const narrow =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(max-width: 820px)").matches;
+    const overflow = needed > barW - 4;
+
+    // Also: with wrap allowed, does the bar become two rows tall?
+    void toolbar.offsetHeight;
+    const barH = toolbar.getBoundingClientRect().height;
+    const btnH = sampleBtn ? sampleBtn.getBoundingClientRect().height : 54;
+    const twoLines = barH > btnH * 1.7 + 20;
 
     document.body.classList.remove("toolbar-measuring");
 
-    // Hysteresis: once compact, need ~40px spare before expanding again
-    let compact = overflow || narrow;
-    if (wasCompact && !narrow) {
-      compact = needed > barW - 48;
+    // Compact ONLY when the full tool strip needs a second line / won't fit
+    let compact = overflow || twoLines;
+    if (wasCompact) {
+      // Stay compact until clearly enough room for one full row
+      compact = needed > barW - 36;
     }
 
     document.body.classList.toggle("compact-toolbar", compact);
