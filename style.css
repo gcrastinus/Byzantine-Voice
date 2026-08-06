@@ -1026,7 +1026,9 @@ body.has-pdf .upload-first-hint {
   display: flex;
   align-items: center;
   gap: 0.75rem 1.1rem;
-  padding: 0.55rem 1.25rem;
+  /* Extra side inset so Prev/Next don’t sit flush on phone screen edges */
+  padding: 0.55rem max(1.25rem, calc(12px + env(safe-area-inset-right, 0px)))
+    0.55rem max(1.25rem, calc(12px + env(safe-area-inset-left, 0px)));
   background: var(--surface);
   border-top: 1px solid var(--border);
   user-select: none;
@@ -1035,15 +1037,17 @@ body.has-pdf .upload-first-hint {
 
 .help-btn {
   flex: 0 0 auto;
-  width: 3.4rem;
-  min-width: 3.4rem;
-  min-height: 3.4rem;
+  /* Slightly tight box around “?” so page nav can sit inset without crowding */
+  width: 3.15rem;
+  min-width: 3.15rem;
+  min-height: 3.15rem;
   padding: 0;
-  font-size: 1.45rem;
+  font-size: 1.35rem;
   font-weight: 800;
   border: 1.5px solid #6c6d76;
   background: var(--bg);
   color: var(--text);
+  box-sizing: border-box;
 }
 
 .help-btn:hover {
@@ -1287,7 +1291,43 @@ body.has-pdf .upload-first-hint {
   align-items: center;
   gap: 0.55rem;
   margin-left: auto;
-  margin-right: 4vw;
+  /* Small nudge inward from the screen edge (~10–14px + safe area) */
+  margin-right: max(10px, 0.65rem);
+}
+
+/* Phone / narrow: Next inset from bezel; keep air between Help and page nav */
+@media (max-width: 720px) {
+  .page-bar {
+    gap: 0.45rem 0.55rem;
+    padding-left: max(0.75rem, calc(10px + env(safe-area-inset-left, 0px)));
+    padding-right: max(0.75rem, calc(10px + env(safe-area-inset-right, 0px)));
+  }
+  /* ~8–10px narrower “?” control → room so Prev doesn’t kiss Help */
+  .help-btn {
+    width: 2.85rem;
+    min-width: 2.85rem;
+    min-height: 2.85rem;
+    font-size: 1.25rem;
+  }
+  .page-bar-controls {
+    margin-right: max(10px, 0.65rem);
+    gap: 0.4rem;
+    /* Don’t let nav steal flex space from Help */
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .page-bar-btn {
+    min-width: 5.5rem;
+    min-height: 3rem;
+    padding: 0.45rem 0.75rem;
+    font-size: 1.1rem;
+  }
+  .page-bar .page-label {
+    min-width: 4.75rem;
+    min-height: 3rem;
+    padding: 0.45rem 0.65rem;
+    font-size: 1.1rem;
+  }
 }
 
 .page-bar-btn {
@@ -2063,9 +2103,10 @@ body.compact-toolbar .toolbar-files {
   flex: 0 0 auto;
 }
 
+/* Tools sits beside Upload/Settings on the left (not pushed to the far right) */
 body.compact-toolbar .tools-menu {
   flex: 0 0 auto;
-  margin-left: auto;
+  margin-left: 0;
   gap: 0;
 }
 
@@ -2085,13 +2126,13 @@ body.compact-toolbar .tools-toggle.is-open {
   background: var(--accent-soft);
 }
 
-/* Dropdown list of all practice controls */
+/* Dropdown list of all practice controls (opens under Tools, aligned left) */
 body.compact-toolbar .tools-panel {
   display: none;
   position: absolute;
   top: calc(100% + 6px);
-  right: 0;
-  left: auto;
+  left: 0;
+  right: auto;
   z-index: 40;
   flex: none;
   flex-direction: column;
