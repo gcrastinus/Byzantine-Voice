@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chant Sight-Singing Trainer</title>
-  <link rel="stylesheet" href="style.css?v=65" />
+  <link rel="stylesheet" href="style.css?v=68" />
   <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -367,6 +367,27 @@
     </div>
   </div>
 
+  <!-- First-load “How to use” (big, front-and-center; dismissed with ×) -->
+  <div id="howto-modal" class="howto-modal" hidden>
+    <div class="howto-modal-card" role="dialog" aria-modal="true" aria-labelledby="howto-title">
+      <button type="button" id="howto-close" class="diag-collapse" title="Close" aria-label="Close how to use">×</button>
+      <h2 id="howto-title">How to use</h2>
+      <div class="howto-body">
+        <ol class="howto-list">
+          <li><strong>Load a PDF</strong> of Byzantine chant (Upload &amp; Settings). For recent and upcoming feasts, open the
+            <button type="button" id="howto-lit-cal-btn" class="btn lit-cal-btn howto-inline-btn" title="Open the Byzantine Liturgical Calendar">Liturgical Calendar</button>
+            to browse the latest MCI sheet music.</li>
+          <li><strong>Play All</strong> hears the score from the top of the page you’re on. Click a note (or drag across notes) to hear just that section.</li>
+          <li><strong>Transpose</strong> shifts pitch up or down by half steps. <strong>Tempo</strong> makes Play faster or slower.</li>
+          <li><strong>Match Pitch</strong> — turn it on, click a note to hear it, then sing that pitch. The app shows when you match it.</li>
+          <li><strong>Find your range</strong> (under Assess) — sing Happy Birthday. The app sets transpose and tempo from how you sing.</li>
+          <li><strong>Assess Singing</strong> — click a start note and an end note, then <strong>Sing section</strong>. You’ll get <strong>3–2–1</strong>, hear the first note, then sing through to the end and press <strong>Finish</strong>. A short report rates your pitch on those notes. No audio is saved.</li>
+        </ol>
+        <p class="howto-foot">Open <strong>?</strong> anytime for more detail. Press <strong>×</strong> or Escape to start.</p>
+      </div>
+    </div>
+  </div>
+
   <!-- Help overlay -->
   <div id="help-modal" class="help-modal" hidden>
     <div class="help-modal-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
@@ -379,7 +400,8 @@
         <p><strong>Match Pitch</strong> — Click a note to hear it, then match the pitch with your voice. Click the button again (or press Escape) to turn it off.</p>
         <p><strong>Transpose</strong> — Shift every played and matched pitch by half steps (1½ octaves down to half an octave up). Default is written pitch (0). Hover the circled <strong>i</strong> for more detail. Release the slider to hear the first three notes at the new pitch. Match Pitch and Assess Singing use the same transpose.</p>
         <p><strong>Tempo</strong> — Speed for Play All, Play Starting Here, and drag-select playback.</p>
-        <p><strong>Assess Singing</strong> — Pick a start and end note, sing the section freely, then Finish for a pitch report. No audio is recorded.</p>
+        <p><strong>Assess Singing</strong> — Pick a start and end note, press Sing section. You get a 3–2–1 countdown, hear the first note, then sing freely through the section and press Finish for a pitch report. No audio is recorded.</p>
+        <p><strong>Find your range</strong> — Under Assess: sing Happy Birthday; the app sets transpose and tempo from your singing.</p>
         <p><strong>Play All / Play Starting Here</strong> — Computer plays the score at the Tempo setting. Play All starts at the top of the page you are viewing. Click a note first to start from there; click empty space to return to Play All.</p>
         <p><strong>Page navigation</strong> — Use Prev / Next at the bottom. The app also advances to the next page automatically while notes play (because of how notes are read from the PDF, continuous scroll is tricky).</p>
         <p><strong>Click &amp; drag</strong> on the score highlights a stretch and plays it. A single click plays that note.</p>
@@ -395,9 +417,9 @@
 
   <script src="audio.js?v=6"></script>
   <script src="extractor.js?v=13"></script>
-  <script src="app.js?v=42"></script>
+  <script src="app.js?v=45"></script>
   <script src="follow.js?v=63"></script>
-  <script src="diagnose.js?v=19"></script>
+  <script src="diagnose.js?v=20"></script>
   <script src="pitch.js?v=13"></script>
   <script src="range.js?v=2"></script>
   <script src="range-test-data.js?v=1"></script>

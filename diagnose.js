@@ -4,7 +4,7 @@
  * Flow:
  *  1. Toggle Diagnose on
  *  2. Click a START note, then a STOP note (range highlighted)
- *  3. Press “Sing section” (mic on) and sing through at any speed/octave
+ *  3. Press “Sing section” → 3–2–1 countdown → first-note pitch cue → listen
  *  4. Press “Finish” → report; wrong notes marked red on the score
  *  5. Session metadata (section + mistake categories) saved per PDF in localStorage
  *     — pitch samples only live in memory during the run; nothing is recorded.
@@ -704,6 +704,7 @@
       diag.phase === "ready" ||
       diag.phase === "listening" ||
       diag.phase === "cueing" ||
+      diag.phase === "countdown" ||
       diag.phase === "needStart" ||
       diag.phase === "needEnd";
 
@@ -711,11 +712,17 @@
       dock.hidden = !needsDock;
       dock.classList.toggle(
         "is-listening",
-        diag.phase === "listening" || diag.phase === "cueing"
+        diag.phase === "listening" ||
+          diag.phase === "cueing" ||
+          diag.phase === "countdown"
       );
     }
 
-    if (diag.phase === "listening" || diag.phase === "cueing") {
+    if (
+      diag.phase === "listening" ||
+      diag.phase === "cueing" ||
+      diag.phase === "countdown"
+    ) {
       bar.innerHTML = `<button type="button" class="btn btn-primary" id="diag-finish-btn">Finish singing</button>
         <button type="button" class="btn" id="diag-cancel-listen">Cancel</button>`;
       const f = document.getElementById("diag-finish-btn");
@@ -725,6 +732,7 @@
         c.addEventListener("click", () => {
           diag.samples = [];
           diag.phase = "ready";
+          showDiagCount(null);
           ensureMicOff();
           setBanner(
             `Assess: notes ${range().start + 1}–${range().end + 1} selected. Press “Sing section”.`,
@@ -786,9 +794,50 @@
     return !!(mic && mic.getAttribute("aria-pressed") === "true");
   }
 
+  /** Big 3-2-1 over the score (same #countdown element as Play / Begin). */
+  function showDiagCount(text) {
+    const c = $("countdown");
+    if (!c) return;
+    if (text == null) {
+      c.hidden = true;
+      c.textContent = "";
+      c.classList.remove("is-tick");
+      return;
+    }
+    c.hidden = false;
+    c.textContent = text;
+    c.classList.remove("is-tick");
+    void c.offsetWidth;
+    c.classList.add("is-tick");
+  }
+
+  /** 3 → 2 → 1 (~700 ms each). Returns false if Assess was cancelled mid-count. */
+  function runDiagCountdown() {
+    return new Promise((resolve) => {
+      let n = 3;
+      showDiagCount(String(n));
+      const id = setInterval(() => {
+        if (!diag.on || (diag.phase !== "cueing" && diag.phase !== "countdown")) {
+          clearInterval(id);
+          showDiagCount(null);
+          resolve(false);
+          return;
+        }
+        n -= 1;
+        if (n <= 0) {
+          clearInterval(id);
+          showDiagCount(null);
+          resolve(true);
+          return;
+        }
+        showDiagCount(String(n));
+      }, 700);
+    });
+  }
+
   /**
-   * Sing section: turn mic on, play the first note of the range as a pitch cue
-   * (no countdown), then start capturing samples so the cue isn’t scored as singing.
+   * Sing section: 3–2–1 countdown → play the first note as a pitch cue →
+   * then capture samples (cue is not scored as singing).
    */
   async function startListening() {
     const r = range();
@@ -810,7 +859,7 @@
 
     diag.samples = [];
     diag.lastResult = null;
-    diag.phase = "cueing"; // not sampling yet
+    diag.phase = "countdown";
     setReport("");
     refreshVisual(null);
     refreshVisual(); // range only
@@ -819,6 +868,24 @@
     const first = t.notes[r.start];
     if (t.focusNote) t.focusNote(r.start);
 
+    setBanner(
+      `Get ready… 3–2–1, then hear the starting note. Sing notes ${r.start + 1}–${r.end + 1}.`,
+      true,
+      { forceOpen: false }
+    );
+    updateActionButtons();
+
+    const counted = await runDiagCountdown();
+    if (!counted || !diag.on) {
+      showDiagCount(null);
+      return;
+    }
+    if (diag.phase !== "countdown") {
+      showDiagCount(null);
+      return;
+    }
+
+    diag.phase = "cueing"; // not sampling yet
     setBanner(
       `Hear the starting note, then sing notes ${r.start + 1}–${r.end + 1}. Press Finish when done.`,
       true,
@@ -878,11 +945,14 @@
     const t = trainer();
     const r = range();
     if (!t || !r) return;
+    // Only finish after listening has actually started (not mid countdown/cue)
+    if (diag.phase !== "listening") return;
 
     // Copy samples then clear (no long-term audio or pitch dump)
     const samples = diag.samples.slice();
     diag.samples = [];
     diag.phase = "done";
+    showDiagCount(null);
 
     const result = analyzeSection(t.notes, r.start, r.end, samples);
     diag.lastResult = result;
@@ -932,8 +1002,13 @@
    */
   function handleNoteClick(i) {
     if (!diag.on) return false;
-    // While analyzing / cueing, ignore retarget clicks so the singer isn't interrupted
-    if (diag.phase === "listening" || diag.phase === "cueing") return true;
+    // While analyzing / cueing / countdown, ignore retarget clicks so the singer isn't interrupted
+    if (
+      diag.phase === "listening" ||
+      diag.phase === "cueing" ||
+      diag.phase === "countdown"
+    )
+      return true;
 
     const t = trainer();
     if (!t || !t.notes[i]) return false;
@@ -1022,6 +1097,7 @@
     setBtn(false);
     setBanner(null);
     setReport("");
+    showDiagCount(null);
     // Leaving Assess always releases the mic; Begin / Match Pitch turn it on again.
     ensureMicOff();
     // Must clear start/end first, then wipe overlay — otherwise residual
@@ -1111,7 +1187,13 @@
     window.trainer.onPitch = function (midi, clarity) {
       onPitch(midi, clarity);
       // While diagnosing a section (cue or listen), don't let free-follow advance
-      if (diag.on && (diag.phase === "listening" || diag.phase === "cueing")) return;
+      if (
+        diag.on &&
+        (diag.phase === "listening" ||
+          diag.phase === "cueing" ||
+          diag.phase === "countdown")
+      )
+        return;
       if (typeof prev === "function") prev(midi, clarity);
     };
 

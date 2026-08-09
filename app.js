@@ -2931,6 +2931,38 @@
     });
   }
 
+  // “How to use” every time the app is opened (this page load only).
+  // Closing it is for this visit; next open shows it again.
+  const howtoModal = $("howto-modal");
+  const howtoClose = $("howto-close");
+  function setHowtoOpen(open) {
+    if (!howtoModal) return;
+    howtoModal.hidden = !open;
+  }
+  if (howtoClose) {
+    howtoClose.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setHowtoOpen(false);
+    });
+  }
+  // “liturgical calendar” inside How to use → dismiss howto, open MCI calendar
+  const howtoLitCal = $("howto-lit-cal-btn");
+  if (howtoLitCal) {
+    howtoLitCal.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setHowtoOpen(false);
+      setLitCalOpen(true);
+    });
+  }
+  if (howtoModal) {
+    howtoModal.addEventListener("click", (e) => {
+      if (e.target === howtoModal) setHowtoOpen(false);
+    });
+    // Always show after paint on each new open / reload
+    setTimeout(() => setHowtoOpen(true), 80);
+  }
+
   // Help modal (?)
   const helpBtn = $("help-btn");
   const helpModal = $("help-modal");
@@ -2958,6 +2990,10 @@
   }
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
+    if (howtoModal && !howtoModal.hidden) {
+      setHowtoOpen(false);
+      return;
+    }
     if (litCalModal && !litCalModal.hidden) {
       setLitCalOpen(false);
       return;
