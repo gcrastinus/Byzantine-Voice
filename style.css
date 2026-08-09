@@ -1460,11 +1460,29 @@ body.compact-toolbar .harmony-hint {
   color: var(--text);
 }
 
-.howto-modal-card h2 {
-  margin: 0 2.25rem 1rem 0;
-  font-size: clamp(1.45rem, 3.5vw, 1.85rem);
+.howto-app-name {
+  margin: 0 2.25rem 0.25rem 0;
+  font-size: clamp(1.65rem, 4vw, 2.1rem);
   font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
   color: #eef2ff;
+}
+
+.howto-app-sub {
+  margin: 0 2.25rem 1rem 0;
+  font-size: clamp(0.98rem, 2.2vw, 1.12rem);
+  font-weight: 600;
+  line-height: 1.35;
+  color: #a8b4cc;
+}
+
+.howto-modal-card h2.howto-section-title,
+.howto-section-title {
+  margin: 0 2.25rem 0.85rem 0;
+  font-size: clamp(1.2rem, 2.8vw, 1.45rem);
+  font-weight: 800;
+  color: #d7e5ff;
 }
 
 .howto-body {
@@ -1528,6 +1546,26 @@ body.compact-toolbar .harmony-hint {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--muted, #9a9ba5);
+}
+
+/* Mini “?” box matching the footer Help button look */
+.howto-help-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin: 0 0.12rem;
+  padding: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1;
+  vertical-align: -0.15em;
+  color: var(--text);
+  background: var(--bg, #1a1b1e);
+  border: 1.5px solid #6c6d76;
+  border-radius: var(--radius, 8px);
+  box-sizing: border-box;
 }
 
 /* Help modal overlay */

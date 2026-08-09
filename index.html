@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chant Sight-Singing Trainer</title>
-  <link rel="stylesheet" href="style.css?v=68" />
+  <link rel="stylesheet" href="style.css?v=70" />
   <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -369,9 +369,11 @@
 
   <!-- First-load “How to use” (big, front-and-center; dismissed with ×) -->
   <div id="howto-modal" class="howto-modal" hidden>
-    <div class="howto-modal-card" role="dialog" aria-modal="true" aria-labelledby="howto-title">
+    <div class="howto-modal-card" role="dialog" aria-modal="true" aria-labelledby="howto-app-name">
       <button type="button" id="howto-close" class="diag-collapse" title="Close" aria-label="Close how to use">×</button>
-      <h2 id="howto-title">How to use</h2>
+      <p id="howto-app-name" class="howto-app-name">Byzantine Voice</p>
+      <p class="howto-app-sub">Ear and voice training for Ruthenian chant</p>
+      <h2 id="howto-title" class="howto-section-title">How to use</h2>
       <div class="howto-body">
         <ol class="howto-list">
           <li><strong>Load a PDF</strong> of Byzantine chant (Upload &amp; Settings). For recent and upcoming feasts, open the
@@ -383,7 +385,7 @@
           <li><strong>Find your range</strong> (under Assess) — sing Happy Birthday. The app sets transpose and tempo from how you sing.</li>
           <li><strong>Assess Singing</strong> — click a start note and an end note, then <strong>Sing section</strong>. You’ll get <strong>3–2–1</strong>, hear the first note, then sing through to the end and press <strong>Finish</strong>. A short report rates your pitch on those notes. No audio is saved.</li>
         </ol>
-        <p class="howto-foot">Open <strong>?</strong> anytime for more detail. Press <strong>×</strong> or Escape to start.</p>
+        <p class="howto-foot">Open <span class="howto-help-glyph" aria-hidden="true">?</span> anytime for more detail. Press <strong>×</strong> or Escape to start.</p>
       </div>
     </div>
   </div>
