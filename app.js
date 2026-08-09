@@ -70,6 +70,9 @@
 
     scoreBanner: $("score-banner"),
     extractBanner: $("extract-banner"),
+    extractBannerText: $("extract-banner-text"),
+    extractDiagCopy: $("extract-diag-copy"),
+    notationDiagBtn: $("notation-diag-btn"),
     scoreReadyBox: $("score-ready-box"),
     extractTestBanner: $("extract-test-banner"),
     prevPage: $("prev-page"),
@@ -226,16 +229,26 @@
   /**
    * Status routing:
    *  - kind "ok" (fully ready) → green box inside Upload & Save menu; hide bottom bar
-   *  - processing / error → yellow (or red) banner at the bottom of the screen
+   *  - processing / error / warn → yellow (or red) banner at the bottom of the screen
+   *  - opts.showDiagCopy: show “Copy diagnostic report” on the banner
+   *  - opts.mixedCase: do not force uppercase (notation messages)
    */
-  function setExtractBanner(msg, kind) {
+  function setExtractBanner(msg, kind, opts) {
+    const options = opts || {};
     const b = els.extractBanner;
+    const textEl = els.extractBannerText;
+    const copyBtn = els.extractDiagCopy;
     const ready = els.scoreReadyBox;
     if (!msg) {
       if (b) {
         b.hidden = true;
-        b.textContent = "";
-        b.classList.remove("is-error", "is-ok");
+        b.classList.remove("is-error", "is-ok", "is-warn", "is-mixed-case");
+      }
+      if (textEl) textEl.textContent = "";
+      else if (b) b.textContent = "";
+      if (copyBtn) {
+        copyBtn.hidden = true;
+        copyBtn.textContent = "Copy diagnostic report";
       }
       if (ready) {
         ready.hidden = true;
@@ -252,9 +265,10 @@
       }
       if (b) {
         b.hidden = true;
-        b.textContent = "";
-        b.classList.remove("is-error", "is-ok");
+        b.classList.remove("is-error", "is-ok", "is-warn", "is-mixed-case");
       }
+      if (textEl) textEl.textContent = "";
+      if (copyBtn) copyBtn.hidden = true;
       return;
     }
 
@@ -265,15 +279,123 @@
     }
     if (!b) return;
     b.hidden = false;
-    b.textContent = msg;
+    if (textEl) textEl.textContent = msg;
+    else b.textContent = msg;
     b.classList.toggle("is-error", kind === "error");
+    b.classList.toggle("is-warn", kind === "warn");
+    b.classList.toggle("is-mixed-case", !!options.mixedCase);
     b.classList.remove("is-ok");
+    if (copyBtn) {
+      copyBtn.hidden = !options.showDiagCopy;
+      if (options.showDiagCopy) copyBtn.textContent = "Copy diagnostic report";
+    }
+  }
+
+  /** Clipboard helper: navigator.clipboard with textarea fallback (file:// / Safari). */
+  async function copyTextToClipboard(text) {
+    const s = text == null ? "" : String(text);
+    if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(s);
+        return true;
+      } catch (_) {
+        /* fall through */
+      }
+    }
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = s;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return !!ok;
+    } catch (e) {
+      console.warn("copy failed", e);
+      return false;
+    }
+  }
+
+  function notationDiagnosticText() {
+    if (window.ScoreExtractor && typeof window.ScoreExtractor.formatDiagnosticReport === "function") {
+      return window.ScoreExtractor.formatDiagnosticReport();
+    }
+    return "Byzantine Voice notation diagnostic — (no diagnostic available yet)\n";
+  }
+
+  async function copyNotationDiagnostic(btn) {
+    const ok = await copyTextToClipboard(notationDiagnosticText());
+    if (btn) {
+      const prev = btn.textContent;
+      btn.textContent = ok ? "Copied ✓" : "Copy failed";
+      setTimeout(() => {
+        if (btn) btn.textContent = prev || "Copy diagnostic report";
+      }, 1600);
+    }
+    return ok;
+  }
+
+  /**
+   * After extraction completes: special banners when staves/notes look unsupported.
+   * Returns true if a notation-specific banner was shown.
+   */
+  function maybeShowNotationDiagnosticBanner(st) {
+    const d =
+      window.ScoreExtractor && window.ScoreExtractor.lastDiagnostic
+        ? window.ScoreExtractor.lastDiagnostic
+        : null;
+    if (!d) return false;
+    const totalStaves = d.totalStaves | 0;
+    const totalNotes =
+      d.totalNotes != null ? d.totalNotes | 0 : st && st.totalNotes != null ? st.totalNotes | 0 : 0;
+    let msg = null;
+    let kind = "error";
+    if (totalStaves > 0 && totalNotes === 0) {
+      msg =
+        "Found " +
+        totalStaves +
+        " staves but no readable notes. This PDF may use a newer notation format (Finale was retired in 2024).";
+      kind = "error";
+    } else if (totalNotes > 0 && totalNotes < totalStaves * 2) {
+      msg =
+        "Very few notes were read (" +
+        totalNotes +
+        " from " +
+        totalStaves +
+        " staves) — the notation may be partially unsupported.";
+      kind = "warn";
+    } else {
+      return false;
+    }
+    if (d.smuflSuspected) {
+      msg +=
+        " SMuFL-style glyphs detected (Dorico/MuseScore family) — the report below is exactly what’s needed to add support.";
+    }
+    setExtractBanner(msg, kind, { showDiagCopy: true, mixedCase: true });
+    return true;
   }
 
   function updateSaveScoreBtn() {
     if (!els.saveScoreBtn) return;
     // Still require a score; also stays disabled while the whole after-PDF block is locked
     els.saveScoreBtn.disabled = !state.score || !state.notes.length;
+  }
+
+  /** Diagnostic is available once a PDF is loaded (even if notes are 0). */
+  function updateNotationDiagBtn() {
+    const btn = els.notationDiagBtn;
+    if (!btn) return;
+    const hasPdf = !!state.pdfDoc;
+    btn.disabled = !hasPdf;
+    btn.classList.toggle("is-awaiting-pdf", !hasPdf);
+    btn.title = hasPdf
+      ? "Copy a notation diagnostic report (fonts/glyphs the extractor saw)"
+      : "Upload a PDF first to copy a notation diagnostic";
   }
 
   /**
@@ -320,6 +442,7 @@
     const firstHint = $("upload-first-hint");
     if (firstHint) firstHint.hidden = hasPdf;
     updateSaveScoreBtn();
+    updateNotationDiagBtn();
     // Compact Tools unlocks with PDF (items inside stay gray until notes ready)
     const toolsToggle = $("tools-toggle");
     if (toolsToggle) {
@@ -1427,11 +1550,10 @@
 
     const apply = () => {
       highlightNote(index);
-      if (n.x != null && n.y != null) drawBall(n.x, n.y);
-      else {
-        state.ball = null;
-        redrawOverlay();
-      }
+      // Do NOT park a ball here. The ball belongs to the live paint loops
+      // (Play / Match Pitch / free-follow repaint it ~50×/s); drawing one on
+      // focus left a stray gray circle sitting on the sheet right after a
+      // PDF loaded, before any mode was active.
     };
 
     if (state.pdfDoc && n.pdfPage !== state.pageNum) {
@@ -1572,6 +1694,8 @@
   function bannerForExtractStatus(st) {
     if (!st) return;
     if (st.complete) {
+      // Notation diagnostic takes priority over generic empty/success banners
+      if (maybeShowNotationDiagnosticBanner(st)) return;
       if (!st.totalNotes) {
         setExtractBanner("NO NOTES FOUND", "error");
         return;
@@ -1690,6 +1814,7 @@
 
     const job = window.ScoreExtractor.createProgressive(pdfDoc, name || "document.pdf", {
       batchSize,
+      fileSize: fileSize != null ? fileSize : null,
       onProgress: (p, n) => {
         // Lightweight live progress while a batch is scanning
         if (!state.extractComplete) {
@@ -1711,6 +1836,7 @@
           complete: st.complete,
         });
         bannerForExtractStatus(st);
+        updateNotationDiagBtn();
         if (st.complete && cacheKey && st.totalNotes) {
           cachePut(cacheKey, st.score).catch(() => {});
         }
@@ -1731,13 +1857,23 @@
 
       const st0 = job.status();
       if (!st0.totalNotes) {
-        setExtractBanner(
-          st0.totalStaves === 0
-            ? "NO STAVES FOUND — NOT AN MCI FINALE PDF?"
-            : "NO NOTES FOUND",
-          "error"
-        );
+        // Prefer detailed notation banner (detected staves / SMuFL) when available
+        if (!maybeShowNotationDiagnosticBanner(st0)) {
+          const d =
+            window.ScoreExtractor && window.ScoreExtractor.lastDiagnostic
+              ? window.ScoreExtractor.lastDiagnostic
+              : null;
+          const detected = d ? d.totalStaves | 0 : st0.totalStaves | 0;
+          setExtractBanner(
+            detected === 0
+              ? "NO STAVES FOUND — NOT AN MCI FINALE PDF?"
+              : "NO NOTES FOUND",
+            "error",
+            detected > 0 ? { showDiagCopy: true } : null
+          );
+        }
         updateScoreBanner();
+        updateNotationDiagBtn();
         return;
       }
 
@@ -2115,6 +2251,19 @@
 
   if (els.saveScoreBtn) {
     els.saveScoreBtn.addEventListener("click", downloadScoreJson);
+  }
+  if (els.notationDiagBtn) {
+    els.notationDiagBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      copyNotationDiagnostic(els.notationDiagBtn).catch((err) => console.warn(err));
+    });
+  }
+  if (els.extractDiagCopy) {
+    els.extractDiagCopy.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      copyNotationDiagnostic(els.extractDiagCopy).catch((err) => console.warn(err));
+    });
   }
 
   // Settings / Upload ▾ menu (upload PDF / save score / load custom / ready status)

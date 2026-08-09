@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chant Sight-Singing Trainer</title>
-  <link rel="stylesheet" href="style.css?v=63" />
+  <link rel="stylesheet" href="style.css?v=65" />
   <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -77,9 +77,14 @@
               Load custom score…
               <input type="file" id="score-input" accept="application/json,.json" hidden disabled />
             </label>
+            <button type="button" id="notation-diag-btn" class="btn btn-block is-awaiting-pdf" disabled
+                    title="Copy a notation diagnostic report (fonts/glyphs the extractor saw)">
+              Diagnostic
+            </button>
             <p class="play-menu-hint">
               <strong>Save</strong> downloads the notes extracted from the PDF.
               <strong>Load custom</strong> is optional if you need a hand-edited score.json.
+              <strong>Diagnostic</strong> copies a font/glyph report for unsupported notation.
             </p>
             <div id="score-ready-box" class="score-ready-box" hidden role="status" aria-live="polite"></div>
           </div>
@@ -333,7 +338,12 @@
 
   <footer class="page-bar" role="contentinfo">
     <button type="button" id="help-btn" class="btn help-btn" title="Help" aria-label="Open help">?</button>
-    <div id="extract-banner" class="extract-banner" hidden role="status" aria-live="polite"></div>
+    <div id="extract-banner" class="extract-banner" hidden role="status" aria-live="polite">
+      <span id="extract-banner-text" class="extract-banner-text"></span>
+      <button type="button" id="extract-diag-copy" class="extract-diag-copy-btn" hidden>
+        Copy diagnostic report
+      </button>
+    </div>
     <div class="page-bar-controls" role="navigation" aria-label="Page">
       <button type="button" id="prev-page" class="btn page-bar-btn" aria-label="Previous page">‹ Prev</button>
       <span id="page-label" class="page-label">— / —</span>
@@ -384,8 +394,8 @@
   </div>
 
   <script src="audio.js?v=6"></script>
-  <script src="extractor.js?v=12"></script>
-  <script src="app.js?v=41"></script>
+  <script src="extractor.js?v=13"></script>
+  <script src="app.js?v=42"></script>
   <script src="follow.js?v=63"></script>
   <script src="diagnose.js?v=19"></script>
   <script src="pitch.js?v=13"></script>

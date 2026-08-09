@@ -1844,7 +1844,12 @@
       // Assess handles its own listening
       return;
     }
-    play.matchPitch = false;
+    if (play.matchPitch) {
+      // Match Pitch owns the mic: clicking a note in that mode turns the mic
+      // on, which fired this handler and force-killed matchPitch — the Stop
+      // button then grayed out (disabled = !matching && freeBusy). Stand down.
+      return;
+    }
     play.active = true;
     play.freeFollow = true;
     play.listen = false;
@@ -1893,13 +1898,19 @@
     if (t.setBallScale) t.setBallScale(1.65);
     freeFollowPaint(n, noteHeadY(n), performance.now());
     playSuccessChime();
-    // Hold the “you got it” pose, then settle still green/won
+    // Hold the “you got it” pose, then auto-advance to the next note
+    // (plays its cue tone and re-arms the mic). Last note: stay green.
     clearTimeout(play.emphasisTimer);
     play.emphasisTimer = setTimeout(() => {
       if (!play.matchPitch || !play.matchWon) return;
       if (t.setBallScale) t.setBallScale(1);
       if (t.setHalo) t.setHalo(false);
-      freeFollowPaint(n, noteHeadY(n), performance.now());
+      const i = t.currentNoteIndex;
+      if (t.notes && i + 1 < t.notes.length) {
+        pitchMatchSelect(i + 1);
+      } else {
+        freeFollowPaint(n, noteHeadY(n), performance.now());
+      }
     }, 700);
   }
 

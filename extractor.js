@@ -46,6 +46,223 @@
     return MUSIC_FONTS.some((m) => f.indexOf(m) !== -1);
   }
 
+  // —— Notation diagnostic (read-only tap; never affects extraction) ——
+  /** @type {Map<string, object>|null} filled during musicChars, consumed by extractPage */
+  let fontTapActive = null;
+  /** Accumulator across progressive / full extract runs */
+  const diagAcc = {
+    source: "",
+    fileSize: null,
+    pagesExpected: 0,
+    pageDiags: [],
+    totalNotes: 0,
+    totalStaves: 0,
+  };
+
+  const FONT_CHAR_CAP = 40;
+  const SMUFL_LO = 0xe000;
+  const SMUFL_HI = 0xf8ff;
+
+  function codepointLabel(ch) {
+    if (!ch) return "U+0000";
+    const cp = ch.codePointAt(0);
+    const hex = cp.toString(16).toUpperCase();
+    return "U+" + (hex.length < 4 ? ("0000" + hex).slice(-4) : hex);
+  }
+
+  function resetDiagAcc(sourceName, opts) {
+    const o = opts || {};
+    diagAcc.source = sourceName || (o.source != null ? o.source : "") || "";
+    diagAcc.fileSize = o.fileSize != null ? o.fileSize : null;
+    diagAcc.pagesExpected = o.pagesExpected != null ? o.pagesExpected | 0 : 0;
+    diagAcc.pageDiags = [];
+    diagAcc.totalNotes = 0;
+    diagAcc.totalStaves = 0;
+  }
+
+  function beginFontTap() {
+    fontTapActive = new Map();
+  }
+
+  /**
+   * Record every shown glyph (music or not). Does not touch extraction output.
+   * @param {string} resolvedName
+   * @param {boolean} musicFont
+   * @param {string} c single character
+   * @param {number} yTop top-left origin y
+   */
+  function tapFontGlyph(resolvedName, musicFont, c, yTop) {
+    if (!fontTapActive) return;
+    const key = resolvedName || "(unknown)";
+    let f = fontTapActive.get(key);
+    if (!f) {
+      f = {
+        resolvedName: key,
+        isMusicFont: !!musicFont,
+        glyphCount: 0,
+        chars: new Map(),
+        ys: [],
+      };
+      fontTapActive.set(key, f);
+    }
+    // If the same name was seen as music later, keep the OR
+    if (musicFont) f.isMusicFont = true;
+    f.glyphCount += 1;
+    f.ys.push(yTop);
+    if (f.chars.has(c)) {
+      f.chars.get(c).count += 1;
+    } else if (f.chars.size < FONT_CHAR_CAP) {
+      f.chars.set(c, { count: 1, codepoint: codepointLabel(c) });
+    }
+    // else: cap hit — only glyphCount continues
+  }
+
+  function nearStaffCountForYs(ys, staves) {
+    if (!ys || !ys.length || !staves || !staves.length) return 0;
+    let n = 0;
+    for (let i = 0; i < ys.length; i++) {
+      const y = ys[i];
+      for (let s = 0; s < staves.length; s++) {
+        const st = staves[s];
+        const sp = st.spacing > 0 ? st.spacing : 4.32;
+        const lineYs = st.lineYs;
+        if (!lineYs || lineYs.length < 5) continue;
+        const top = lineYs[0] - 6 * sp;
+        const bot = lineYs[4] + 6 * sp;
+        if (y >= top && y <= bot) {
+          n += 1;
+          break;
+        }
+      }
+    }
+    return n;
+  }
+
+  /**
+   * Finalize per-page font stats from the active tap + detected staves.
+   * Drops fonts with glyphCount 0; strips raw y arrays from the published form.
+   */
+  function finalizeFontTap(staves) {
+    const tap = fontTapActive;
+    fontTapActive = null;
+    if (!tap) return [];
+    const fonts = [];
+    for (const f of tap.values()) {
+      if (!f.glyphCount) continue;
+      const nearStaffCount = nearStaffCountForYs(f.ys, staves);
+      const chars = [];
+      for (const [ch, info] of f.chars) {
+        chars.push({ ch: ch, codepoint: info.codepoint, count: info.count });
+      }
+      chars.sort((a, b) => b.count - a.count || a.codepoint.localeCompare(b.codepoint));
+      fonts.push({
+        resolvedName: f.resolvedName,
+        isMusicFont: !!f.isMusicFont,
+        glyphCount: f.glyphCount,
+        nearStaffCount: nearStaffCount,
+        chars: chars,
+      });
+    }
+    fonts.sort((a, b) => b.glyphCount - a.glyphCount || a.resolvedName.localeCompare(b.resolvedName));
+    return fonts;
+  }
+
+  function computeSmuflSuspected(pageDiags) {
+    for (const pd of pageDiags) {
+      for (const f of pd.fonts || []) {
+        if (f.isMusicFont) continue;
+        if (!(f.nearStaffCount > 0)) continue;
+        for (const c of f.chars || []) {
+          const cp = c.ch && c.ch.codePointAt(0);
+          if (cp >= SMUFL_LO && cp <= SMUFL_HI) return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function publishLastDiagnostic() {
+    const pageDiags = diagAcc.pageDiags;
+    const diag = {
+      when: new Date().toISOString(),
+      source: diagAcc.source || "",
+      fileSize: diagAcc.fileSize,
+      pages: diagAcc.pagesExpected || pageDiags.length,
+      totalStaves: diagAcc.totalStaves,
+      totalNotes: diagAcc.totalNotes,
+      pageDiags: pageDiags,
+      smuflSuspected: computeSmuflSuspected(pageDiags),
+    };
+    window.ScoreExtractor.lastDiagnostic = diag;
+    return diag;
+  }
+
+  function appendPageDiag(pageDiag, noteCount) {
+    if (!pageDiag) return;
+    diagAcc.pageDiags.push(pageDiag);
+    diagAcc.totalStaves += pageDiag.staves | 0;
+    diagAcc.totalNotes += noteCount | 0;
+    publishLastDiagnostic();
+  }
+
+  /**
+   * Plain-text report for clipboard (self-contained; no PDF required).
+   * @param {object} [diag] defaults to lastDiagnostic
+   */
+  function formatDiagnosticReport(diag) {
+    const d = diag || (window.ScoreExtractor && window.ScoreExtractor.lastDiagnostic);
+    if (!d) return "Byzantine Voice notation diagnostic — (no diagnostic available yet)\n";
+    const lines = [];
+    lines.push("Byzantine Voice notation diagnostic — " + (d.when || ""));
+    const sizePart =
+      d.fileSize != null && Number.isFinite(Number(d.fileSize))
+        ? Number(d.fileSize) + " bytes, "
+        : "";
+    lines.push(
+      "File: " +
+        (d.source || "(unknown)") +
+        " (" +
+        sizePart +
+        (d.pages | 0) +
+        " pages)"
+    );
+    lines.push(
+      "Result: " +
+        (d.totalStaves | 0) +
+        " staves, " +
+        (d.totalNotes | 0) +
+        " notes extracted"
+    );
+    lines.push("SMuFL suspected: " + (d.smuflSuspected ? "yes" : "no"));
+    lines.push("");
+    for (const pd of d.pageDiags || []) {
+      lines.push("Page " + pd.page + " — " + (pd.staves | 0) + " staves");
+      for (const f of pd.fonts || []) {
+        lines.push(
+          '  Font "' +
+            f.resolvedName +
+            '" (music-font match: ' +
+            (f.isMusicFont ? "yes" : "no") +
+            ") — " +
+            f.glyphCount +
+            " glyphs, " +
+            f.nearStaffCount +
+            " near staves"
+        );
+        if (f.chars && f.chars.length) {
+          const parts = f.chars.map((c) => {
+            const printable =
+              c.ch && /^[A-Za-z0-9]$/.test(c.ch) ? "'" + c.ch + "' " : "";
+            return printable + c.codepoint + " ×" + c.count;
+          });
+          lines.push("    " + parts.join(", "));
+        }
+      }
+      lines.push("");
+    }
+    return lines.join("\n").replace(/\n+$/, "\n");
+  }
+
   /**
    * Glyphs we may keep when the music font name failed to resolve (pdf.js
    * commonObjs lag). Must NOT include ordinary Latin letters from lyrics:
@@ -323,6 +540,8 @@
       // (flags/œ — not Latin w/W from lyrics). Unresolved font names used to
       // drop all flags; the first fix was too broad and pulled lyric “w” in as
       // whole notes under the staff.
+      // Diagnostic tap (fontTapActive): records EVERY shown glyph for every
+      // font — does not change what enters `out` / extraction.
       for (const g of list) {
         if (g == null) continue;
         // TJ numbers: horizontal displacement in thousandths of text space
@@ -351,6 +570,8 @@
         for (let i = 0; i < ch.length; i++) {
           const c = ch[i];
           if (!c || !c.trim()) continue;
+          // Read-only diagnostic: all fonts, all glyphs
+          tapFontGlyph(fontName || fontId || "(unknown)", musicFont, c, yTop);
           if (musicFont || (unresolved && isSafeUnresolvedMusicChar(c))) {
             out.push({ c, x, y: yTop });
           }
@@ -612,11 +833,34 @@
       ? await provider(page, pageIndex)
       : await findStaffLinesByCanvas(page);
     const staves = groupStaves(hl);
+
+    // Always walk operators once (musicChars): extraction uses music glyphs only;
+    // the diagnostic tap records every font/glyph (including non-music).
+    beginFontTap();
+    let chars;
+    try {
+      chars = await musicChars(page);
+    } catch (e) {
+      fontTapActive = null;
+      throw e;
+    }
+    const fontStats = finalizeFontTap(staves);
+    const pageDiag = {
+      page: (pageIndex | 0) + 1,
+      staves: staves.length,
+      fonts: fontStats,
+    };
+
     if (!staves.length) {
-      return { pageOut: null, gidx, noteCount: 0, staffCount: 0 };
+      return {
+        pageOut: null,
+        gidx,
+        noteCount: 0,
+        staffCount: 0,
+        pageDiag,
+      };
     }
 
-    const chars = await musicChars(page);
     const words = await textWords(page);
 
     const per = staves.map((st) => ({
@@ -756,7 +1000,15 @@
         : null;
 
     const noteCount = stavesOut.reduce((s, st) => s + st.notes.length, 0);
-    return { pageOut, gidx, noteCount, staffCount: stavesOut.length };
+    // staffCount stays stavesOut (treble staves that produced notes) — unchanged
+    // for callers. Detected staff-line groups live on pageDiag.staves.
+    return {
+      pageOut,
+      gidx,
+      noteCount,
+      staffCount: stavesOut.length,
+      pageDiag,
+    };
   }
 
   /**
@@ -773,10 +1025,25 @@
     const numPages = pdfDoc.numPages;
     const start = Math.max(0, Math.min(numPages, from0 | 0));
     const end = Math.max(start, Math.min(numPages, to0 | 0));
+    const o = opts || {};
+
+    // Fresh diagnostic at the start of a full/progressive run
+    if (start === 0 && (gidxStart | 0) === 0) {
+      resetDiagAcc(sourceName, {
+        fileSize: o.fileSize,
+        pagesExpected: numPages,
+        source: sourceName,
+      });
+    } else if (o.fileSize != null && diagAcc.fileSize == null) {
+      diagAcc.fileSize = o.fileSize;
+    }
+    if (sourceName && !diagAcc.source) diagAcc.source = sourceName;
+    if (!diagAcc.pagesExpected) diagAcc.pagesExpected = numPages;
 
     for (let pno = start; pno < end; pno++) {
-      if (opts && opts.onProgress) opts.onProgress(pno + 1, numPages);
-      if (opts && opts.shouldCancel && opts.shouldCancel()) {
+      if (o.onProgress) o.onProgress(pno + 1, numPages);
+      if (o.shouldCancel && o.shouldCancel()) {
+        publishLastDiagnostic();
         return {
           pages: pagesOut,
           gidx,
@@ -788,20 +1055,19 @@
         };
       }
       const page = await pdfDoc.getPage(pno + 1);
-      const { pageOut, gidx: next, noteCount, staffCount } = await extractPage(
-        page,
-        pno,
-        gidx
-      );
+      const { pageOut, gidx: next, noteCount, staffCount, pageDiag } =
+        await extractPage(page, pno, gidx);
       gidx = next;
       totalNotes += noteCount;
       totalStaves += staffCount;
       if (pageOut) pagesOut.push(pageOut);
+      if (pageDiag) appendPageDiag(pageDiag, noteCount);
 
       // Yield so the UI can paint / respond between heavy page scans
       await new Promise((r) => setTimeout(r, 0));
     }
 
+    publishLastDiagnostic();
     return {
       pages: pagesOut,
       gidx,
@@ -892,6 +1158,7 @@
           const batch = await extractPdfRange(pdfDoc, sourceName, from, to, gidx, {
             onProgress: options.onProgress,
             shouldCancel: () => cancelled,
+            fileSize: options.fileSize,
           });
           if (cancelled) return status();
 
@@ -1043,5 +1310,18 @@
     FLAG_WEIGHT,
     /** Default pages per progressive batch (UI may override). */
     DEFAULT_BATCH_SIZE: 3,
+    /** Populated after each extractPage / extractPdfRange page. Read-only. */
+    lastDiagnostic: null,
+    formatDiagnosticReport,
+    /** Test hooks (do not use from app UI). */
+    _diag: {
+      resetDiagAcc,
+      publishLastDiagnostic,
+      appendPageDiag,
+      beginFontTap,
+      finalizeFontTap,
+      codepointLabel,
+      computeSmuflSuspected,
+    },
   };
 })();
