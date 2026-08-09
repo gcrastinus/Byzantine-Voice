@@ -1407,7 +1407,19 @@
   function updatePageChrome() {
     const n = state.pageCount;
     const p = state.pageNum;
-    els.pageLabel.textContent = n ? `${p} / ${n}` : "— / —";
+    // "Page 3 of 12" — the two numerals carry the bright text color (style.css)
+    els.pageLabel.replaceChildren(
+      document.createTextNode("Page "),
+      Object.assign(document.createElement("span"), {
+        className: "page-label-num",
+        textContent: n ? String(p) : "—",
+      }),
+      document.createTextNode(" of "),
+      Object.assign(document.createElement("span"), {
+        className: "page-label-num",
+        textContent: n ? String(n) : "—",
+      })
+    );
     els.prevPage.disabled = !n || p <= 1;
     els.nextPage.disabled = !n || p >= n;
     updatePageAdvanceHint();
