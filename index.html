@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chant Sight-Singing Trainer</title>
-  <link rel="stylesheet" href="style.css?v=58" />
+  <link rel="stylesheet" href="style.css?v=63" />
   <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -117,12 +117,21 @@
                data-title-ready="Shift all played and matched pitches by half steps"
                title="Upload a PDF first to use Transpose" aria-disabled="true">
             <label for="transpose-slider" class="tempo-label">Transpose</label>
-            <span class="info-eye" tabindex="0" role="button"
+            <span class="info-eye" id="transpose-info-eye" tabindex="0" role="button"
                   aria-label="Transpose help">
               <span class="info-eye-glyph" aria-hidden="true">i</span>
               <div class="info-eye-tip" role="tooltip">
+                <div id="range-in-tip" class="range-in-tip" hidden>
+                  <p class="range-in-tip-title">Your measured range</p>
+                  <p id="range-in-tip-summary" class="range-in-tip-summary"></p>
+                  <div class="range-in-tip-actions">
+                    <button type="button" id="range-chip-remeasure" class="range-chip-item">Re-measure</button>
+                    <button type="button" id="range-chip-clear" class="range-chip-item">Clear</button>
+                  </div>
+                  <hr class="range-in-tip-hr" />
+                </div>
                 Moves every note by <strong>half steps</strong> (not whole steps).<br /><br />
-                Range: one octave down (−12) to half an octave up (+6).<br />
+                Range: 1½ octaves down (−18) to half an octave up (+6).<br />
                 Bold marks = full octaves; short marks = half octaves.<br />
                 Default is written pitch (<strong>0</strong>). Slide left to lower for men’s range.<br />
                 Release the slider to hear the first three notes at the new pitch.<br /><br />
@@ -130,13 +139,15 @@
               </div>
             </span>
             <div class="transpose-slider-wrap transpose-slider-wrap-bar">
-              <input type="range" id="transpose-slider" min="-12" max="6" value="0" step="1" disabled
-                     aria-valuemin="-12" aria-valuemax="6" aria-valuenow="0"
-                     aria-label="Transpose by half steps: down one octave to up half an octave" />
+              <input type="range" id="transpose-slider" min="-18" max="6" value="0" step="1" disabled
+                     aria-valuemin="-18" aria-valuemax="6" aria-valuenow="0"
+                     aria-label="Transpose by half steps: down one and a half octaves to up half an octave" />
               <div class="transpose-ticks" aria-hidden="true">
-                <span class="tick tick-octave" style="left: 0%"><i></i></span>
-                <span class="tick tick-half" style="left: 33.333%"><i></i></span>
-                <span class="tick tick-octave" style="left: 66.667%"><i></i></span>
+                <!-- span −18…+6 (24 semis): −18, −12, −6, 0, +6 -->
+                <span class="tick tick-half" style="left: 0%"><i></i></span>
+                <span class="tick tick-octave" style="left: 25%"><i></i></span>
+                <span class="tick tick-half" style="left: 50%"><i></i></span>
+                <span class="tick tick-octave" style="left: 75%"><i></i></span>
                 <span class="tick tick-half" style="left: 100%"><i></i></span>
               </div>
             </div>
@@ -154,23 +165,47 @@
 
         <div class="toolbar-group toolbar-note">
           <div id="diag-wrap" class="diag-wrap">
-            <button type="button" id="diag-btn" class="btn is-awaiting-score" disabled aria-pressed="false"
-                    title="Upload a PDF first to use Assess Singing">
-              Assess Singing
-            </button>
+            <!-- Assess menu: Assess selection (existing) + Find your range (new) -->
+            <div id="assess-menu" class="play-menu assess-menu">
+              <button type="button" id="assess-menu-toggle" class="btn play-menu-toggle"
+                      aria-expanded="false" aria-controls="assess-menu-panel"
+                      title="Assess a section or find your singing range">
+                Assess <span class="caret" aria-hidden="true">▾</span>
+              </button>
+              <div id="assess-menu-panel" class="play-menu-panel assess-menu-panel" hidden
+                   role="menu" aria-label="Assess options">
+                <button type="button" id="diag-btn" class="btn btn-block is-awaiting-score" disabled
+                        aria-pressed="false" role="menuitem"
+                        title="Upload a PDF first to use Assess Singing">
+                  Assess selection
+                </button>
+                <button type="button" id="find-range-btn" class="btn btn-block" role="menuitem"
+                        title="Sing a short piece to measure your comfortable range and pace">
+                  Find your range
+                </button>
+              </div>
+            </div>
             <div id="diag-ui" class="diag-ui" hidden>
               <div id="diag-panel" class="diag-panel" hidden>
-                <button type="button" id="diag-collapse" class="diag-collapse" title="Hide intro" aria-label="Hide assess intro">×</button>
+                <button type="button" id="diag-collapse" class="diag-collapse" title="Exit assess" aria-label="Exit assess">×</button>
                 <div id="diag-banner" class="diag-banner" role="status" aria-live="polite">
                   <div id="diag-banner-text" class="diag-banner-text"></div>
                 </div>
               </div>
               <div id="diag-action-dock" class="diag-action-dock" hidden>
+                <button type="button" id="diag-dock-close" class="diag-collapse" title="Exit assess" aria-label="Exit assess">×</button>
                 <div id="diag-status-line" class="diag-status-line" role="status" aria-live="polite"></div>
                 <div id="diag-action-bar" class="diag-actions"></div>
               </div>
               <div id="diag-report-panel" class="diag-report-panel" hidden>
-                <button type="button" id="diag-report-collapse" class="diag-collapse" title="Hide report" aria-label="Hide diagnostic report">×</button>
+                <div class="diag-report-chrome">
+                  <button type="button" id="diag-report-minimize" class="diag-minimize" title="Minimize report" aria-label="Minimize report">−</button>
+                  <button type="button" id="diag-report-collapse" class="diag-collapse" title="Exit assess" aria-label="Exit assess">×</button>
+                </div>
+                <button type="button" id="diag-report-mini" class="diag-report-mini" hidden title="Expand report">
+                  <span id="diag-report-mini-text" class="diag-report-mini-text">Results</span>
+                  <span class="diag-report-mini-expand" aria-hidden="true">▸</span>
+                </button>
                 <div id="diag-report" class="diag-report" role="region" aria-label="Diagnostic report"></div>
               </div>
               <button type="button" id="diag-tab" class="diag-tab" hidden title="Show assess intro" aria-label="Show assess intro">▾</button>
@@ -202,6 +237,49 @@
   <div id="page-advance-hint" class="page-advance-hint" hidden aria-live="polite"></div>
 
   <div id="countdown" class="countdown" hidden aria-hidden="true"></div>
+
+  <!-- Find your range: large Happy Birthday card stays centered; 3-2-1 flashes over it -->
+  <div id="range-overlay" class="range-overlay" hidden>
+    <div id="range-session-stage" class="range-session-stage" hidden>
+      <div id="range-piece-sheet" class="range-piece-sheet" aria-label="Happy Birthday score to sing">
+        <div id="range-sheet-countdown" class="range-sheet-countdown" hidden aria-hidden="true"></div>
+        <h2 class="range-piece-title">Happy Birthday to You</h2>
+        <div id="range-piece-lyrics" class="range-piece-lyrics"></div>
+        <p class="range-piece-friend-note">
+          On the third line, sing <strong>“dear friend”</strong>
+          (not a person’s name).
+        </p>
+        <p id="range-sheet-prompt" class="range-sheet-prompt">
+          Click this card to begin — then sing the way that feels comfortable.
+          Don’t worry about being exact.
+        </p>
+        <div id="range-sheet-listen-bar" class="range-sheet-listen-bar" hidden>
+          <p class="range-listening-label">Listening… sing freely</p>
+          <button type="button" id="range-stop-btn" class="btn btn-primary">Stop</button>
+        </div>
+      </div>
+    </div>
+    <div id="range-overlay-retry" class="range-overlay-panel range-overlay-card" hidden>
+      <p>I didn’t hear enough singing — try again?</p>
+      <div class="range-overlay-actions">
+        <button type="button" id="range-retry-btn" class="btn btn-primary">Retry</button>
+        <button type="button" id="range-cancel-btn" class="btn">Cancel</button>
+      </div>
+    </div>
+    <div id="range-overlay-results" class="range-overlay-panel range-overlay-card" hidden>
+      <div id="range-results-body" class="range-results-body"></div>
+      <div class="range-overlay-actions">
+        <button type="button" id="range-use-btn" class="btn btn-primary">Use this</button>
+        <button type="button" id="range-discard-btn" class="btn">Discard</button>
+      </div>
+    </div>
+    <div id="range-overlay-pending" class="range-overlay-panel range-overlay-card" hidden>
+      <p id="range-pending-msg">Working…</p>
+      <div class="range-overlay-actions">
+        <button type="button" id="range-pending-ok" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
 
   <main id="stage" class="stage" role="main">
     <div id="drop-hint" class="drop-hint">
@@ -289,10 +367,10 @@
         <p><strong>Upload &amp; Settings</strong> — On a computer this menu is always named <strong>Upload &amp; Settings</strong>. On phones it says <strong>Upload</strong> until a PDF is loaded, then <strong>Settings</strong>. Open it to upload a chant PDF first; sound, mic, and save/load options stay grayed out until a file is loaded so you are not asked to configure them first. When extraction finishes, a green ready box shows how many notes were found.</p>
         <p><strong>Tools</strong> (phones) — Match Pitch, Transpose, Tempo, Assess Singing, and Play All. Grayed out until a PDF is ready; then open the dropdown to use them. On a computer these controls stay on the main toolbar.</p>
         <p><strong>Match Pitch</strong> — Click a note to hear it, then match the pitch with your voice. Click the button again (or press Escape) to turn it off.</p>
-        <p><strong>Transpose</strong> — Shift every played and matched pitch by half steps (one octave down to half an octave up). Default is written pitch (0). Hover the circled <strong>i</strong> for more detail. Release the slider to hear the first three notes at the new pitch. Match Pitch and Assess Singing use the same transpose.</p>
+        <p><strong>Transpose</strong> — Shift every played and matched pitch by half steps (1½ octaves down to half an octave up). Default is written pitch (0). Hover the circled <strong>i</strong> for more detail. Release the slider to hear the first three notes at the new pitch. Match Pitch and Assess Singing use the same transpose.</p>
         <p><strong>Tempo</strong> — Speed for Play All, Play Starting Here, and drag-select playback.</p>
         <p><strong>Assess Singing</strong> — Pick a start and end note, sing the section freely, then Finish for a pitch report. No audio is recorded.</p>
-        <p><strong>Play All / Play Starting Here</strong> — Computer plays the score at the Tempo setting. Click a note first to start from there; click empty space to return to Play All.</p>
+        <p><strong>Play All / Play Starting Here</strong> — Computer plays the score at the Tempo setting. Play All starts at the top of the page you are viewing. Click a note first to start from there; click empty space to return to Play All.</p>
         <p><strong>Page navigation</strong> — Use Prev / Next at the bottom. The app also advances to the next page automatically while notes play (because of how notes are read from the PDF, continuous scroll is tricky).</p>
         <p><strong>Click &amp; drag</strong> on the score highlights a stretch and plays it. A single click plays that note.</p>
         <h3 class="help-credits-heading">Credits</h3>
@@ -307,9 +385,12 @@
 
   <script src="audio.js?v=6"></script>
   <script src="extractor.js?v=12"></script>
-  <script src="app.js?v=39"></script>
-  <script src="follow.js?v=61"></script>
-  <script src="diagnose.js?v=18"></script>
+  <script src="app.js?v=41"></script>
+  <script src="follow.js?v=63"></script>
+  <script src="diagnose.js?v=19"></script>
   <script src="pitch.js?v=13"></script>
+  <script src="range.js?v=2"></script>
+  <script src="range-test-data.js?v=1"></script>
+  <script src="range-ui.js?v=6"></script>
 </body>
 </html>

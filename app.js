@@ -627,6 +627,8 @@
     const oct = Math.floor(m / 12) - 1;
     return `${name}${oct}`;
   }
+  // Exposed for range-ui / other shells (file:// safe, no modules)
+  window.midiToName = midiToName;
 
   /**
    * What to show in the big readout: the syllable/words for this note.
@@ -814,16 +816,27 @@
    */
   function sungPitchY(n, sungMidi) {
     if (!n || sungMidi == null || !Number.isFinite(sungMidi)) return null;
+    // Diagnose folds sungMidi toward the TRANSPOSED expectation (written +
+    // transpose). The trail must be anchored the same way, or every mark for
+    // a transposed singer draws ~an octave off the written note (the reported
+    // "first note green, the rest proportionally spaced but far too low").
+    let transpose = 0;
+    try {
+      const p = window.followPlayback && window.followPlayback.play;
+      transpose = (p && p.transposeSemis) || 0;
+    } catch (_) {
+      /* ignore */
+    }
     const core = window.followCore;
     if (!core || typeof core.ballStep !== "function" || typeof core.stepToY !== "function") {
-      // Fallback: shift written y by ~1 staff step per 100¢
+      // Fallback: shift written y by ~1 staff step per 100¢ vs expectation
       if (n.y == null) return null;
       const sp = n.staffSpacing || 4.32;
-      const cents = (sungMidi - n.midi) * 100;
+      const cents = (sungMidi - (n.midi + transpose)) * 100;
       return n.y - (cents / 100) * (sp / 2);
     }
     const fifths = (n.keySig && n.keySig.fifths) || 0;
-    const step = core.ballStep(sungMidi, n, fifths, 0);
+    const step = core.ballStep(sungMidi, n, fifths, transpose);
     return core.stepToY(step, n.staffLineYs, n.staffSpacing || 4.32);
   }
 
@@ -1862,7 +1875,78 @@
     get notes() {
       return state.notes;
     },
+    /**
+     * Load a PDF from bytes (normal path: render + extract).
+     * Used by Find your range for the bundled range-test piece.
+     */
+    async loadPdfData(u8, name, meta) {
+      await loadPdfFromData(u8, name || "document.pdf", meta || {});
+    },
+    /**
+     * Clear PDF/score and restore the welcome screen (upload directions + calendar).
+     * Used when Find your range ends so Happy Birthday doesn’t linger.
+     */
+    clearDocument() {
+      resetToWelcomeScreen();
+    },
   };
+
+  /** Full reset to empty home stage (drop-hint with upload + MCI calendar). */
+  function resetToWelcomeScreen() {
+    cancelExtractJob();
+    state.pdfDoc = null;
+    state.pdfName = "";
+    state.pageCount = 0;
+    state.pageNum = 1;
+    state.ball = null;
+    state.scoreOverride = false;
+    state.score = null;
+    state.notes = [];
+    state.extractComplete = false;
+    state.extractPagesDone = 0;
+    state.extractPagesTotal = 0;
+    state.highlightIndex = -1;
+    state.bursts = [];
+    state.scale = 1;
+    if (window.trainer) {
+      window.trainer.currentNoteIndex = 0;
+      if (window.trainer.completed && typeof window.trainer.completed.clear === "function") {
+        window.trainer.completed.clear();
+      }
+    }
+    if (els.dropHint) els.dropHint.hidden = false;
+    if (els.canvasWrap) els.canvasWrap.hidden = true;
+    if (els.pageCanvas) {
+      try {
+        const ctx = els.pageCanvas.getContext("2d");
+        if (ctx) ctx.clearRect(0, 0, els.pageCanvas.width || 0, els.pageCanvas.height || 0);
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    if (els.overlayCanvas) {
+      try {
+        const ctx = els.overlayCanvas.getContext("2d");
+        if (ctx) ctx.clearRect(0, 0, els.overlayCanvas.width || 0, els.overlayCanvas.height || 0);
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    setFileStatusDisplay("No PDF loaded");
+    setExtractBanner("");
+    updateScoreBanner();
+    updateUploadMenuAfterPdf();
+    updatePageChrome();
+    updateSaveScoreBtn();
+    if (els.pageAdvanceHint) els.pageAdvanceHint.classList.remove("is-visible");
+    if (els.harmonyHint) els.harmonyHint.hidden = true;
+    if (els.stage) els.stage.scrollTop = 0;
+    window.dispatchEvent(
+      new CustomEvent("trainer:score", {
+        detail: { notes: 0, partial: false, cleared: true },
+      })
+    );
+  }
 
   // —— File loading ——
 

@@ -167,28 +167,67 @@
     if (b) b.classList.toggle("is-listening", !!listening);
   }
 
-  function setReport(html) {
+  function setReport(html, miniSummary) {
     const r = $("diag-report");
     const panel = $("diag-report-panel");
+    const mini = $("diag-report-mini");
+    const miniText = $("diag-report-mini-text");
     if (!r) return;
     if (!html) {
       r.innerHTML = "";
-      if (panel) panel.hidden = true;
+      if (panel) {
+        panel.hidden = true;
+        panel.classList.remove("is-minimized");
+        delete panel.dataset.miniSummary;
+      }
+      if (mini) mini.hidden = true;
+      if (miniText) miniText.textContent = "";
       return;
     }
     r.innerHTML = html;
-    if (panel) panel.hidden = false;
+    if (panel) {
+      panel.hidden = false;
+      panel.classList.remove("is-minimized");
+      if (miniSummary) panel.dataset.miniSummary = miniSummary;
+      else delete panel.dataset.miniSummary;
+    }
+    if (mini) mini.hidden = true;
+    if (miniText && miniSummary) miniText.textContent = miniSummary;
     // Keep results visible even if instructions are collapsed
     const ui = $("diag-ui");
     if (ui && diag.on) ui.hidden = false;
   }
 
+  function setReportMinimized(minimized) {
+    const panel = $("diag-report-panel");
+    const mini = $("diag-report-mini");
+    const report = $("diag-report");
+    const miniText = $("diag-report-mini-text");
+    if (!panel || panel.hidden) return;
+    const on = !!minimized;
+    panel.classList.toggle("is-minimized", on);
+    if (mini) mini.hidden = !on;
+    if (report) report.hidden = on;
+    if (on && miniText) {
+      miniText.textContent =
+        panel.dataset.miniSummary || miniText.textContent || "Assess results";
+    }
+  }
+
   function setBtn(on) {
     const b = $("diag-btn");
-    if (!b) return;
-    b.setAttribute("aria-pressed", String(on));
-    b.classList.toggle("is-on", on);
-    b.textContent = on ? "Assess On" : "Assess Singing";
+    if (b) {
+      b.setAttribute("aria-pressed", String(on));
+      b.classList.toggle("is-on", on);
+      b.textContent = on ? "Assess On" : "Assess selection";
+    }
+    // Toolbar “Assess ▾” lights up yellow while assess mode is active
+    const toggle = $("assess-menu-toggle");
+    if (toggle) {
+      toggle.classList.toggle("is-on", on);
+      toggle.classList.toggle("is-assess-on", on);
+      toggle.setAttribute("aria-pressed", String(on));
+    }
   }
 
   function range() {
@@ -592,7 +631,11 @@
       <button type="button" class="btn" id="diag-new-range">New range</button>
     </div>`;
 
-    setReport(html);
+    const mini =
+      `Results · notes ${start + 1}–${end + 1} · ≈${pct}% · ` +
+      `${s.wrong} wrong · ${s.missing} missing`;
+    setReport(html, mini);
+    setReportMinimized(false);
     refreshVisual(result.marks);
 
     const again = document.getElementById("diag-sing-again");
@@ -990,7 +1033,14 @@
     const dock = $("diag-action-dock");
     if (dock) dock.hidden = true;
     const reportPanel = $("diag-report-panel");
-    if (reportPanel) reportPanel.hidden = true;
+    if (reportPanel) {
+      reportPanel.hidden = true;
+      reportPanel.classList.remove("is-minimized");
+    }
+    const report = $("diag-report");
+    if (report) report.hidden = false;
+    const mini = $("diag-report-mini");
+    if (mini) mini.hidden = true;
     const bar = document.getElementById("diag-action-bar");
     if (bar) bar.innerHTML = "";
   }
@@ -1014,20 +1064,42 @@
     const btn = $("diag-btn");
     if (btn) btn.addEventListener("click", toggle);
 
+    // Any panel × exits Assess mode entirely
+    const closeAssess = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (diag.on) exitMode();
+    };
     const collapse = $("diag-collapse");
     if (collapse) {
       collapse.addEventListener("click", (e) => {
-        e.stopPropagation();
-        // Closing the intro counts as “seen” — don’t show it again
-        dismissHelpPanel();
+        // Closing intro counts as seen so it won’t spam next time
+        markHelpSeen();
+        closeAssess(e);
       });
     }
+    const dockClose = $("diag-dock-close");
+    if (dockClose) dockClose.addEventListener("click", closeAssess);
+
     const reportCollapse = $("diag-report-collapse");
-    if (reportCollapse) {
-      reportCollapse.addEventListener("click", (e) => {
+    if (reportCollapse) reportCollapse.addEventListener("click", closeAssess);
+
+    const reportMin = $("diag-report-minimize");
+    if (reportMin) {
+      reportMin.addEventListener("click", (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        const panel = $("diag-report-panel");
-        if (panel) panel.hidden = true;
+        setReportMinimized(true);
+      });
+    }
+    const reportMini = $("diag-report-mini");
+    if (reportMini) {
+      reportMini.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setReportMinimized(false);
       });
     }
     // Intro re-open tab is intentionally unused after permanent dismiss

@@ -215,8 +215,8 @@
     /** Only for computer Play timeline (not for Begin hold lengths). */
     tempo: PLAY_TEMPO_DEFAULT,
     /**
-     * User pitch transpose in half steps (−12 … +6): one octave down to
-     * half an octave up. Default 0 = written pitch (slider ~2/3 from left).
+     * User pitch transpose in half steps (−18 … +6): 1½ octaves down to
+     * half an octave up. Default 0 = written pitch (slider at 75%).
      */
     transposeSemis: 0,
     voicedMs: 0,
@@ -1038,6 +1038,29 @@
     return (play.startIndex | 0) > 0;
   }
 
+  /**
+   * First sequential note index on the currently rendered PDF page.
+   * Play All uses this so multi-page scores start from “top of this page”,
+   * not the beginning of the whole PDF.
+   */
+  function firstNoteIndexOnCurrentPage() {
+    const t = trainer();
+    if (!t || !t.notes || !t.notes.length) return 0;
+    const page = (t.pageNum | 0) || 1;
+    for (let i = 0; i < t.notes.length; i++) {
+      const n = t.notes[i];
+      if (!n) continue;
+      const pdfPage =
+        n.pdfPage != null
+          ? n.pdfPage | 0
+          : n.pageIndex != null
+            ? (n.pageIndex | 0) + 1
+            : 1;
+      if (pdfPage === page) return i;
+    }
+    return 0;
+  }
+
   function setRunUi() {
     const uploadBtn = el("upload-pdf-btn");
     const uploadSaveToggle = el("upload-save-toggle");
@@ -1221,8 +1244,9 @@
         playBtn.disabled = false;
       } else {
         html = 'Play All <span class="play-icon" aria-hidden="true">▶</span>';
-        label = "Play all from the beginning";
-        title = "Play the whole piece from the beginning at the Tempo setting";
+        label = "Play all from the top of this page";
+        title =
+          "Play from the first note on the current page to the end at the Tempo setting";
         playBtn.classList.remove("is-playing");
         playBtn.disabled = false;
       }
@@ -1258,7 +1282,7 @@
       t.highlightNote(-1);
       if (typeof t.drawBall === "function") t.drawBall(null, null);
     }
-    // No note selected → Play All (from the beginning)
+    // No note selected → Play All (from top of current page)
     play.startIndex = 0;
     setRunUi();
   }
@@ -1332,18 +1356,20 @@
     if (val) val.textContent = String(t);
   }
 
-  /** Transpose: −12 … +6 half steps (semitones). Default 0. */
+  /** Transpose: −18 … +6 half steps (semitones). Default 0. */
   function clampTranspose(semis) {
     const n = Math.round(Number(semis));
     if (!Number.isFinite(n)) return 0;
-    return Math.max(-12, Math.min(6, n));
+    return Math.max(-18, Math.min(6, n));
   }
 
-  /** Display: −1 / 0 for exact octaves; otherwise signed half-step count. */
+  /** Display: −1½ / −1 / 0 / +½ for exact landmarks; otherwise signed half-step count. */
   function transposeLabel(semis) {
     const t = semis | 0;
     if (t === 0) return "0";
+    if (t === -18) return "−1½";
     if (t === -12) return "−1";
+    if (t === -6) return "−½";
     if (t === 6) return "+½";
     return t > 0 ? `+${t}` : String(t);
   }
@@ -1358,7 +1384,9 @@
       // No on-screen number; expose value on the control for hover / a11y
       let tip;
       if (t === 0) tip = "Written pitch (0)";
+      else if (t === -18) tip = "1½ octaves down (−18)";
       else if (t === -12) tip = "1 octave down (−12)";
+      else if (t === -6) tip = "Half an octave down (−6)";
       else if (t === 6) tip = "Half an octave up (+6)";
       else {
         const abs = Math.abs(t);
@@ -1502,8 +1530,8 @@
   /**
    * Computer sings at tempo (Play ▶), or a drag-selected range.
    * Start note = last clicked note (play.startIndex), or an explicit range.
-   * When a run finishes/pauses, startIndex resets to 0 so the next Play goes
-   * from the beginning unless the user clicks a note (or drags) first.
+   * When a run finishes/pauses, startIndex resets to 0 so the next Play All
+   * starts at the top of the current page (unless the user clicks a note first).
    * @param {{ startIndex?: number, endIndex?: number }} opts
    */
   async function startListenRun(opts) {
@@ -1770,9 +1798,9 @@
     play.timeline = [];
     play.seg = -1;
     resetFreeAccum();
-    // After a Play / drag-select run ends (or is paused), the next Play without a
-    // new note click starts from the beginning of the piece. Click a note first
-    // (or drag a range) to start elsewhere.
+    // After a Play / drag-select run ends (or is paused), clear note selection so
+    // the next Play All starts at the top of the current page (not whole-PDF start).
+    // Click a note first (or drag a range) to start elsewhere.
     if (wasListen) {
       play.startIndex = 0;
     }
@@ -1938,7 +1966,10 @@
       return;
     }
     // Capture start before any other cleanup (selection must survive the click)
-    const start = hasPlayStartSelection() ? play.startIndex | 0 : 0;
+    // No selection → first note on the page you’re viewing (not PDF start)
+    const start = hasPlayStartSelection()
+      ? play.startIndex | 0
+      : firstNoteIndexOnCurrentPage();
     // Always force a clean listen start (free-follow may leave active true)
     if (play.active || play.freeFollow || play.countdownTimer || play.preparingBegin) {
       play.active = false;
@@ -1956,7 +1987,7 @@
       }
     }
     if (play.matchPitch) stopPitchMatch();
-    // Play All from 0, or Play Starting Here from the last clicked note
+    // Play All from top of current page, or Play Starting Here from clicked note
     startListenRun({ startIndex: start }).catch((e) => console.error("Play", e));
   }
 
@@ -2061,8 +2092,12 @@
     const sung = midiFloat - 12 * fold;
 
     const fifths = (n.keySig && n.keySig.fifths) || 0;
-    // Ball staff position uses score degrees only (transpose is register, not staff step)
-    const step = ballStep(sung, n, fifths, relOffset);
+    // Anchor the ball at the TRANSPOSED target: with Transpose −12 the singer
+    // is expected to sing an octave below written, and singing that pitch must
+    // put the ball ON the notehead. Anchoring at written pitch (old code:
+    // relOffset only) drew the ball ~3.5 lines low for every transposed user
+    // while the match logic said "in tune" — the reported "registers too low".
+    const step = ballStep(sung, n, fifths, offset);
     const y = stepToY(step, n.staffLineYs, n.staffSpacing || 4.32);
     play.pitchY = y;
     play.lastVoicedMs = now;
