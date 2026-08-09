@@ -255,24 +255,16 @@ body.has-pdf .upload-first-hint {
   opacity: 0.42;
   filter: grayscale(0.55);
   cursor: not-allowed;
-  /* Block slider interaction, but allow the circled-i tip (see below) */
   user-select: none;
 }
 
 .tempo-controls.is-awaiting-score input,
 .transpose-controls-bar.is-awaiting-score input,
 .tempo-controls.is-awaiting-score label,
-.transpose-controls-bar.is-awaiting-score label {
+.transpose-controls-bar.is-awaiting-score label,
+.transpose-controls-bar.is-awaiting-score .transpose-menu-toggle {
   pointer-events: none;
   cursor: not-allowed;
-}
-
-/* Keep info tip usable even while controls are grayed out */
-.transpose-controls-bar.is-awaiting-score .info-eye {
-  pointer-events: auto;
-  opacity: 1;
-  filter: none;
-  cursor: help;
 }
 
 /* Score menu: file picker styled like a full-width menu button */
@@ -512,7 +504,7 @@ body.has-pdf .upload-first-hint {
   text-align: left;
 }
 
-/* Range actions inside Transpose circled-i tip (buttons) */
+/* Range actions inside Transpose ▾ menu */
 .range-chip-item {
   display: inline-block;
   padding: 0.35rem 0.6rem;
@@ -520,22 +512,23 @@ body.has-pdf .upload-first-hint {
   font-size: 0.82rem;
   font-weight: 700;
   text-align: center;
-  color: #1a1408;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(180, 130, 40, 0.55);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 6px;
   cursor: pointer;
 }
 
 .range-chip-item:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(140, 100, 20, 0.75);
+  background: rgba(76, 139, 245, 0.18);
+  border-color: rgba(120, 150, 200, 0.45);
 }
 
-/* Measured range block inside Transpose i tip */
+/* Measured range block inside Transpose ▾ panel */
 .range-in-tip {
-  margin: 0 0 0.55rem;
-  padding: 0 0 0.55rem;
+  margin: 0.45rem 0 0;
+  padding: 0.5rem 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .range-in-tip[hidden] {
@@ -544,25 +537,71 @@ body.has-pdf .upload-first-hint {
 
 .range-in-tip-title {
   margin: 0 0 0.25rem;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #5a4010;
+  color: #a8b4cc;
 }
 
 .range-in-tip-summary {
-  margin: 0 0 0.45rem;
-  font-size: 0.95rem;
-  font-weight: 750;
+  margin: 0 0 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 700;
   line-height: 1.35;
-  color: #1a1408;
+  color: var(--text);
 }
 
 .range-in-tip-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.35rem;
+}
+
+/* Transpose ▾ dropdown */
+.transpose-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.transpose-menu-toggle {
+  min-width: 0;
+  min-height: 2.1rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.92rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.transpose-menu-toggle.has-range {
+  border-color: #4c8bf5;
+  box-shadow: 0 0 0 1px rgba(76, 139, 245, 0.35);
+}
+
+.transpose-menu-panel {
+  left: 0;
+  right: auto;
+  min-width: 12.5rem;
+  max-width: min(18rem, 90vw);
+  padding: 0.4rem;
+  z-index: 60;
+}
+
+.transpose-menu-panel .btn-block {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+/* Match Pitch active = Stop (same idea as Play is-playing) */
+#match-pitch-btn.is-on,
+#match-pitch-btn.is-playing,
+#match-pitch-btn[aria-pressed="true"] {
+  background: rgba(224, 90, 90, 0.2);
+  border-color: rgba(240, 120, 120, 0.85);
+  color: #ffd0d0;
+  font-weight: 750;
 }
 
 .range-in-tip-hr {
@@ -908,7 +947,7 @@ body.compact-toolbar .harmony-hint {
 }
 
 /**
- * Transpose: label · i · track (no numeric readout — value on title / aria).
+ * Transpose: menu ▾ · track (no numeric readout — value on title / aria).
  * Track: four equal half-octave bands (−18…−12 | −12…−6 | −6…0 | 0…+6);
  * default 0 sits at 75%.
  */
@@ -919,19 +958,14 @@ body.compact-toolbar .harmony-hint {
   gap: 0.4rem;
   flex: 0 0 auto;
   box-sizing: border-box;
-  width: 17.5rem;
-  min-width: 17.5rem;
-  max-width: 17.5rem;
-  padding: 0.35rem 0.6rem 0.5rem;
-  /* Must stay visible so the circled-i tooltip is not clipped to an empty bar */
+  width: 18.5rem;
+  min-width: 16.5rem;
+  max-width: 20rem;
+  padding: 0.35rem 0.55rem 0.5rem;
   overflow: visible;
 }
 
-.tempo-controls.transpose-controls-bar .tempo-label {
-  flex: 0 0 auto;
-}
-
-.tempo-controls.transpose-controls-bar .info-eye {
+.tempo-controls.transpose-controls-bar .transpose-menu {
   flex: 0 0 auto;
 }
 
@@ -1497,7 +1531,8 @@ body.compact-toolbar .harmony-hint {
   overflow: auto;
   padding: 1.5rem 1.65rem 1.4rem;
   background: var(--surface);
-  border: 1.5px solid #7a8cb0;
+  /* Quiet gray edge (same family as help modal / other cards — not blue) */
+  border: 1.5px solid #6c6d76;
   border-radius: 14px;
   box-shadow: 0 20px 56px rgba(0, 0, 0, 0.55);
   color: var(--text);
@@ -1792,6 +1827,13 @@ body.compact-toolbar .harmony-hint {
 }
 
 .help-body strong {
+  color: #d7e5ff;
+}
+
+.help-section-heading {
+  margin: 1rem 0 0.45rem;
+  font-size: 1.1rem;
+  font-weight: 800;
   color: #d7e5ff;
 }
 

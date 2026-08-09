@@ -1079,8 +1079,18 @@
     setBtn(true);
     setReport("");
     refreshVisual(null);
-    if (window.followPlayback && window.followPlayback.stopPlayback) {
-      window.followPlayback.stopPlayback();
+    // Assess is exclusive: leave Match Pitch (mic) and computer Play
+    try {
+      if (window.followPlayback) {
+        if (typeof window.followPlayback.stopPitchMatch === "function") {
+          window.followPlayback.stopPitchMatch();
+        }
+        if (typeof window.followPlayback.stopPlayback === "function") {
+          window.followPlayback.stopPlayback();
+        }
+      }
+    } catch (_) {
+      /* ignore */
     }
     setBanner("Click the START note.", false, { forceOpen: true });
     updateActionButtons();

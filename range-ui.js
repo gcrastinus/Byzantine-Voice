@@ -79,11 +79,13 @@
     }
     try {
       if (window.followPlayback) {
+        if (typeof window.followPlayback.stopPitchMatch === "function") {
+          window.followPlayback.stopPitchMatch();
+        } else if (window.followPlayback.play) {
+          window.followPlayback.play.matchPitch = false;
+        }
         if (typeof window.followPlayback.stopPlayback === "function") {
           window.followPlayback.stopPlayback();
-        }
-        if (window.followPlayback.play) {
-          window.followPlayback.play.matchPitch = false;
         }
       }
     } catch (_) {
@@ -505,18 +507,18 @@
   }
 
   /**
-   * Show measured range inside the Transpose circled-i tip
-   * (no separate chip in the toolbar — that was overlapping other controls).
+   * Show measured range inside the Transpose ▾ menu panel
+   * (Re-measure / Clear + summary).
    */
   function updateRangeChip() {
     const tip = $("range-in-tip");
     const summary = $("range-in-tip-summary");
-    const eye = $("transpose-info-eye");
+    const toggle = $("transpose-menu-toggle");
     const data = readStoredRange();
     if (!tip) return;
     if (!data || data.low == null || data.high == null) {
       tip.hidden = true;
-      if (eye) eye.classList.remove("has-range");
+      if (toggle) toggle.classList.remove("has-range");
       return;
     }
     const lowN = midiToName(data.low);
@@ -535,7 +537,7 @@
     }
     if (summary) summary.textContent = text;
     tip.hidden = false;
-    if (eye) eye.classList.add("has-range");
+    if (toggle) toggle.classList.add("has-range");
   }
 
   function applyStoredDefaults(opts) {

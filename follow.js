@@ -1123,7 +1123,8 @@
     const transposeControls = el("transpose-controls");
     const tempoSlider = el("tempo-slider");
     const transposeSlider = el("transpose-slider");
-    const infoEye = transposeControls && transposeControls.querySelector(".info-eye");
+    const transposeMenuToggle = el("transpose-menu-toggle");
+    const transposeReset = el("transpose-reset-btn");
 
     // Always visible: grayed/disabled until a score is loaded
     if (playControls) playControls.hidden = false;
@@ -1139,68 +1140,27 @@
       transposeControls.hidden = false;
       transposeControls.classList.toggle("is-awaiting-score", !ready);
       transposeControls.setAttribute("aria-disabled", ready ? "false" : "true");
+      const readyTitle = transposeControls.getAttribute("data-title-ready");
+      const idleTitle = transposeControls.getAttribute("data-title-idle");
       transposeControls.title = ready
-        ? "Shift all played and matched pitches by half steps"
-        : "Upload a PDF first to use Transpose";
+        ? readyTitle || "Shift all played and matched pitches by half steps"
+        : idleTitle || "Upload a PDF first to use Transpose";
     }
     if (tempoSlider) tempoSlider.disabled = !ready;
     if (transposeSlider) transposeSlider.disabled = !ready;
-    if (infoEye) {
-      // Always allow keyboard focus so the help tip stays available
-      infoEye.tabIndex = 0;
-      infoEye.setAttribute("aria-disabled", "false");
+    if (transposeMenuToggle) {
+      transposeMenuToggle.disabled = !ready;
+      transposeMenuToggle.classList.toggle("is-awaiting-score", !ready);
     }
-    // Parent title must not cover the circled-i tip while hovering it
-    if (transposeControls && !transposeControls.__tipTitleWired) {
-      transposeControls.__tipTitleWired = true;
-      const eye = transposeControls.querySelector(".info-eye");
-      if (eye) {
-        const clearTitle = () => {
-          transposeControls.dataset._savedTitle = transposeControls.title || "";
-          transposeControls.removeAttribute("title");
-          const lab = transposeControls.querySelector("label");
-          if (lab) {
-            lab.dataset._savedTitle = lab.title || "";
-            lab.removeAttribute("title");
-          }
-        };
-        const restoreTitle = () => {
-          const t =
-            transposeControls.dataset._savedTitle ||
-            (scoreReady()
-              ? transposeControls.dataset.titleReady ||
-                "Shift all played and matched pitches by half steps"
-              : transposeControls.dataset.titleIdle ||
-                "Upload a PDF first to use Transpose");
-          // Prefer data-title-* attributes set in HTML
-          const ready = scoreReady();
-          const pref = ready
-            ? transposeControls.getAttribute("data-title-ready")
-            : transposeControls.getAttribute("data-title-idle");
-          transposeControls.title = pref || t || "";
-        };
-        eye.addEventListener("mouseenter", clearTitle);
-        eye.addEventListener("focus", clearTitle);
-        eye.addEventListener("mouseleave", restoreTitle);
-        eye.addEventListener("blur", restoreTitle);
-      }
-    }
-    if (transposeControls) {
-      const readyTitle = transposeControls.getAttribute("data-title-ready");
-      const idleTitle = transposeControls.getAttribute("data-title-idle");
-      if (!transposeControls.querySelector(".info-eye:hover")) {
-        transposeControls.title = ready
-          ? readyTitle || "Shift all played and matched pitches by half steps"
-          : idleTitle || "Upload a PDF first to use Transpose";
-      }
-    }
+    if (transposeReset) transposeReset.disabled = !ready;
 
     if (matchBtn) {
       matchBtn.hidden = false;
       matchBtn.classList.toggle("is-awaiting-score", !ready);
-      // Active → "Stop" so it is obvious you can click to turn Match Pitch off
+      // Active Match Pitch → always "Stop" (never leave mic matching without a stop control)
       matchBtn.textContent = matching ? "Stop" : "Match Pitch";
       matchBtn.classList.toggle("is-playing", matching && ready);
+      matchBtn.classList.toggle("is-on", matching && ready);
       // Blue primary when score is ready and Match Pitch is idle
       matchBtn.classList.toggle("btn-primary", ready && !matching);
       matchBtn.setAttribute("aria-pressed", matching ? "true" : "false");
@@ -1208,13 +1168,18 @@
         "aria-label",
         matching ? "Stop Match Pitch" : "Match Pitch"
       );
-      // Disabled until score; when ready, allow off anytime / block on while Play runs
-      matchBtn.disabled = !ready || (!matching && (listening || freeBusy));
+      // Disabled only until score, or while computer Play is running.
+      // Free-follow (mic on alone) must NOT gray out Match Pitch — that was
+      // leaving the mic on with no obvious Stop control.
+      // When matching, always leave the button enabled so Stop works.
+      matchBtn.disabled = !ready || (!matching && listening);
       matchBtn.title = !ready
         ? "Upload a PDF first to use Match Pitch"
         : matching
-          ? "Stop Match Pitch"
-          : "Click to turn on, then click a note to hear it and match with your voice";
+          ? "Stop Match Pitch (turns the microphone off)"
+          : freeBusy
+            ? "Start Match Pitch (takes over from free practice)"
+            : "Click to turn on, then click a note to hear it and match with your voice";
     }
 
     if (playBtn) {
@@ -1915,10 +1880,19 @@
   }
 
   function stopPitchMatch() {
-    if (!play.matchPitch) return;
+    if (!play.matchPitch) {
+      // Still refresh UI so a stuck “gray Match Pitch” can recover
+      setRunUi();
+      return;
+    }
     play.matchPitch = false;
     resetMatchHold();
     ensureMicOff();
+    // Also clear free-follow if it was somehow left active under Match Pitch
+    if (play.freeFollow) {
+      play.freeFollow = false;
+      play.active = false;
+    }
     const t = trainer();
     if (t && t.setHalo) t.setHalo(false);
     if (t && t.setBallColor) t.setBallColor("neutral");
@@ -1928,21 +1902,61 @@
   }
 
   function startPitchMatch() {
-    // Leave Begin / Play if needed; keep match mode exclusive
-    if (play.active || play.countdownTimer || play.preparingBegin) {
+    // Exclusive mode: leave Assess, free-follow, and computer Play
+    try {
+      if (
+        window.diagnose &&
+        typeof window.diagnose.isOn === "function" &&
+        window.diagnose.isOn() &&
+        typeof window.diagnose.exitMode === "function"
+      ) {
+        window.diagnose.exitMode();
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    if (play.active || play.freeFollow || play.countdownTimer || play.preparingBegin) {
+      // stopPlayback clears free-follow; only re-arms free-follow after *listen* ends
       stopPlayback();
     }
     play.matchPitch = true;
+    play.freeFollow = false;
+    play.active = false;
+    play.listen = false;
     resetMatchHold();
     resetAnchor(); // Match Pitch uses written pitch only
     resetOctave();
-    setRunUi();
+    setRunUi(); // must show Stop immediately
   }
 
   /** Click Match Pitch to turn on; click again (or Escape) to turn off. */
   function togglePitchMatch() {
     if (play.matchPitch) stopPitchMatch();
     else startPitchMatch();
+  }
+
+  /** Reset transpose slider + play state to written pitch (0). */
+  function resetTranspose() {
+    syncTransposeUi(0);
+    const slider = el("transpose-slider");
+    if (slider) {
+      slider.value = "0";
+      slider.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    // Brief preview so the user hears written pitch
+    if (scoreReady()) previewTranspose();
+    setRunUi();
+  }
+
+  function setTransposeMenuOpen(open) {
+    const panel = el("transpose-menu-panel");
+    const toggle = el("transpose-menu-toggle");
+    const menu = el("transpose-menu");
+    if (!panel || !toggle) return;
+    panel.hidden = !open;
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    toggle.classList.toggle("is-open", !!open);
+    if (menu) menu.classList.toggle("is-open", !!open);
   }
 
   /**
@@ -2545,16 +2559,86 @@
     }
 
     // Mic on → free-follow practice; mic off → stop free-follow
+    // Never free-follow over Match Pitch or Assess (those own the mic path).
     window.addEventListener("trainer:mic", (e) => {
       const on = !!(e.detail && e.detail.on);
       if (on && scoreReady() && !play.listen) {
+        if (play.matchPitch) {
+          setRunUi(); // keep Stop visible; Match Pitch already owns mic
+          return;
+        }
+        if (window.diagnose && window.diagnose.isOn && window.diagnose.isOn()) {
+          return;
+        }
         armFreeFollowFromCurrent();
-      } else if (!on && play.freeFollow) {
-        play.active = false;
-        play.freeFollow = false;
+      } else if (!on) {
+        if (play.freeFollow) {
+          play.active = false;
+          play.freeFollow = false;
+        }
+        // Mic switched off externally while Match Pitch was on → exit mode
+        if (play.matchPitch) {
+          play.matchPitch = false;
+          resetMatchHold();
+          const t = trainer();
+          if (t && t.setHalo) t.setHalo(false);
+          if (t && t.setBallColor) t.setBallColor("neutral");
+          if (t && t.setBallScale) t.setBallScale(1);
+        }
         setRunUi();
       }
     });
+
+    // Leaving the tab/window: drop free-follow mic practice so it doesn’t
+    // keep listening unattended. Match Pitch also stops (mic off).
+    if (typeof document.addEventListener === "function") {
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) return;
+        if (play.matchPitch) {
+          stopPitchMatch();
+          return;
+        }
+        if (play.freeFollow) {
+          play.active = false;
+          play.freeFollow = false;
+          ensureMicOff();
+          setRunUi();
+        }
+      });
+    }
+
+    // Transpose ▾ menu: Reset (+ measured range lives in the panel)
+    const transposeMenu = el("transpose-menu");
+    const transposeMenuToggle = el("transpose-menu-toggle");
+    const transposeMenuPanel = el("transpose-menu-panel");
+    const transposeResetBtn = el("transpose-reset-btn");
+    if (transposeMenuToggle && transposeMenuPanel) {
+      transposeMenuToggle.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (transposeMenuToggle.disabled) return;
+        setTransposeMenuOpen(!!transposeMenuPanel.hidden);
+      });
+      document.addEventListener("pointerdown", (e) => {
+        if (
+          transposeMenuPanel.hidden ||
+          !transposeMenu ||
+          !e.target ||
+          transposeMenu.contains(e.target)
+        ) {
+          return;
+        }
+        setTransposeMenuOpen(false);
+      });
+    }
+    if (transposeResetBtn) {
+      transposeResetBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        resetTranspose();
+        setTransposeMenuOpen(false);
+      });
+    }
 
     const soundStatusCollapse = el("sound-status-collapse");
     if (soundStatusCollapse) {
@@ -2645,6 +2729,11 @@
     beginPlayback,
     startRun: (listen) => (listen ? startListenRun() : startSingRun()),
     stopPlayback,
+    stopPitchMatch,
+    startPitchMatch,
+    togglePitchMatch,
+    resetTranspose,
+    isMatchPitch: () => !!play.matchPitch,
     seekTo,
     onPitch,
     buildTimeline,
