@@ -596,27 +596,30 @@
   }
 
   function showAudioBlocked() {
-    const msg =
-      "No sound yet. Open Settings → Turn Sound On (you should hear a beep), then try again.";
-    console.warn(msg, window.AppAudio && window.AppAudio.getState());
+    // Only when the user tried to play / hear something (not idle tab resume)
+    const msgPlain =
+      "No sound yet. Open Upload & Settings → Turn Sound On (you should hear a beep), then try again.";
+    const msgHtml =
+      "No sound yet. Open <strong>Upload &amp; Settings</strong> → <strong>Turn Sound On</strong> (you should hear a beep), then try again.";
+    console.warn(msgPlain, window.AppAudio && window.AppAudio.getState());
     const b = document.getElementById("mic-error");
     if (b) {
       b.hidden = false;
-      b.textContent = msg;
+      b.textContent = msgPlain;
       setTimeout(() => {
-        if (b.textContent === msg) {
+        if (b.textContent === msgPlain) {
           b.hidden = true;
           b.textContent = "";
         }
       }, 8000);
     }
-    updateSoundUi(false, msg);
-    // Open the menu and highlight Turn Sound On
+    updateSoundUi(false, msgHtml);
+    // Open Upload & Settings and highlight Turn Sound On (only useful if PDF unlocked it)
     setSoundMicMenuOpen(true);
     const btn = el("enable-sound-btn");
     if (btn) {
       btn.classList.add("is-fail");
-      btn.focus();
+      if (!btn.disabled) btn.focus();
     }
   }
 
@@ -664,11 +667,18 @@
       html =
         detail ||
         err ||
-        "Sound was paused. Open Sound & Mic → Turn Sound On (you should hear a beep).";
+        "Sound was paused. Open <strong>Upload &amp; Settings</strong> → <strong>Turn Sound On</strong> (you should hear a beep).";
     } else {
       html = detail || err || "";
     }
     if (!html) {
+      setSoundStatusOpen(false);
+      return;
+    }
+
+    // Idle / no score: never show the floating red sound box. Nothing to play yet,
+    // and Turn Sound On is locked until a PDF is loaded.
+    if (ok === false && !scoreReady()) {
       setSoundStatusOpen(false);
       return;
     }
@@ -2657,11 +2667,18 @@
       window.AppAudio.onStatus((st) => {
         // Never auto-claim “Sound On” just because the context is running —
         // Safari often says running while still silent. Only forceEnable confirms.
+        //
+        // Also: do NOT popup a red “sound paused” box on tab return / idle suspend.
+        // That fires with no PDF loaded and Turn Sound On is still locked.
+        // Surface audio problems only when the user tries Play / Match Pitch /
+        // note cue (showAudioBlocked / ensureAudioLive), or presses Turn Sound On.
         if (st && st.userConfirmed) return;
         if (st && st.state && st.state !== "running" && st.state !== "none") {
-          updateSoundUi(
-            false,
-            "Sound was paused (tab was in the background or idle). Open <strong>Settings</strong> and press <strong>Turn Sound On</strong>."
+          // Quiet log only — no UI while idle
+          console.info(
+            "[Byzantine Voice] audio context:",
+            st.state,
+            "(banner only if you press Play / Turn Sound On)"
           );
         }
       });
