@@ -11,14 +11,11 @@
   }
 
   const STORAGE_KEY = "byz.range.v1";
-  /** Preferred PDF names (first that fetch() succeeds wins). */
-  const RANGE_PDF_CANDIDATES = [
-    "range-test.pdf",
-    "Happy_Birthday_To_You.pdf",
-    "Happy Birthday.pdf",
-    "Happy_Birthday.pdf",
-  ];
-  /** Preferred score JSON names. */
+  /**
+   * Score JSON fallback names. Find your range deliberately loads NO PDF —
+   * the singer reads lyrics off the overlay card, so there is no sheet to
+   * render, and loading one would clobber whatever document is already open.
+   */
   const RANGE_JSON_CANDIDATES = [
     "range-test.json",
     "Happy_Birthday_To_You.json",
@@ -216,26 +213,6 @@
       .join("");
     const a = $("range-piece-lyrics");
     if (a) a.innerHTML = html;
-  }
-
-  /** Ensure stage shows the score page (not the empty upload drop-hint). */
-  function showScoreStage() {
-    const drop = $("drop-hint");
-    const wrap = $("canvas-wrap");
-    if (drop) drop.hidden = true;
-    if (wrap) wrap.hidden = false;
-    if (window.trainer && typeof window.trainer.focusNote === "function") {
-      try {
-        // Page 1, first note — scroll sheet into view without free-follow
-        if (window.trainer.notes && window.trainer.notes.length) {
-          window.trainer.focusNote(0);
-        }
-      } catch (_) {
-        /* ignore */
-      }
-    }
-    const stage = $("stage");
-    if (stage) stage.scrollTop = 0;
   }
 
   /** Bold 3-2-1 drawn over the Happy Birthday card (not the faint global #countdown). */
@@ -615,31 +592,10 @@
     } catch (_) {
       /* ignore */
     }
-    // Leave Happy Birthday / range-test score; restore upload + calendar home
-    restoreWelcomeScreen();
-  }
-
-  /** Clear the range-test piece and show the main drop-hint (upload + calendar). */
-  function restoreWelcomeScreen() {
-    try {
-      if (window.followPlayback && typeof window.followPlayback.stopPlayback === "function") {
-        window.followPlayback.stopPlayback();
-      }
-    } catch (_) {
-      /* ignore */
-    }
-    try {
-      if (window.trainer && typeof window.trainer.clearDocument === "function") {
-        window.trainer.clearDocument();
-      } else {
-        const drop = $("drop-hint");
-        const wrap = $("canvas-wrap");
-        if (drop) drop.hidden = false;
-        if (wrap) wrap.hidden = true;
-      }
-    } catch (e) {
-      console.warn("range restore welcome", e);
-    }
+    // The session never loaded a document, so there is nothing to restore —
+    // whatever the user had open is still on the stage behind the overlay.
+    // (This used to call clearDocument(), which wiped the user's PDF and
+    // discarded the transpose that had just been applied to it.)
   }
 
   function resolveUrl(name) {
@@ -678,91 +634,52 @@
   }
 
   /**
-   * Load the Happy Birthday / range-test piece for Find your range.
-   * Order:
-   *  1) fetch JSON candidates (range-test.json, Happy_Birthday*.json, …)
-   *  2) embedded window.RANGE_TEST_SCORE (range-test-data.js — works on file://)
-   *  3) score already loaded in the app (Upload & Settings → Load custom score)
-   * PDF: try fetch candidates for display; if PDF fetch fails but score is ok, keep going.
+   * Prepare the Happy Birthday piece for Find your range.
+   *
+   * The score is only ever used as the reference melody for
+   * RangeFinder.estimate() and to print the lyrics on the overlay card. It is
+   * never handed to the trainer, so the user's open document, extracted
+   * notes, page number, and transpose all survive a range session untouched.
    */
   async function loadRangePiece() {
-    if (!window.trainer) {
-      alert("App load path not ready — try again in a moment.");
-      return false;
-    }
+    // 1) Embedded score (range-test-data.js) — always present, no network,
+    //    no parsing, no extraction. This is the normal path.
+    let json = isUsableScore(window.RANGE_TEST_SCORE) ? window.RANGE_TEST_SCORE : null;
+    let jsonName = json ? "RANGE_TEST_SCORE (embedded)" : null;
 
-    const pdfNames =
-      (window.RANGE_TEST_PDF_CANDIDATES && window.RANGE_TEST_PDF_CANDIDATES.length
-        ? window.RANGE_TEST_PDF_CANDIDATES
-        : null) || RANGE_PDF_CANDIDATES;
-    const jsonNames =
-      (window.RANGE_TEST_JSON_CANDIDATES && window.RANGE_TEST_JSON_CANDIDATES.length
-        ? window.RANGE_TEST_JSON_CANDIDATES
-        : null) || RANGE_JSON_CANDIDATES;
-
-    // —— Score JSON ——
-    let json = null;
-    let jsonName = null;
-    const jsonHit = await fetchFirstOk(jsonNames);
-    if (jsonHit) {
-      try {
-        json = await jsonHit.res.json();
-        jsonName = jsonHit.name;
-      } catch (e) {
-        console.warn("range json parse", e);
-        json = null;
+    // 2) Only if range-test-data.js failed to load: fetch the score JSON.
+    //    Still no PDF — the session never renders a sheet.
+    if (!json) {
+      const jsonNames =
+        (window.RANGE_TEST_JSON_CANDIDATES && window.RANGE_TEST_JSON_CANDIDATES.length
+          ? window.RANGE_TEST_JSON_CANDIDATES
+          : null) || RANGE_JSON_CANDIDATES;
+      const jsonHit = await fetchFirstOk(jsonNames);
+      if (jsonHit) {
+        try {
+          const parsed = await jsonHit.res.json();
+          if (isUsableScore(parsed)) {
+            json = parsed;
+            jsonName = jsonHit.name;
+          }
+        } catch (e) {
+          console.warn("range json parse", e);
+        }
       }
     }
-    if (!isUsableScore(json) && window.RANGE_TEST_SCORE && isUsableScore(window.RANGE_TEST_SCORE)) {
-      json = window.RANGE_TEST_SCORE;
-      jsonName = "RANGE_TEST_SCORE (embedded)";
-    }
-    if (!isUsableScore(json) && window.trainer.score && isUsableScore(window.trainer.score)) {
-      // Already loaded via Upload & Settings (e.g. Happy Birthday score)
-      json = window.trainer.score;
-      jsonName = "currently loaded score";
-    }
-    if (!isUsableScore(json)) {
+
+    if (!json) {
       alert(
         "Range test piece not installed.\n\n" +
-          "Add range-test.json (or Happy_Birthday_To_You.json) next to index.html,\n" +
-          "or load that score first via Upload & Settings → Load custom score,\n" +
+          "Add range-test-data.js (or range-test.json) next to index.html,\n" +
           "then try Find your range again."
       );
       return false;
     }
 
-    // —— PDF for display (best-effort) ——
-    let pdfLoaded = false;
-    const pdfHit = await fetchFirstOk(pdfNames);
-    if (pdfHit && typeof window.trainer.loadPdfData === "function") {
-      try {
-        const buf = new Uint8Array(await pdfHit.res.arrayBuffer());
-        await window.trainer.loadPdfData(buf, pdfHit.name, {
-          fileSize: buf.byteLength,
-          skipCache: true,
-        });
-        pdfLoaded = true;
-      } catch (e) {
-        console.warn("range pdf load", e);
-      }
-    }
-
-    // Apply score (override extract if PDF was loaded)
-    if (typeof window.trainer.setScore === "function") {
-      window.trainer.setScore(json, { override: true });
-    }
     session.scoreJson = json;
     fillHappyBirthdayLyrics(json);
-    showScoreStage();
-    // Second tick: ensure drop-hint stays hidden after any async extract UI
-    setTimeout(showScoreStage, 50);
-    setTimeout(showScoreStage, 250);
-    console.info(
-      "[Byzantine Voice] Find your range loaded score from",
-      jsonName,
-      pdfLoaded ? "+ PDF" : "(no PDF fetched; score only)"
-    );
+    console.info("[Byzantine Voice] Find your range using score from", jsonName);
     return true;
   }
 
