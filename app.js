@@ -37,7 +37,7 @@
 
   // Build stamp: visible on the how-to card and in the console so a phone
   // running a stale cached build can be identified at a glance.
-  const APP_BUILD = "2026-08-10";
+  const APP_BUILD = "2026-08-10b";
   try {
     console.log("Byzantine Voice — build", APP_BUILD);
     document.documentElement.setAttribute("data-build", APP_BUILD);
@@ -1420,14 +1420,13 @@
   function updatePageChrome() {
     const n = state.pageCount;
     const p = state.pageNum;
-    // "Page 3 of 12" — the two numerals carry the bright text color (style.css)
+    // Compact "3/12" between the arrows (same on desktop and phone)
     els.pageLabel.replaceChildren(
-      document.createTextNode("Page "),
       Object.assign(document.createElement("span"), {
         className: "page-label-num",
         textContent: n ? String(p) : "—",
       }),
-      document.createTextNode(" of "),
+      document.createTextNode("/"),
       Object.assign(document.createElement("span"), {
         className: "page-label-num",
         textContent: n ? String(n) : "—",
@@ -2371,6 +2370,8 @@
    * until a PDF is ready).
    */
   let toolbarMeasuring = false;
+  const toolbarFlips = [];
+  let toolbarLockUntil = 0;
   function updateCompactToolbar() {
     const toolbar = document.querySelector(".toolbar");
     if (!toolbar || !document.body) return;
@@ -2435,6 +2436,25 @@
       // ResizeObserver) — the reported "top bar flashing and covering the
       // screen".
       compact = needed > barW - 72;
+    }
+
+    // OSCILLATION BREAKER (belt and suspenders): whatever the feedback path,
+    // a toolbar that flips state 3+ times within 2 s is thrashing, not
+    // adapting. Lock it compact (compact always fits) for 10 s so the screen
+    // is guaranteed to stop flashing.
+    const nowTs = Date.now();
+    if (toolbarLockUntil > nowTs) {
+      compact = true;
+    } else if (compact !== wasCompact) {
+      toolbarFlips.push(nowTs);
+      while (toolbarFlips.length && nowTs - toolbarFlips[0] > 2000) {
+        toolbarFlips.shift();
+      }
+      if (toolbarFlips.length >= 3) {
+        compact = true;
+        toolbarLockUntil = nowTs + 10000;
+        toolbarFlips.length = 0;
+      }
     }
 
     document.body.classList.toggle("compact-toolbar", compact);

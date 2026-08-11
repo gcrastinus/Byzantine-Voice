@@ -1546,18 +1546,60 @@
     // scheduleAhead() when the run began. This function is visuals only.
   }
 
+  /**
+   * iOS audio watchdog. The sound test can work while a RUN is silent: iOS
+   * quietly interrupts/stalls the context mid-run (state flips, or the
+   * context clock freezes while still reporting "running"), and every tone
+   * queued against the dead clock is lost — ball advances, no sound.
+   * Detect a clock that stops advancing versus wall time, wake the context,
+   * and re-queue the remaining timeline from the CURRENT segment.
+   */
+  function watchAudioClock(c, wallNow, elapsedMs) {
+    if (!c || !play.active || !play.listen) return;
+    if (play.watchWallMs == null) {
+      play.watchWallMs = wallNow;
+      play.watchCtxT = c.currentTime;
+      return;
+    }
+    const wallDt = wallNow - play.watchWallMs;
+    if (wallDt < 450) return;
+    const ctxDt = c.currentTime - play.watchCtxT;
+    play.watchWallMs = wallNow;
+    play.watchCtxT = c.currentTime;
+
+    const stalled = c.state !== "running" || ctxDt < (wallDt / 1000) * 0.4;
+    if (!stalled) return;
+    if (play.lastRecoverMs && wallNow - play.lastRecoverMs < 900) return;
+    play.lastRecoverMs = wallNow;
+
+    try {
+      if (c.state !== "running" && typeof c.resume === "function") {
+        c.resume().catch(() => {});
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    // Drop stale nodes and re-anchor the timeline so the current segment
+    // re-times to "now" and the rest follows at correct offsets.
+    stopTones();
+    play.audioT0 = c.currentTime + 0.06 - elapsedMs / 1000;
+    play.scheduledIdx = play.seg;
+    if (c.state === "running") scheduleAhead(c);
+  }
+
   function tickListen() {
     if (!play.active || !play.listen) return;
     play.rafId = requestAnimationFrame(tickListen);
 
-    // Top up the queue for long scores. Cheap no-op once everything is queued.
-    if (play.scheduledIdx < play.timeline.length) {
-      const c = window.AppAudio && window.AppAudio.ensure && window.AppAudio.ensure();
-      if (c) scheduleAhead(c);
-    }
-
     const now = performance.now();
     const elapsed = now - play.runStartMs;
+
+    const c = window.AppAudio && window.AppAudio.ensure && window.AppAudio.ensure();
+    if (c) {
+      // Top up the queue for long scores. Cheap no-op once everything is queued.
+      if (play.scheduledIdx < play.timeline.length) scheduleAhead(c);
+      watchAudioClock(c, now, elapsed);
+    }
 
     while (play.seg < play.timeline.length && elapsed >= play.timeline[play.seg].t1) {
       play.seg += 1;
@@ -1671,6 +1713,9 @@
     play.audioT0 = live.ctx.currentTime + LEAD_SEC;
     play.runStartMs = performance.now() + LEAD_SEC * 1000;
     play.scheduledIdx = 0;
+    play.watchWallMs = null; // reset the audio-clock watchdog for this run
+    play.watchCtxT = 0;
+    play.lastRecoverMs = 0;
     stopTones();
     scheduleAhead(live.ctx);
 

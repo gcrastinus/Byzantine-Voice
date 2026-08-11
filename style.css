@@ -3488,3 +3488,36 @@ body.toolbar-measuring .tools-panel .toolbar-play-music {
   opacity: 0.55;
   text-align: center;
 }
+
+/* —— 2026-08-10b: aesthetics + phone page indicator —— */
+
+/* A touch more breathing room inside the How-to card */
+.howto-modal-card {
+  padding: 1.9rem 2.1rem 1.7rem;
+}
+.howto-body {
+  padding: 0 0.15rem;
+}
+
+/* Build number: small spacer after the “press × or Escape” line */
+.howto-build {
+  margin-top: 14px;
+}
+
+@media (max-width: 720px), ((pointer: coarse) and (max-height: 540px)) {
+  /* X/Y indicator floats bottom-center between the corner arrows */
+  .page-label {
+    display: block !important;
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 60;
+    min-width: 0;
+    font-size: 0.95rem;
+    padding: 3px 12px;
+    border-radius: 12px;
+    background: rgba(10, 10, 14, 0.55);
+    opacity: 0.85;
+  }
+}
