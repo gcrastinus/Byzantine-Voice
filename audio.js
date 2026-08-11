@@ -399,9 +399,36 @@
   }
 
   /**
+   * iOS audio-session kick (the Howler trick). Web Audio alone can end up on
+   * a dead or earpiece output route on iPhones: the reported symptom was
+   * "sound test beeps, Play is silent, Match Pitch sounds FAINT (earpiece),
+   * then everything works" - starting the mic reset the audio session. A
+   * looping silent <audio> element forces the MEDIA playback session, which
+   * routes Web Audio to the main speaker (and ignores the ringer switch).
+   */
+  let mediaKick = null;
+  function kickMediaSession() {
+    if (mediaKick !== null) return;
+    if (!("ontouchstart" in window)) return; // touch devices only
+    try {
+      const a = document.createElement("audio");
+      a.setAttribute("playsinline", "");
+      a.loop = true;
+      a.preload = "auto";
+      a.src = "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==";
+      const p = a.play();
+      mediaKick = a; // hold the reference either way; retry is pointless
+      if (p && p.catch) p.catch(() => {});
+    } catch (_) {
+      mediaKick = false;
+    }
+  }
+
+  /**
    * Soft unlock on any gesture — does NOT claim “sound works”.
    */
   function unlock() {
+    kickMediaSession();
     let c = ensure();
     if (!c) return null;
     if (c.state === "closed") c = recreate();

@@ -37,12 +37,29 @@
 
   // Build stamp: visible on the how-to card and in the console so a phone
   // running a stale cached build can be identified at a glance.
-  const APP_BUILD = "2026-08-10b";
+  const APP_BUILD = "2026-08-11";
   try {
     console.log("Byzantine Voice — build", APP_BUILD);
     document.documentElement.setAttribute("data-build", APP_BUILD);
     const bl = document.getElementById("howto-build");
     if (bl) bl.textContent = "build " + APP_BUILD;
+  } catch (_) {
+    /* ignore */
+  }
+
+  // Small screens start COMPACT before the first measurement. The measurer
+  // bails while layout/fonts aren't ready ("barW < 80"), which let phones
+  // paint the full three-row desktop toolbar until something re-triggered it.
+  try {
+    if (
+      window.matchMedia &&
+      (window.matchMedia("(max-width: 720px)").matches ||
+        (window.matchMedia("(pointer: coarse)").matches &&
+          (window.matchMedia("(max-width: 940px)").matches ||
+            window.matchMedia("(max-height: 540px)").matches)))
+    ) {
+      document.body.classList.add("compact-toolbar");
+    }
   } catch (_) {
     /* ignore */
   }
@@ -2466,6 +2483,60 @@
   // Allow other modules / PDF load to remeasure
   window.updateCompactToolbar = updateCompactToolbar;
 
+  /**
+   * Phone bottom sheets: tap the grab-handle strip, or drag it downward,
+   * to close. (Reported: "swiping down from the little tab doesn't work".)
+   * Closing = clicking the sheet's own toggle button (aria-controls pairing),
+   * so each menu's state logic stays authoritative.
+   */
+  function wireSheetDismiss() {
+    const panels = document.querySelectorAll(".play-menu-panel");
+    for (const panel of panels) {
+      if (panel.__sheetWired) continue;
+      panel.__sheetWired = true;
+      const closeSheet = () => {
+        const toggle = document.querySelector(
+          `[aria-controls="${panel.id}"][aria-expanded="true"]`
+        );
+        if (toggle) toggle.click();
+        else panel.hidden = true;
+      };
+      const inGrabZone = (e) => {
+        if (!document.body.classList.contains("compact-toolbar")) return false;
+        const r = panel.getBoundingClientRect();
+        return e.clientY - r.top < 40;
+      };
+      panel.addEventListener("click", (e) => {
+        if (inGrabZone(e)) {
+          e.stopPropagation();
+          closeSheet();
+        }
+      });
+      let dragY = null;
+      panel.addEventListener(
+        "touchstart",
+        (e) => {
+          dragY = inGrabZone(e.touches[0]) ? e.touches[0].clientY : null;
+        },
+        { passive: true }
+      );
+      panel.addEventListener(
+        "touchmove",
+        (e) => {
+          if (dragY == null) return;
+          if (e.touches[0].clientY - dragY > 45) {
+            dragY = null;
+            closeSheet();
+          }
+        },
+        { passive: true }
+      );
+      panel.addEventListener("touchend", () => (dragY = null), { passive: true });
+    }
+  }
+  wireSheetDismiss();
+  setTimeout(wireSheetDismiss, 1000); // panels added late by other modules
+
   let resizeTimer = null;
   let compactToolbarTimer = null;
   function onViewportResize() {
@@ -2489,6 +2560,17 @@
     requestAnimationFrame(() => updateCompactToolbar());
   }
   setTimeout(updateCompactToolbar, 250);
+  // Late re-measures: fonts and full load change widths; without these the
+  // early "layout not ready" bail could leave the wrong toolbar mode stuck.
+  setTimeout(updateCompactToolbar, 900);
+  window.addEventListener("load", () => setTimeout(updateCompactToolbar, 50));
+  try {
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(() => updateCompactToolbar());
+    }
+  } catch (_) {
+    /* ignore */
+  }
   if (typeof ResizeObserver === "function") {
     const tb = document.querySelector(".toolbar");
     if (tb) {
