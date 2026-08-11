@@ -18,6 +18,12 @@
   /** True only after Turn Sound On successfully scheduled a beep. */
   let userConfirmed = false;
   let recreateCount = 0;
+  /**
+   * True while a run has tones scheduled on the context. Rebuilding the
+   * context throws away every scheduled oscillator, so recreate() refuses
+   * while this is set unless the context is genuinely closed.
+   */
+  let busy = false;
   let htmlAudio = null;
   let silentAudio = null;
   let beepUrl = null;
@@ -259,7 +265,17 @@
     return ctx;
   }
 
+  /** Mark a run as in progress (see `busy`). */
+  function setBusy(v) {
+    busy = !!v;
+  }
+
   function recreate() {
+    // Mid-run: keep the context that already has notes scheduled on it. Only
+    // a closed context is beyond saving. iOS reports "interrupted" whenever
+    // another tab or app touches audio; that clears on its own and must not
+    // cost the user the rest of the phrase.
+    if (busy && ctx && ctx.state !== "closed") return ctx;
     stopKeepAlive();
     const old = ctx;
     ctx = null;
@@ -638,6 +654,7 @@
     ensureLive,
     forceEnable,
     recreate,
+    setBusy,
     whenRunning,
     primeOutput,
     startKeepAlive,

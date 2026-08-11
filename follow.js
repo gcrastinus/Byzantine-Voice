@@ -531,12 +531,37 @@
   let toneNodes = [];
   let toneBlankUntilMs = 0;
 
+  /**
+   * Soft unlock. Safe to call on any gesture and on any code path.
+   *
+   * This deliberately does NOT call AppAudio.wake(). wake() is allowed to
+   * close() and rebuild the AudioContext when a resume doesn't land, which is
+   * correct for recovering a dead context but catastrophic mid-run: on iOS the
+   * context briefly reports "interrupted" (another tab or app touching audio,
+   * a notification, the ringer switch), wake() sees a non-running context,
+   * recreates it, and every oscillator already scheduled dies with the old
+   * context — audible as "the first note plays and then silence". The
+   * rebuilt context is also suspended, since it wasn't born in a gesture, so
+   * nothing plays afterward either. Recovery belongs to ensureAudioLive(),
+   * which runs once per Play/Begin on a real user gesture.
+   */
+  /**
+   * Tell audio.js a run has tones scheduled, so a transient "interrupted"
+   * state can't cause the context (and the rest of the phrase) to be torn
+   * down and rebuilt underneath us.
+   */
+  function setAudioBusy(v) {
+    try {
+      if (window.AppAudio && typeof window.AppAudio.setBusy === "function") {
+        window.AppAudio.setBusy(v);
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   function unlockAudio() {
     if (window.AppAudio) {
-      // Prefer wake when available — recovers Safari after tab background
-      if (typeof window.AppAudio.wake === "function") {
-        window.AppAudio.wake();
-      }
       return window.AppAudio.unlock();
     }
     // Fallback if audio.js failed to load
@@ -958,7 +983,9 @@
    */
   function playSegmentTone(seg) {
     if (!seg || !seg.n || seg.n.midi == null) return;
-    unlockAudio();
+    // No unlock here: this runs from the rAF loop, not a gesture, and the run
+    // already called ensureAudioLive() on the user's Play click. Unlocking per
+    // segment only churned keep-alive nodes and status notifications.
     const n = seg.n;
     // One segment = one re-attack. Recit pulses are never multi-scheduled here.
     const pulses = 1;
@@ -1575,6 +1602,7 @@
     play.seg = 0;
     play.runStartMs = performance.now();
     play.ballX = null;
+    setAudioBusy(true);
     resetBallSmoothing();
     beginSegment(0);
     setRunUi();
@@ -1753,6 +1781,7 @@
     const wasActive = play.active || !!play.countdownTimer;
     const wasFree = play.freeFollow;
     const wasListen = play.listen;
+    setAudioBusy(false);
     play.runId += 1; // cancel any async Begin wait
     play.active = false;
     play.freeFollow = false;

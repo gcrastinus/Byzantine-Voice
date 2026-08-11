@@ -26,6 +26,9 @@
   --danger: #e05a5a;
   --ok: #3db87a;
   --toolbar-h: auto;
+  /* Height of the bottom page bar, excluding the iOS safe-area inset.
+     Anything docking above the bar (see .diag-ui) measures from this. */
+  --page-bar-h: 4rem;
   --radius: 8px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -1483,7 +1486,7 @@ body.compact-toolbar .harmony-hint {
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 -3px 10px -2px rgba(0, 0, 0, 0.4);
   user-select: none;
-  min-height: 4rem;
+  min-height: var(--page-bar-h);
 }
 
 .help-btn {
@@ -1955,8 +1958,20 @@ body.compact-toolbar .harmony-hint {
 
 /* Phone / narrow: Next inset from bezel; keep air between Help and page nav */
 @media (max-width: 720px) {
+  :root {
+    --page-bar-h: 3.4rem;
+  }
+  /**
+   * Phone: the bar is only as tall as its controls, and the home indicator
+   * strip is paid for exactly once via env() rather than being padded around.
+   * Previously the bar kept its 4rem desktop height AND sat under the
+   * indicator, so it cost ~34px of screen and still crowded the buttons.
+   */
   .page-bar {
     gap: 0.45rem 0.55rem;
+    min-height: var(--page-bar-h);
+    padding-top: 0.3rem;
+    padding-bottom: calc(0.3rem + env(safe-area-inset-bottom, 0px));
     padding-left: max(0.75rem, calc(10px + env(safe-area-inset-left, 0px)));
     padding-right: max(0.75rem, calc(10px + env(safe-area-inset-right, 0px)));
   }
@@ -3003,9 +3018,137 @@ body.compact-toolbar .tools-panel #diag-btn {
   width: 100%;
 }
 
+/* ——————————————————————————————————————————————————————————
+   Phone: Assess docks above the page bar
+
+   Hanging off the Assess button, the yellow instruction panel covered the
+   staff — including the very noteheads it was asking the user to tap. Docked
+   to the bottom edge it stays permanently visible and out of the way, and the
+   score keeps the whole middle of the screen.
+   —————————————————————————————————————————————————————————— */
+body.compact-toolbar .diag-ui,
 body.compact-toolbar .tools-panel .diag-ui {
+  position: fixed;
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--page-bar-h) + env(safe-area-inset-bottom, 0px));
+  transform: none;
+  z-index: 60;
+  align-items: stretch;
+  max-height: 42vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+body.compact-toolbar .diag-panel,
+body.compact-toolbar .diag-action-dock {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+body.compact-toolbar .diag-panel {
+  padding: 0.5rem 2.25rem 0.5rem 0.85rem;
+  box-shadow: none;
+}
+
+body.compact-toolbar .diag-action-dock {
+  margin-top: 0;
+  padding: 0.45rem 0.85rem calc(0.5rem + env(safe-area-inset-bottom, 0px) * 0);
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.35);
+}
+
+body.compact-toolbar .diag-status-line {
+  font-size: 0.88rem;
+}
+
+/* ——————————————————————————————————————————————————————————
+   Phone: menus as bottom sheets
+
+   A dropdown anchored under its button has nowhere to go on a 6.9" screen —
+   it either runs off the right edge or covers the score. Pinning menus to the
+   bottom edge instead gives them the full width, puts them under the thumb,
+   and lets them scroll internally rather than pushing the layout around.
+   —————————————————————————————————————————————————————————— */
+body.compact-toolbar .play-menu-panel,
+body.compact-toolbar .tools-panel {
+  position: fixed;
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 80;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  max-height: min(78vh, 40rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  /* Last row clears the home indicator instead of hiding behind it */
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  background: var(--surface);
+  border: none;
+  border-top: 1px solid #4a5670;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.5);
+  overscroll-behavior: contain;
+}
+
+/* Dimming scrim. pointer-events:none so a tap still reaches the element
+   behind it and the existing outside-click handler closes the menu. */
+body.compact-toolbar .play-menu-panel::before,
+body.compact-toolbar .tools-panel::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(8, 10, 14, 0.5);
+  pointer-events: none;
+}
+
+/* Grab handle, so the sheet reads as a sheet */
+body.compact-toolbar .play-menu-panel::after,
+body.compact-toolbar .tools-panel::after {
+  content: "";
+  position: absolute;
+  top: 0.45rem;
   left: 50%;
   transform: translateX(-50%);
+  width: 2.5rem;
+  height: 4px;
+  border-radius: 2px;
+  background: #565963;
+}
+
+body.compact-toolbar .play-menu-panel > *:first-child,
+body.compact-toolbar .tools-panel > *:first-child {
+  margin-top: 0.5rem;
+}
+
+/* A menu opened from inside another sheet stacks above it */
+body.compact-toolbar .assess-menu-panel,
+body.compact-toolbar .transpose-menu-panel {
+  z-index: 82;
+}
+
+/* Full-width, thumb-sized rows inside a sheet */
+body.compact-toolbar .play-menu-panel .btn,
+body.compact-toolbar .play-menu-panel .file-btn,
+body.compact-toolbar .tools-panel .btn,
+body.compact-toolbar .tools-panel .file-btn {
+  width: 100%;
+  min-height: 3rem;
+  justify-content: center;
 }
 
 body.compact-toolbar .slider-label input[type="range"] {
