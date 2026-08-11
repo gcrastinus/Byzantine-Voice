@@ -316,22 +316,19 @@
     try {
       const n = Math.max(1, (c.sampleRate * 0.25) | 0);
       const buf = c.createBuffer(1, n, c.sampleRate);
-      // Low-level noise at ≈ −62 dB: inaudible in a room, but REAL signal.
-      // The previous keep-alive (~−180 dB) was digital silence as far as the
-      // speaker amp was concerned — Mac amps power down during silence and
-      // wake with an audible POP on the first tone. Keeping the DAC/amp fed
-      // with faint noise keeps them awake between tones.
+      // Keep the speaker amp awake with a 24 Hz sine — real signal energy,
+      // but below what any laptop/phone speaker can reproduce, so nothing
+      // audible. (Digital silence let Mac amps sleep → POP on the first
+      // tone; white noise at −62 dB was audible as a faint "ssshhh".)
+      // 6 full cycles in the 0.25 s buffer → seamless loop.
       const d = buf.getChannelData(0);
-      let s = 22222;
-      for (let i = 0; i < d.length; i++) {
-        s = (s * 48271) % 2147483647;
-        d[i] = (s / 2147483647 - 0.5) * 2;
-      }
+      const w = (2 * Math.PI * 6) / n;
+      for (let i = 0; i < d.length; i++) d[i] = Math.sin(w * i);
       const src = c.createBufferSource();
       src.buffer = buf;
       src.loop = true;
       const g = c.createGain();
-      g.gain.value = 0.0008;
+      g.gain.value = 0.004;
       src.connect(g);
       g.connect(c.destination);
       src.start();

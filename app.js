@@ -37,7 +37,7 @@
 
   // Build stamp: visible on the how-to card and in the console so a phone
   // running a stale cached build can be identified at a glance.
-  const APP_BUILD = "2026-08-11";
+  const APP_BUILD = "2026-08-11b";
   try {
     console.log("Byzantine Voice — build", APP_BUILD);
     document.documentElement.setAttribute("data-build", APP_BUILD);
