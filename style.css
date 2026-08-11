@@ -2780,19 +2780,25 @@ body.compact-toolbar .harmony-hint {
     flex: 1 1 auto;
     width: 100%;
   }
+  /**
+   * Horizontal rule between the stacked columns.
+   * Centred by width + auto margins, not by left/right: on a relatively
+   * positioned box those are offsets rather than insets, so `right` is
+   * ignored and `left` just pushes the full-width rule off the screen edge.
+   */
   .drop-hint-divider {
-    left: 12%;
-    right: 12%;
+    position: relative;
+    left: auto;
+    right: auto;
     top: auto;
     bottom: auto;
-    width: auto;
+    width: 70%;
+    max-width: 70%;
     height: 0;
     border-left: none;
     border-top: 1px solid rgba(154, 155, 165, 0.45);
     transform: none;
-    /* horizontal rule across middle band of the stacked layout */
-    position: relative;
-    margin: 0.25rem 0;
+    margin: 0.25rem auto;
   }
 }
 
@@ -3191,8 +3197,48 @@ body.compact-toolbar .tools-panel .btn {
   width: auto;
 }
 
+/**
+ * Phone bar proportions. With only three icon controls left, the desktop
+ * 3.4rem control height and 0.55rem bar padding are more than the bar needs —
+ * this trims both to a medium size that is still a comfortable tap target
+ * (≈44px, Apple's minimum) and gives the score back the difference.
+ */
 body.compact-toolbar .toolbar {
   gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+}
+
+body.compact-toolbar .toolbar .btn,
+body.compact-toolbar .toolbar .file-btn {
+  min-height: 2.75rem;
+  font-size: 1.05rem;
+  padding: 0.4rem 0.85rem;
+}
+
+body.compact-toolbar #upload-save-toggle,
+body.compact-toolbar #match-pitch-btn,
+body.compact-toolbar #play-btn {
+  min-width: 2.9rem;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.6rem;
+}
+
+body.compact-toolbar #upload-save-toggle::before {
+  font-size: 1.45rem;
+}
+
+body.compact-toolbar #match-pitch-btn::before {
+  font-size: 1.5rem;
+}
+
+body.compact-toolbar #match-pitch-btn[aria-pressed="true"]::before,
+body.compact-toolbar #match-pitch-btn.is-on::before {
+  font-size: 1.15rem;
+}
+
+body.compact-toolbar #play-btn .play-icon,
+body.compact-toolbar #play-btn .pause-icon {
+  font-size: 1.35rem;
 }
 
 body.compact-toolbar .toolbar-play-music {
