@@ -3409,3 +3409,82 @@ body.toolbar-measuring .tools-panel .transpose-controls-bar {
 body.toolbar-measuring .tools-panel .toolbar-play-music {
   margin-left: auto !important;
 }
+
+/* =====================================================================
+   Phone layout (2026-08-10): minimal chrome, maximum sheet.
+   - file-status chip hidden (was an unreadable thin box)
+   - page nav = small fixed arrows in the bottom corners
+   - help "?" moves to the top-right; toolbar keeps clear of it
+   ===================================================================== */
+/* Phones in portrait (narrow) OR any touch device in short landscape —
+   an iPhone in landscape is ~850–930px wide, far past a 720px query. */
+@media (max-width: 720px), ((pointer: coarse) and (max-height: 540px)) {
+  /* The filename readout renders as an unreadable thin sliver on phones —
+     hide it there (id covers the current in-menu variant). */
+  #file-status,
+  .file-status,
+  .file-status-in-menu {
+    display: none !important;
+  }
+
+  /* Small corner arrows; disabled state grays out (Prev at page 1). */
+  #prev-page,
+  #next-page {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+    z-index: 60;
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 22px;
+    font-size: 1.5rem;
+    line-height: 1;
+    opacity: 0.82;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+  #prev-page {
+    left: calc(env(safe-area-inset-left, 0px) + 10px);
+  }
+  #next-page {
+    right: calc(env(safe-area-inset-right, 0px) + 10px);
+  }
+  #prev-page:disabled,
+  #next-page:disabled {
+    opacity: 0.22;
+  }
+  #prev-page .pg-word,
+  #next-page .pg-word {
+    display: none;
+  }
+  .page-label {
+    display: none;
+  }
+  .page-bar-controls {
+    min-height: 0;
+  }
+
+  /* Help to the top-right; reserve toolbar space so nothing sits under it. */
+  #help-btn {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    right: calc(env(safe-area-inset-right, 0px) + 8px);
+    z-index: 61;
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    border-radius: 20px;
+    opacity: 0.9;
+  }
+  .toolbar {
+    padding-right: 54px;
+  }
+}
+
+.howto-build {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  opacity: 0.55;
+  text-align: center;
+}

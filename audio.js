@@ -316,14 +316,22 @@
     try {
       const n = Math.max(1, (c.sampleRate * 0.25) | 0);
       const buf = c.createBuffer(1, n, c.sampleRate);
-      // Tiny non-zero so some engines don't optimize out the graph
+      // Low-level noise at ≈ −62 dB: inaudible in a room, but REAL signal.
+      // The previous keep-alive (~−180 dB) was digital silence as far as the
+      // speaker amp was concerned — Mac amps power down during silence and
+      // wake with an audible POP on the first tone. Keeping the DAC/amp fed
+      // with faint noise keeps them awake between tones.
       const d = buf.getChannelData(0);
-      for (let i = 0; i < d.length; i++) d[i] = (i & 1) * 0.00001;
+      let s = 22222;
+      for (let i = 0; i < d.length; i++) {
+        s = (s * 48271) % 2147483647;
+        d[i] = (s / 2147483647 - 0.5) * 2;
+      }
       const src = c.createBufferSource();
       src.buffer = buf;
       src.loop = true;
       const g = c.createGain();
-      g.gain.value = 0.00005;
+      g.gain.value = 0.0008;
       src.connect(g);
       g.connect(c.destination);
       src.start();

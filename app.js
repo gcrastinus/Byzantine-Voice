@@ -35,6 +35,18 @@
 (() => {
   "use strict";
 
+  // Build stamp: visible on the how-to card and in the console so a phone
+  // running a stale cached build can be identified at a glance.
+  const APP_BUILD = "2026-08-10";
+  try {
+    console.log("Byzantine Voice — build", APP_BUILD);
+    document.documentElement.setAttribute("data-build", APP_BUILD);
+    const bl = document.getElementById("howto-build");
+    if (bl) bl.textContent = "build " + APP_BUILD;
+  } catch (_) {
+    /* ignore */
+  }
+
   // —— pdf.js setup ——
   const pdfjsLib = window["pdfjs-dist/build/pdf"] || window.pdfjsLib;
   if (!pdfjsLib) {
@@ -1339,6 +1351,7 @@
     // Fit-to-width; stage scrolls vertically for tall pages.
     const unscaled = page.getViewport({ scale: 1 });
     const avail = Math.max(1, els.stage.clientWidth);
+    state.lastFitW = avail; // resize handler re-renders only when this changes
     return avail / unscaled.width;
   }
 
@@ -2357,10 +2370,20 @@
    * Wide screens: no Tools button — those controls stay on the bar (grayed
    * until a PDF is ready).
    */
+  let toolbarMeasuring = false;
   function updateCompactToolbar() {
     const toolbar = document.querySelector(".toolbar");
     if (!toolbar || !document.body) return;
+    if (toolbarMeasuring) return;
+    toolbarMeasuring = true;
+    try {
+      updateCompactToolbarInner(toolbar);
+    } finally {
+      toolbarMeasuring = false;
+    }
+  }
 
+  function updateCompactToolbarInner(toolbar) {
     const wasCompact = document.body.classList.contains("compact-toolbar");
     // Measure full desktop layout: all tools on one row, Tools button hidden
     document.body.classList.remove("compact-toolbar");
@@ -2406,8 +2429,12 @@
     // Compact ONLY when the full tool strip needs a second line / won't fit
     let compact = overflow || twoLines;
     if (wasCompact) {
-      // Stay compact until clearly enough room for one full row
-      compact = needed > barW - 36;
+      // Strong hysteresis: stay compact until there is CLEARLY enough room.
+      // A narrow margin here caused compact↔full oscillation on phone
+      // landscape (each state changes the bar's own height, re-firing the
+      // ResizeObserver) — the reported "top bar flashing and covering the
+      // screen".
+      compact = needed > barW - 72;
     }
 
     document.body.classList.toggle("compact-toolbar", compact);
@@ -2426,6 +2453,12 @@
     clearTimeout(compactToolbarTimer);
     compactToolbarTimer = setTimeout(updateCompactToolbar, 80);
     if (!state.pdfDoc) return;
+    // Re-render ONLY when the usable width actually changed. iOS fires
+    // resize constantly as the URL bar collapses/expands (height-only), and
+    // re-rendering the canvas on each one made the sheet flicker behind the
+    // how-to card and thrash the main thread during playback.
+    const w = els.stage ? els.stage.clientWidth : 0;
+    if (state.lastFitW != null && Math.abs(w - state.lastFitW) < 3) return;
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => renderPage(state.pageNum), 120);
   }
@@ -2439,7 +2472,19 @@
   if (typeof ResizeObserver === "function") {
     const tb = document.querySelector(".toolbar");
     if (tb) {
-      const ro = new ResizeObserver(() => {
+      // Only remeasure when the toolbar's WIDTH changes. Its height changes
+      // as a RESULT of compact/full toggling, so reacting to height put the
+      // observer in a feedback loop with the measurement (visible as the top
+      // bar flashing on phones, worst in landscape at the breakpoint).
+      let lastToolbarW = 0;
+      const ro = new ResizeObserver((entries) => {
+        if (toolbarMeasuring) return;
+        const w =
+          entries && entries[0] && entries[0].contentRect
+            ? entries[0].contentRect.width
+            : tb.clientWidth;
+        if (Math.abs(w - lastToolbarW) < 1.5) return;
+        lastToolbarW = w;
         clearTimeout(compactToolbarTimer);
         compactToolbarTimer = setTimeout(updateCompactToolbar, 60);
       });

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chant Sight-Singing Trainer</title>
-  <link rel="stylesheet" href="style.css?v=74" />
+  <link rel="stylesheet" href="style.css?v=75" />
   <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -354,9 +354,9 @@
       </button>
     </div>
     <div class="page-bar-controls" role="navigation" aria-label="Page">
-      <button type="button" id="prev-page" class="btn page-bar-btn" aria-label="Previous page">‹ Prev</button>
+      <button type="button" id="prev-page" class="btn page-bar-btn" aria-label="Previous page"><span class="pg-arrow">‹</span><span class="pg-word"> Prev</span></button>
       <span id="page-label" class="page-label">Page <span class="page-label-num">—</span> of <span class="page-label-num">—</span></span>
-      <button type="button" id="next-page" class="btn page-bar-btn" aria-label="Next page">Next ›</button>
+      <button type="button" id="next-page" class="btn page-bar-btn" aria-label="Next page"><span class="pg-word">Next </span><span class="pg-arrow">›</span></button>
     </div>
   </footer>
 
@@ -396,6 +396,7 @@
           <li><strong>Assess Singing</strong> — click a start note and an end note, then <strong>Sing section</strong>. You’ll get <strong>3–2–1</strong>, hear the first note, then sing through to the end and press <strong>Finish</strong>. A short report rates your pitch on those notes. No audio is saved.</li>
         </ol>
         <p class="howto-foot">Open <span class="howto-help-glyph" aria-hidden="true">?</span> anytime for more detail. Press <strong>×</strong> or Escape to start.</p>
+        <p class="howto-build" id="howto-build" aria-hidden="true"></p>
       </div>
     </div>
   </div>
@@ -433,10 +434,10 @@
     </div>
   </div>
 
-  <script src="audio.js?v=7"></script>
+  <script src="audio.js?v=8"></script>
   <script src="extractor.js?v=13"></script>
-  <script src="app.js?v=45"></script>
-  <script src="follow.js?v=67"></script>
+  <script src="app.js?v=46"></script>
+  <script src="follow.js?v=68"></script>
   <script src="diagnose.js?v=21"></script>
   <script src="pitch.js?v=13"></script>
   <script src="range.js?v=2"></script>

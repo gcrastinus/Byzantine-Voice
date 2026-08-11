@@ -816,15 +816,19 @@
     }
 
     const dur = t1 - t0;
-    const attack = Math.min(0.025, dur * 0.12);
-    const release = Math.min(0.07, dur * 0.22);
+    // Longer, exponential attack: a 25 ms linear rise still popped on speakers
+    // whose amps wake from sleep (new Macs especially). 50 ms exponential
+    // reads as a soft "ah" onset and is click-free.
+    const attack = Math.min(0.05, dur * 0.25);
+    const release = Math.min(0.09, dur * 0.28);
     const peak = 0.55; // loud enough for laptop speakers after Safari unlock
 
     const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.linearRampToValueAtTime(peak, t0 + attack);
+    gain.gain.setValueAtTime(0.0004, t0);
+    gain.gain.exponentialRampToValueAtTime(peak, t0 + attack);
     gain.gain.setValueAtTime(peak, Math.max(t0 + attack, t1 - release));
-    gain.gain.linearRampToValueAtTime(0.0001, t1);
+    gain.gain.exponentialRampToValueAtTime(0.0004, t1);
+    gain.gain.linearRampToValueAtTime(0.0001, t1 + 0.015);
     gain.connect(ctx.destination);
     toneNodes.push(gain);
 
