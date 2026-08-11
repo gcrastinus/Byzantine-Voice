@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Chant Sight-Singing Trainer</title>
-  <link rel="stylesheet" href="style.css?v=73" />
+  <link rel="stylesheet" href="style.css?v=74" />
   <!-- pdf.js (UMD) — stable vanilla build, no bundler -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -88,6 +88,15 @@
             </p>
             <div id="score-ready-box" class="score-ready-box" hidden role="status" aria-live="polite"></div>
           </div>
+
+          <!-- Phone only: Transpose + Tempo are relocated here by mobile.js,
+               and assess features are pointed at Help rather than shown. -->
+          <div id="mobile-tools-mount" class="mobile-tools-mount">
+            <div class="menu-section-title">Pitch &amp; pace</div>
+          </div>
+          <p id="mobile-assess-note" class="play-menu-hint mobile-assess-note">
+            To use assess features, see <span class="howto-help-glyph" aria-hidden="true">?</span>
+          </p>
         </div>
         <!-- Sound status floats under this menu -->
         <div id="sound-status-panel" class="sound-status-panel" hidden>
@@ -373,6 +382,7 @@
       <button type="button" id="howto-close" class="diag-collapse" title="Close" aria-label="Close how to use">×</button>
       <p id="howto-app-name" class="howto-app-name">Byzantine Voice</p>
       <p class="howto-app-sub">Ear and voice training for Ruthenian chant</p>
+      <p class="howto-app-note">For full functionality use on a desktop, laptop, or large tablet screen.</p>
       <h2 id="howto-title" class="howto-section-title">How to use</h2>
       <div class="howto-body">
         <ol class="howto-list">
@@ -398,7 +408,10 @@
       <div class="help-body">
         <p><strong>Byzantine Liturgical Calendar</strong> — Opens a live panel of the MCI home-page calendar and Vigil Divine Liturgy propers (dates, service names, and sheet-music links). Links open PDFs on the MCI site in a new tab; save the file and upload it here to practice. Content is re-fetched each time you open the panel so new months stay current.</p>
         <p><strong>Upload &amp; Settings</strong> — On a computer this menu is always named <strong>Upload &amp; Settings</strong>. On phones it says <strong>Upload</strong> until a PDF is loaded, then <strong>Settings</strong>. Open it to upload a chant PDF first; sound, mic, and save/load options stay grayed out until a file is loaded so you are not asked to configure them first. When extraction finishes, a green ready box shows how many notes were found.</p>
-        <p><strong>Tools</strong> (phones) — Match Pitch, Transpose, Tempo, Assess Singing, and Play All. Grayed out until a PDF is ready; then open the dropdown to use them. On a computer these controls stay on the main toolbar.</p>
+        <h3 class="help-section-heading">On a phone</h3>
+        <p>A phone screen is too small to show the full toolbar without crowding the music, so the phone layout is deliberately reduced to four things: the <strong>gear</strong> (upload and settings), <strong>Match Pitch</strong>, <strong>Play</strong>, and page navigation. <strong>Transpose</strong> and <strong>Tempo</strong> move inside the gear menu as plain sliders.</p>
+        <p><strong>Assess Singing</strong> and <strong>Find your range</strong> are hidden on phones. They are not removed — both need room to show a section of the staff, pick start and end notes, and display a pitch report alongside the music, which a phone cannot do legibly. Open the app on a desktop, laptop, or large tablet and both features appear on the toolbar under <strong>Assess</strong>.</p>
+        <p><strong>Tools</strong> (small tablets) — Match Pitch, Transpose, Tempo, Assess Singing, and Play All. Grayed out until a PDF is ready; then open the dropdown to use them. On a computer these controls stay on the main toolbar.</p>
         <p><strong>Match Pitch</strong> — Click <strong>Match Pitch</strong> (the button becomes <strong>Stop</strong>), then click a note to hear it and match with your voice. Click <strong>Stop</strong> or press Escape to turn it off and release the microphone.</p>
         <h3 class="help-section-heading">Transpose</h3>
         <p><strong>Transpose</strong> shifts every played and matched pitch by <strong>half steps</strong> (not whole steps). Range is 1½ octaves down (−18) to half an octave up (+6). Bold marks on the slider are full octaves; short marks are half octaves. Default is written pitch (<strong>0</strong>). Slide left to lower the music for men’s range. Release the slider to hear the first three notes at the new pitch.</p>
@@ -423,11 +436,12 @@
   <script src="audio.js?v=7"></script>
   <script src="extractor.js?v=13"></script>
   <script src="app.js?v=45"></script>
-  <script src="follow.js?v=66"></script>
+  <script src="follow.js?v=67"></script>
   <script src="diagnose.js?v=21"></script>
   <script src="pitch.js?v=13"></script>
   <script src="range.js?v=2"></script>
   <script src="range-test-data.js?v=1"></script>
   <script src="range-ui.js?v=8"></script>
+  <script src="mobile.js?v=1"></script>
 </body>
 </html>

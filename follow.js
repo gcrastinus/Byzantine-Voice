@@ -211,6 +211,10 @@
     timeline: [],
     seg: -1,
     runStartMs: 0,
+    /** AudioContext.currentTime that timeline offset 0 maps to. */
+    audioT0: 0,
+    /** Next timeline index still needing a tone queued (see scheduleAhead). */
+    scheduledIdx: 0,
     rafId: 0,
     /** Only for computer Play timeline (not for Begin hold lengths). */
     tempo: PLAY_TEMPO_DEFAULT,
@@ -976,10 +980,57 @@
     return true;
   }
 
+  /** How far ahead of the playhead tones are queued on the audio clock. */
+  const SCHEDULE_AHEAD_SEC = 25;
+
+  /** Sounding length of one timeline segment. */
+  function segmentToneSec(seg) {
+    // Recit quarters get a short gap so they read as separate re-attacks.
+    const ms = seg.isRecitPulse
+      ? Math.max(90, (seg.durMs || HEAR_NOTE_MS) * 0.78)
+      : seg.durMs || HEAR_NOTE_MS;
+    return ms / 1000;
+  }
+
   /**
-   * Play the current Play-mode segment.
-   * Recit beats are already expanded to one segment per quarter: play a single
-   * slightly-short quarter so the re-attack into the next beat is audible.
+   * Queue every upcoming tone directly on the AudioContext clock.
+   *
+   * Previously each note was scheduled from the rAF loop at the moment it was
+   * due. That put a live audio dependency on a visual callback once per note,
+   * and any single failure — a frame the browser skipped, a context that
+   * momentarily reported something other than "running", a stopTones() landing
+   * between segments — silenced the rest of the run. On iOS that happened on
+   * the very first hand-off, which is why playback stopped after one note.
+   *
+   * Web Audio's clock is sample-accurate and independent of the main thread,
+   * so queueing ahead means the run survives anything that happens to
+   * JavaScript timing afterwards. Nodes land in toneNodes and are torn down by
+   * stopTones() exactly as before.
+   */
+  function scheduleAhead(ctx) {
+    if (!ctx || ctx.state !== "running") return;
+    if (!play.timeline || !play.timeline.length) return;
+    const horizon = ctx.currentTime + SCHEDULE_AHEAD_SEC;
+    let last = 0;
+    while (play.scheduledIdx < play.timeline.length) {
+      const seg = play.timeline[play.scheduledIdx];
+      const startSec = play.audioT0 + (seg.t0 || 0) / 1000;
+      if (startSec > horizon) break;
+      if (seg && seg.n && seg.n.midi != null) {
+        scheduleTone(ctx, Number(seg.n.midi), startSec, startSec + segmentToneSec(seg));
+        last = Math.max(last, startSec + segmentToneSec(seg));
+      }
+      play.scheduledIdx += 1;
+    }
+    // Keep the mic gate open across everything we just queued, so the pitch
+    // detector never hears the app's own tones.
+    if (last > 0) blankThrough(ctx, last);
+  }
+
+  /**
+   * Play one Play-mode segment on demand.
+   * Retained for callers outside the main run (cues, tests); the run itself
+   * uses scheduleAhead().
    */
   function playSegmentTone(seg) {
     if (!seg || !seg.n || seg.n.midi == null) return;
@@ -1487,13 +1538,19 @@
         t.drawBall(x, seg.n.y);
       }
     }
-    // Each recit beat is its own quarter-note attack
-    playSegmentTone(seg);
+    // Tone is not started here — it was queued on the audio clock by
+    // scheduleAhead() when the run began. This function is visuals only.
   }
 
   function tickListen() {
     if (!play.active || !play.listen) return;
     play.rafId = requestAnimationFrame(tickListen);
+
+    // Top up the queue for long scores. Cheap no-op once everything is queued.
+    if (play.scheduledIdx < play.timeline.length) {
+      const c = window.AppAudio && window.AppAudio.ensure && window.AppAudio.ensure();
+      if (c) scheduleAhead(c);
+    }
 
     const now = performance.now();
     const elapsed = now - play.runStartMs;
@@ -1600,9 +1657,19 @@
 
     play.active = true;
     play.seg = 0;
-    play.runStartMs = performance.now();
     play.ballX = null;
     setAudioBusy(true);
+
+    // Anchor visuals and audio to the same instant. The small lead gives the
+    // scheduler room before the first attack and keeps the ball in step with
+    // what is actually sounding.
+    const LEAD_SEC = 0.12;
+    play.audioT0 = live.ctx.currentTime + LEAD_SEC;
+    play.runStartMs = performance.now() + LEAD_SEC * 1000;
+    play.scheduledIdx = 0;
+    stopTones();
+    scheduleAhead(live.ctx);
+
     resetBallSmoothing();
     beginSegment(0);
     setRunUi();
@@ -1801,6 +1868,8 @@
     stopTones();
     play.timeline = [];
     play.seg = -1;
+    play.scheduledIdx = 0;
+    play.audioT0 = 0;
     resetFreeAccum();
     // After a Play / drag-select run ends (or is paused), clear note selection so
     // the next Play All starts at the top of the current page (not whole-PDF start).

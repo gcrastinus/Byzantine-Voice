@@ -1558,6 +1558,16 @@ body.compact-toolbar .harmony-hint {
   color: #a8b4cc;
 }
 
+/* Screen-size advisory — deliberately unbolded so it reads as a note, not a
+   warning competing with the title. */
+.howto-app-note {
+  margin: 0 2.25rem 1rem 0;
+  font-size: clamp(0.92rem, 2vw, 1rem);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 .howto-modal-card h2.howto-section-title,
 .howto-section-title {
   margin: 0 2.25rem 0.85rem 0;
@@ -3071,6 +3081,175 @@ body.compact-toolbar .diag-status-line {
 }
 
 /* ——————————————————————————————————————————————————————————
+   Phone: reduced toolbar
+
+   Three icon controls only — gear (upload + settings), Match Pitch, Play.
+   Transpose and Tempo are relocated into the gear sheet by mobile.js; assess
+   features are hidden entirely and explained under Help. Labels are collapsed
+   with font-size:0 rather than removed, because follow.js rewrites the text of
+   these buttons as their state changes.
+   —————————————————————————————————————————————————————————— */
+
+/* Assess is desktop-only */
+body.compact-toolbar .toolbar-note,
+body.compact-toolbar #assess-menu,
+body.compact-toolbar #diag-ui,
+body.compact-toolbar #diag-tab,
+body.compact-toolbar .tools-toggle,
+body.compact-toolbar #harmony-hint,
+/* The "app will turn the page" notice competes with the sheets for the same
+   strip of screen and is redundant when the page bar is one thumb away. */
+body.compact-toolbar .page-advance-hint {
+  display: none !important;
+}
+
+/* Gear */
+body.compact-toolbar #upload-save-toggle {
+  min-width: 3.2rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0;
+}
+
+body.compact-toolbar #upload-save-toggle::before {
+  content: "\2699";
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+body.compact-toolbar #upload-save-toggle .us-label,
+body.compact-toolbar #upload-save-toggle .caret {
+  display: none;
+}
+
+/* Match Pitch → eighth note; becomes a stop square while matching */
+body.compact-toolbar #match-pitch-btn {
+  min-width: 3.2rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0;
+}
+
+body.compact-toolbar #match-pitch-btn::before {
+  content: "\266A";
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+body.compact-toolbar #match-pitch-btn[aria-pressed="true"]::before,
+body.compact-toolbar #match-pitch-btn.is-on::before {
+  content: "\25A0";
+  font-size: 1.4rem;
+}
+
+/* Play → ▶ / ⏸ only. The glyph spans are re-sized back up. */
+body.compact-toolbar #play-btn {
+  min-width: 3.2rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0;
+}
+
+body.compact-toolbar #play-btn .play-icon,
+body.compact-toolbar #play-btn .pause-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+/**
+ * Match Pitch and Play sit on the bar itself. With Transpose and Tempo moved
+ * into the gear sheet and Assess hidden, what is left of the Tools panel is
+ * two icon buttons — so it stops being a dropdown and becomes part of the bar.
+ */
+body.compact-toolbar .tools-panel {
+  display: flex;
+  position: static;
+  flex: 0 0 auto;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.compact-toolbar .tools-panel .toolbar-group {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: auto;
+  gap: 0.5rem;
+}
+
+body.compact-toolbar .tools-panel .btn {
+  width: auto;
+}
+
+body.compact-toolbar .toolbar {
+  gap: 0.5rem;
+}
+
+body.compact-toolbar .toolbar-play-music {
+  margin-left: auto;
+}
+
+/* Relocated sliders (see mobile.js) */
+.mobile-tools-mount,
+.mobile-assess-note {
+  display: none;
+}
+
+body.compact-toolbar .mobile-tools-mount {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: 0.35rem;
+}
+
+body.compact-toolbar .mobile-tools-mount .tempo-controls,
+body.compact-toolbar .mobile-tools-mount .transpose-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: none;
+}
+
+body.compact-toolbar .mobile-tools-mount input[type="range"] {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+/* Transpose keeps its slider; its ▾ menu is redundant at this size */
+body.compact-toolbar .mobile-tools-mount #transpose-menu {
+  display: none;
+}
+
+body.compact-toolbar .mobile-tools-mount .transpose-controls-bar::before {
+  content: "Transpose";
+  flex: 0 0 5.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--label);
+}
+
+body.compact-toolbar .mobile-assess-note {
+  display: block;
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ——————————————————————————————————————————————————————————
    Phone: menus as bottom sheets
 
    A dropdown anchored under its button has nowhere to go on a 6.9" screen —
@@ -3078,8 +3257,7 @@ body.compact-toolbar .diag-status-line {
    bottom edge instead gives them the full width, puts them under the thumb,
    and lets them scroll internally rather than pushing the layout around.
    —————————————————————————————————————————————————————————— */
-body.compact-toolbar .play-menu-panel,
-body.compact-toolbar .tools-panel {
+body.compact-toolbar .play-menu-panel {
   position: fixed;
   top: auto;
   left: 0;
@@ -3094,8 +3272,8 @@ body.compact-toolbar .tools-panel {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
-  /* Last row clears the home indicator instead of hiding behind it */
-  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  /* Top inset clears the grab handle; bottom clears the home indicator. */
+  padding: 1.6rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
   background: var(--surface);
   border: none;
   border-top: 1px solid #4a5670;
@@ -3106,8 +3284,7 @@ body.compact-toolbar .tools-panel {
 
 /* Dimming scrim. pointer-events:none so a tap still reaches the element
    behind it and the existing outside-click handler closes the menu. */
-body.compact-toolbar .play-menu-panel::before,
-body.compact-toolbar .tools-panel::before {
+body.compact-toolbar .play-menu-panel::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -3117,8 +3294,7 @@ body.compact-toolbar .tools-panel::before {
 }
 
 /* Grab handle, so the sheet reads as a sheet */
-body.compact-toolbar .play-menu-panel::after,
-body.compact-toolbar .tools-panel::after {
+body.compact-toolbar .play-menu-panel::after {
   content: "";
   position: absolute;
   top: 0.45rem;
@@ -3130,8 +3306,7 @@ body.compact-toolbar .tools-panel::after {
   background: #565963;
 }
 
-body.compact-toolbar .play-menu-panel > *:first-child,
-body.compact-toolbar .tools-panel > *:first-child {
+body.compact-toolbar .play-menu-panel > *:first-child {
   margin-top: 0.5rem;
 }
 
@@ -3143,9 +3318,7 @@ body.compact-toolbar .transpose-menu-panel {
 
 /* Full-width, thumb-sized rows inside a sheet */
 body.compact-toolbar .play-menu-panel .btn,
-body.compact-toolbar .play-menu-panel .file-btn,
-body.compact-toolbar .tools-panel .btn,
-body.compact-toolbar .tools-panel .file-btn {
+body.compact-toolbar .play-menu-panel .file-btn {
   width: 100%;
   min-height: 3rem;
   justify-content: center;
