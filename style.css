@@ -3617,3 +3617,50 @@ body.compact-toolbar .play-menu-panel::after {
     border-radius: 10px;
   }
 }
+
+/* —— 2026-08-12: sheet transpose sizing, sheet Reset, SE status bar —— */
+
+/* Sheet transpose: a medium-short bar whose ticks align exactly with the
+   thumb travel — the control keeps its own compact row, and the slider wrap
+   is a fixed centred width instead of inheriting the toolbar's 18.5rem box. */
+body.compact-toolbar #mobile-tools-mount .transpose-controls-bar {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem 0.6rem;
+  padding: 0.35rem 0;
+}
+body.compact-toolbar #mobile-tools-mount .transpose-slider-wrap {
+  flex: 0 0 auto;
+  width: 13rem;
+  max-width: calc(100% - 1rem);
+  margin: 0 auto;
+}
+body.compact-toolbar #mobile-tools-mount .transpose-slider-wrap input[type="range"] {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Sheet-only Reset button (created by mobile.js) */
+.mobile-transpose-reset {
+  display: none;
+}
+body.compact-toolbar #mobile-tools-mount .mobile-transpose-reset {
+  display: flex;
+  width: 100%;
+  min-height: 2.7rem;
+  justify-content: center;
+  margin-top: 0.15rem;
+}
+
+/* iPhone SE / status-bar clearance: keep the app toolbar below the system
+   clock + carrier text when the page is drawn edge-to-edge
+   (viewport-fit=cover). env() is 0 wherever the browser already offsets. */
+@media (max-width: 720px), ((pointer: coarse) and (max-height: 540px)) {
+  .toolbar {
+    padding-top: calc(0.55rem + env(safe-area-inset-top, 0px)) !important;
+  }
+}

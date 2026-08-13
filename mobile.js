@@ -45,6 +45,35 @@
       rememberHome(el);
       mount.appendChild(el);
     }
+    ensureSheetTransposeReset();
+  }
+
+  /**
+   * The desktop Reset lives inside the Transpose ▾ dropdown, which is buried
+   * on a phone. Give the sheet its own visible Reset button (CSS hides it
+   * outside compact mode). Uses followPlayback.resetTranspose so behaviour
+   * stays identical to the desktop path.
+   */
+  function ensureSheetTransposeReset() {
+    if ($("mobile-transpose-reset")) return;
+    const tc = $("transpose-controls");
+    if (!tc) return;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.id = "mobile-transpose-reset";
+    b.className = "btn mobile-transpose-reset";
+    b.textContent = "Reset to written pitch";
+    b.title = "Set transpose back to 0 (written pitch)";
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      try {
+        const fp = window.followPlayback;
+        if (fp && typeof fp.resetTranspose === "function") fp.resetTranspose();
+      } catch (_) {
+        /* ignore */
+      }
+    });
+    tc.appendChild(b);
   }
 
   function moveToToolbar() {

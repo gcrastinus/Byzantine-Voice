@@ -1020,9 +1020,18 @@
       const seg = play.timeline[play.scheduledIdx];
       const startSec = play.audioT0 + (seg.t0 || 0) / 1000;
       if (startSec > horizon) break;
+      const endSec = startSec + segmentToneSec(seg);
+      // Segments whose window has already fully passed are SKIPPED, not
+      // re-timed. After a screen lock the wall clock runs on while the audio
+      // clock froze; re-timing every missed note to "now" machine-gunned
+      // them all in a rapid stream on wake.
+      if (endSec < ctx.currentTime + 0.02) {
+        play.scheduledIdx += 1;
+        continue;
+      }
       if (seg && seg.n && seg.n.midi != null) {
-        scheduleTone(ctx, Number(seg.n.midi), startSec, startSec + segmentToneSec(seg));
-        last = Math.max(last, startSec + segmentToneSec(seg));
+        scheduleTone(ctx, Number(seg.n.midi), startSec, endSec);
+        last = Math.max(last, endSec);
       }
       play.scheduledIdx += 1;
     }
@@ -1579,6 +1588,22 @@
     } catch (_) {
       /* ignore */
     }
+    // FAST-FORWARD first: while the screen was off, wall time kept running
+    // but neither the rAF loop nor the audio clock did. Land the run on the
+    // segment the wall clock says we should be at — missed notes are gone,
+    // not owed. (Without this, re-queueing from the pre-lock segment played
+    // every missed note at once.)
+    while (
+      play.seg < play.timeline.length &&
+      elapsedMs >= play.timeline[play.seg].t1
+    ) {
+      play.seg += 1;
+    }
+    if (play.seg >= play.timeline.length) {
+      stopPlayback();
+      return;
+    }
+    beginSegment(play.seg);
     // Drop stale nodes and re-anchor the timeline so the current segment
     // re-times to "now" and the rest follows at correct offsets.
     stopTones();
