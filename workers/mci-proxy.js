@@ -1,5 +1,9 @@
 /**
- * Optional Cloudflare Worker — true live proxy for mci.archpitt.org.
+ * Optional standalone Cloudflare Worker — true live proxy for mci.archpitt.org.
+ *
+ * Production on Studium Institute prefers the Cloudflare Pages Function at
+ * functions/api/mci-home.js (same-origin /api/mci-home on chant.studiuminstitute.org).
+ * Keep this file if you need a workers.dev URL or a non-Pages host.
  *
  * Deploy (free Cloudflare account):
  *   1. dash.cloudflare.com → Workers & Pages → Create Worker

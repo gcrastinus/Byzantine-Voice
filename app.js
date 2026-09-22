@@ -2732,9 +2732,9 @@
   // —— Byzantine Liturgical Calendar (live from mci.archpitt.org sidebar) ——
   const MCI_HOME = "https://mci.archpitt.org/";
   /**
-   * Optional true live proxy (Cloudflare Worker — see workers/mci-proxy.js).
-   * Leave empty to rely on: local serve.py → GitHub snapshot → public proxies.
-   * Override anytime with ?mciProxy=https://your-worker.workers.dev
+   * Optional standalone Worker URL (see workers/mci-proxy.js).
+   * Leave empty on Studium: Cloudflare Pages Function serves same-origin
+   * /api/mci-home. Override anytime with ?mciProxy=https://….workers.dev
    */
   const MCI_LIVE_PROXY =
     (queryParams.get("mciProxy") || "").trim() ||
@@ -2773,10 +2773,9 @@
    * Fetch MCI homepage HTML for the calendar panel.
    *
    * Browsers cannot read mci.archpitt.org directly (no CORS). Priority:
-   *  1) Optional Cloudflare Worker (true live) — MCI_LIVE_PROXY / ?mciProxy=
-   *  2) Local serve.py  /api/mci-home  (true live on your Mac)
-   *  3) Same-origin GitHub snapshot  data/mci-home.html  (Pages-friendly;
-   *     refreshed by GitHub Actions every few hours)
+   *  1) Optional Cloudflare Worker — MCI_LIVE_PROXY / ?mciProxy=
+   *  2) Same-origin /api/mci-home (Pages Function on live site; serve.py on Mac)
+   *  3) Static fallback data/mci-home.html (no longer auto-committed)
    *  4) Direct + public CORS proxies (best-effort)
    */
   async function fetchMciHomeHtml() {
