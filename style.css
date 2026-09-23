@@ -3683,3 +3683,15 @@ body.compact-toolbar #mobile-tools-mount .mobile-transpose-reset {
     padding-top: calc(0.55rem + env(safe-area-inset-top, 0px)) !important;
   }
 }
+
+
+.designer-credit{
+  text-align:center;
+  margin:28px auto 8px;
+  max-width:40rem;
+  padding:0 16px;
+  font-size:0.85rem;
+  font-style:italic;
+  line-height:1.45;
+  color:var(--muted);
+}
